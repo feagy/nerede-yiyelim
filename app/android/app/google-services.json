@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "787113541841",
+    "project_id": "nerede-yiyelim-69235",
+    "storage_bucket": "nerede-yiyelim-69235.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:787113541841:android:2aab360223f439031a45f0",
+        "android_client_info": {
+          "package_name": "com.example.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyADD3xoKDHlvZjyMrU8V5nN-HOZ7ONiafo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
