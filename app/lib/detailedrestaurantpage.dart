@@ -6,7 +6,6 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-
 /*
 
   GETTERING DESIGN MUST BE CHANGED BEFORE DEPLOYMENT.
@@ -291,7 +290,7 @@ class DetailedRestaurantHeader extends StatelessWidget {
                 RatingBarIndicator(
                   itemBuilder: (context, _) => const Icon(
                     Icons.star_border_purple500_rounded,
-                    color: const Color.fromARGB(255, 221, 133, 2),
+                    color: Color.fromARGB(255, 221, 133, 2),
                   ),
                   rating: restaurantRating ?? 0.0,
                   itemCount: 5,
@@ -480,7 +479,7 @@ class DetailedRestaurantCommentsSection extends StatelessWidget {
               ),
             )
           else
-            ...reviews.map((r) => _buildReviewCard(r)).toList(),
+            ...reviews.map((r) => _buildReviewCard(r)),
         ],
       ),
     );

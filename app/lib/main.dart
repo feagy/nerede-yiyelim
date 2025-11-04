@@ -1,5 +1,6 @@
 import 'package:app/firebase_options.dart';
-import 'package:app/welcomepage.dart';
+import 'package:app/loginpage.dart';
+//import 'package:app/welcomepage.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
@@ -8,7 +9,6 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-
   runApp(const MyApp());
 }
 
@@ -38,7 +38,7 @@ class MyApp extends StatelessWidget {
         // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: WelcomePage(),
+      home: LoginPage(),
     );
   }
 }
