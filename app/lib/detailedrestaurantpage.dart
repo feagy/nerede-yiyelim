@@ -6,6 +6,13 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+
+/*
+
+  GETTERING DESIGN MUST BE CHANGED BEFORE DEPLOYMENT.
+
+*/
+
 final restaurant = {
   "name": "Mikla Restaurant",
   "id": "mikla-istanbul",
@@ -122,10 +129,21 @@ class DetailedRestaurantPage extends StatefulWidget {
 }
 
 class _DetailedRestaurantPage extends State<DetailedRestaurantPage> {
+  String? get restaurantMapUri => restaurant["googleMapsUri"] as String?; 
+  
+  Future<void> _openGoogleMaps() async {
+    if (restaurantMapUri != null) {
+      final Uri url = Uri.parse(restaurantMapUri!);
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      } else {
+        print('Could not launch $restaurantMapUri');
+      }
+    }
+  }
   
   @override
   Widget build (BuildContext context) {
-
     // IT WILL COMPLETELY CHANGE
     print("=== RESTAURANT DATA DEBUG ===");
     print("Restaurant: $restaurant");
@@ -161,7 +179,25 @@ class _DetailedRestaurantPage extends State<DetailedRestaurantPage> {
               restaurantGenerativeSummary: overview?["text"] as String?,
               restaurantInternationalPhoneNumber: restaurant["internationalPhoneNumber"] as String?,
               restaurantNextCloseTime: regularHours?["nextCloseTime"] as String?,
-              restaurantMapUri: restaurant["googleMapsUri"] as String?,
+            ),
+            if (restaurantMapUri != null)
+            Container(
+              alignment: Alignment.center,
+              margin: const EdgeInsets.only(bottom: 20),
+              child: ElevatedButton.icon(
+                onPressed: _openGoogleMaps,
+                icon: const Icon(Icons.map, size: 20),
+                label: const Text("Open in Google Maps"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF4285F4),
+                  foregroundColor: Colors.white,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
             ),
             DetailedRestaurantCommentsSection(
               restaurantReviews: restaurant["reviews"] as List<dynamic>?,
@@ -285,7 +321,6 @@ class DetailedRestaurantInformationSection extends StatelessWidget {
   final String? restaurantGenerativeSummary;
   final String? restaurantInternationalPhoneNumber;
   final String? restaurantNextCloseTime;
-  final String? restaurantMapUri;
 
   const DetailedRestaurantInformationSection({
     super.key,
@@ -293,19 +328,7 @@ class DetailedRestaurantInformationSection extends StatelessWidget {
     this.restaurantGenerativeSummary,
     this.restaurantInternationalPhoneNumber,
     this.restaurantNextCloseTime,
-    this.restaurantMapUri,
   });
-
-  Future<void> _openGoogleMaps() async {
-    if (restaurantMapUri != null) {
-      final Uri url = Uri.parse(restaurantMapUri!);
-      if (await canLaunchUrl(url)) {
-        await launchUrl(url, mode: LaunchMode.externalApplication);
-      } else {
-        print('Could not launch $restaurantMapUri');
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -366,25 +389,6 @@ class DetailedRestaurantInformationSection extends StatelessWidget {
                 restaurantInternationalPhoneNumber ?? "Phone not available",
           ),
           const SizedBox(height: 16),
-          if (restaurantMapUri != null)
-            Container(
-              alignment: Alignment.center,
-              margin: const EdgeInsets.only(bottom: 20),
-              child: ElevatedButton.icon(
-                onPressed: _openGoogleMaps,
-                icon: const Icon(Icons.map, size: 20),
-                label: const Text("Open in Google Maps"),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4285F4),
-                  foregroundColor: Colors.white,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-            ),
         ],
       ),
     );
