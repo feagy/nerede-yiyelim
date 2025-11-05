@@ -17,8 +17,8 @@ class _WelcomePage extends State<WelcomePage> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            const WelcomePageHeader(),
-            const WelcomePageSection(),
+            const _WelcomePageHeader(),
+            const _WelcomePageSection(),
             const SizedBox(height: 80),
             Container(
               alignment: Alignment.center,
@@ -44,8 +44,8 @@ class _WelcomePage extends State<WelcomePage> {
   }
 }
 
-class WelcomePageHeader extends StatelessWidget {
-  const WelcomePageHeader({super.key});
+class _WelcomePageHeader extends StatelessWidget {
+  const _WelcomePageHeader({super.key});
 
 
   @override
@@ -63,8 +63,8 @@ class WelcomePageHeader extends StatelessWidget {
 
 }
 
-class WelcomePageSection extends StatelessWidget {
-  const WelcomePageSection({super.key});
+class _WelcomePageSection extends StatelessWidget {
+  const _WelcomePageSection({super.key});
 
 
   @override

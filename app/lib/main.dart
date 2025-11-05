@@ -1,5 +1,6 @@
 import 'package:app/firebase_options.dart';
 import 'package:app/loginpage.dart';
+import 'package:app/signuppage.dart';
 //import 'package:app/welcomepage.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -38,7 +39,7 @@ class MyApp extends StatelessWidget {
         // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: LoginPage(),
+      home: SignupPage(),
     );
   }
 }

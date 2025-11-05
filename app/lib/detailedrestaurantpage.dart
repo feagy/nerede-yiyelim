@@ -1,4 +1,3 @@
-import 'dart:ffi';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -166,14 +165,14 @@ class _DetailedRestaurantPage extends State<DetailedRestaurantPage> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            DetailedRestaurantHeader(
+            _DetailedRestaurantHeader(
               restaurantName: restaurant["name"] as String?,
               restaurantPhotoUri: "https://lh3.googleusercontent.com/gps-cs-s/AG0ilSxF1kIayE8ncojdeqpOhlFkHB3Gf_JsOxBtWFnIMfAoVql5IQST8TIYYapEtCrkPBZjWV3Sz9nBICXKq3ZxvFfHCPEeXUFoEqtdsFB8nXFHVmsaXup_mU9nRpGJgIrmeOZwAByBLQ=s680-w680-h510-rw",
               restaurantRating: restaurant["rating"] as double?,
               restaurantUserRatingCount: restaurant["userRatingCount"] as int?,
               isOpen: regularHours?["openNow"] as bool?,
             ),
-            DetailedRestaurantInformationSection(
+            _DetailedRestaurantInformationSection(
               restaurantFormattedaddress: restaurant["formattedAddress"] as String?,
               restaurantGenerativeSummary: overview?["text"] as String?,
               restaurantInternationalPhoneNumber: restaurant["internationalPhoneNumber"] as String?,
@@ -198,7 +197,7 @@ class _DetailedRestaurantPage extends State<DetailedRestaurantPage> {
                 ),
               ),
             ),
-            DetailedRestaurantCommentsSection(
+            _DetailedRestaurantCommentsSection(
               restaurantReviews: restaurant["reviews"] as List<dynamic>?,
             )
           ],
@@ -208,7 +207,7 @@ class _DetailedRestaurantPage extends State<DetailedRestaurantPage> {
   }
 }
 
-class DetailedRestaurantHeader extends StatelessWidget {
+class _DetailedRestaurantHeader extends StatelessWidget {
 
   // They will change as final
   // and this application right now will terminate itself cause lack of API 
@@ -219,7 +218,7 @@ class DetailedRestaurantHeader extends StatelessWidget {
   final bool? isOpen;
 
 
-  const DetailedRestaurantHeader({
+  const _DetailedRestaurantHeader({
     super.key,
     this.restaurantPhotoUri,
     this.restaurantName,
@@ -315,13 +314,13 @@ class DetailedRestaurantHeader extends StatelessWidget {
   }
 }
 
-class DetailedRestaurantInformationSection extends StatelessWidget {
+class _DetailedRestaurantInformationSection extends StatelessWidget {
   final String? restaurantFormattedaddress;
   final String? restaurantGenerativeSummary;
   final String? restaurantInternationalPhoneNumber;
   final String? restaurantNextCloseTime;
 
-  const DetailedRestaurantInformationSection({
+  const _DetailedRestaurantInformationSection({
     super.key,
     this.restaurantFormattedaddress,
     this.restaurantGenerativeSummary,
@@ -431,10 +430,10 @@ class DetailedRestaurantInformationSection extends StatelessWidget {
   }
 }
 
-class DetailedRestaurantCommentsSection extends StatelessWidget {
+class _DetailedRestaurantCommentsSection extends StatelessWidget {
   final List<dynamic>? restaurantReviews;
 
-  const DetailedRestaurantCommentsSection({
+  const _DetailedRestaurantCommentsSection({
     super.key,
     this.restaurantReviews,
   });
