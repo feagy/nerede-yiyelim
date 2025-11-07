@@ -227,7 +227,7 @@ class _LoginPageState extends State<LoginPage> {
 }
 
 class _LoginHeaderPage extends StatelessWidget {
-  const _LoginHeaderPage({super.key});
+  const _LoginHeaderPage();
 
   @override
   Widget build(BuildContext context) {
@@ -256,7 +256,7 @@ class _LoginHeaderPage extends StatelessWidget {
 }
 
 class _LoginHeadFooterPage extends StatelessWidget {
-  const _LoginHeadFooterPage({super.key});
+  const _LoginHeadFooterPage();
 
   @override
   Widget build(BuildContext context) {

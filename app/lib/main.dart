@@ -1,20 +1,26 @@
 import 'package:app/firebase_options.dart';
-import 'package:app/loginpage.dart';
+import 'package:app/homepage.dart';
 import 'package:app/signuppage.dart';
 //import 'package:app/welcomepage.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-void main() async {
+Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env") ;
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const MyApp());
+
+  final String apiKey = dotenv.env['MAPTILER_MAPS_API_KEY'] ?? '';
+
+  runApp(MyApp(keyAPI: apiKey,));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final String keyAPI;
+  const MyApp({super.key, required this.keyAPI});
 
   // This widget is the root of your application.
   @override
@@ -39,7 +45,7 @@ class MyApp extends StatelessWidget {
         // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: SignupPage(),
+      home: HomePage(keyAPI: keyAPI,),
     );
   }
 }

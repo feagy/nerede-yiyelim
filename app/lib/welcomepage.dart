@@ -45,7 +45,7 @@ class _WelcomePage extends State<WelcomePage> {
 }
 
 class _WelcomePageHeader extends StatelessWidget {
-  const _WelcomePageHeader({super.key});
+  const _WelcomePageHeader();
 
 
   @override
@@ -64,7 +64,7 @@ class _WelcomePageHeader extends StatelessWidget {
 }
 
 class _WelcomePageSection extends StatelessWidget {
-  const _WelcomePageSection({super.key});
+  const _WelcomePageSection();
 
 
   @override

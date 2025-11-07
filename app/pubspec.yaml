@@ -38,8 +38,12 @@ dependencies:
   firebase_auth: ^6.1.2
   flutter_rating_bar: ^4.0.1
   google_fonts: ^6.3.2
+  flutter_dotenv: ^6.0.0
   url_launcher: ^6.2.5
   flutter_map: ^8.2.2
+  latlng: any
+  latlong2: ^0.9.1
+
 
 dev_dependencies:
   flutter_test:
@@ -68,6 +72,7 @@ flutter:
   assets:
     - images/loginheader.png
     - images/image_logo.png
+    - .env
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

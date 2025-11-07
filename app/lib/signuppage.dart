@@ -67,7 +67,7 @@ class _SignupPageState extends State<SignupPage> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0xFFFF7300)),
+                          borderSide: const BorderSide(color: Color.from(alpha: 1, red: 1, green: 0.451, blue: 0)),
                         ),
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 16,
@@ -249,7 +249,7 @@ class _SignupPageState extends State<SignupPage> {
 }
 
 class _SignupHeaderPage extends StatelessWidget {
-  const _SignupHeaderPage({super.key});
+  const _SignupHeaderPage();
 
  @override
   Widget build(BuildContext context) {

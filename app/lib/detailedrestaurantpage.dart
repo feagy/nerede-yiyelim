@@ -219,7 +219,6 @@ class _DetailedRestaurantHeader extends StatelessWidget {
 
 
   const _DetailedRestaurantHeader({
-    super.key,
     this.restaurantPhotoUri,
     this.restaurantName,
     this.restaurantRating,
@@ -321,7 +320,6 @@ class _DetailedRestaurantInformationSection extends StatelessWidget {
   final String? restaurantNextCloseTime;
 
   const _DetailedRestaurantInformationSection({
-    super.key,
     this.restaurantFormattedaddress,
     this.restaurantGenerativeSummary,
     this.restaurantInternationalPhoneNumber,
@@ -434,7 +432,6 @@ class _DetailedRestaurantCommentsSection extends StatelessWidget {
   final List<dynamic>? restaurantReviews;
 
   const _DetailedRestaurantCommentsSection({
-    super.key,
     this.restaurantReviews,
   });
 
