@@ -1,8 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:latlong2/latlong.dart';
-
+import 'package:app/locationfunc.dart';
 class HomePage extends StatefulWidget {
   final String keyAPI;
   const HomePage({super.key, required this.keyAPI});
@@ -17,14 +19,43 @@ class _HomePageState extends State<HomePage> {
   int _selectedBottomTab = 0;
   String _selectedFilter = 'Filtrele';
 
+  final LocationService _locationService = LocationService();
+  StreamSubscription? _locationStream;
+  LatLng? _currentUserLatLng;
+
   @override
   void initState() {
     super.initState();
     _mapController = MapController();
+
+    _initUserLocation();
+  }
+
+  Future<void> _initUserLocation() async {
+    final pos = await _locationService.getUserCurrentLocation();
+    if (pos != null) {
+      setState(() {
+        _currentUserLatLng = LatLng(pos.latitude, pos.longitude);
+      });
+      _mapController.move(_currentUserLatLng!, 15.0);
+    }
+  }
+
+  Future<void> _startTrackingUser() async {
+    _locationStream = await _locationService.startUpdateUserCurrentLocation(
+      onLocationChanged: (pos) {
+        final newLatLng = LatLng(pos.latitude, pos.longitude);
+        setState(() {
+          _currentUserLatLng = newLatLng;
+        });
+        _mapController.move(newLatLng, _mapController.camera.zoom);
+      },
+    );
   }
 
   @override
   void dispose() {
+    _locationStream?.cancel();
     _mapController.dispose();
     super.dispose();
   }
@@ -45,7 +76,7 @@ class _HomePageState extends State<HomePage> {
         title: Text(
           "Nerede Yiyelim?",
           style: GoogleFonts.lato(
-            color: const Color.from(alpha: 1, red: 1, green: 0.451, blue: 0),
+            color: const Color.fromARGB(255, 255, 115, 0),
             fontSize: 24,
             fontWeight: FontWeight.bold,
           ),
@@ -77,7 +108,7 @@ class _HomePageState extends State<HomePage> {
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: const BorderSide(
-                    color: Color.from(alpha: 1, red: 1, green: 0.451, blue: 0),
+                    color: Color.fromARGB(255, 255, 115, 0),
                     width: 2,
                   ),
                 ),
@@ -85,11 +116,9 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
-
           Expanded(
             child: Stack(
               children: [
-                // Harita
                 FlutterMap(
                   mapController: _mapController,
                   options: MapOptions(
@@ -109,7 +138,7 @@ class _HomePageState extends State<HomePage> {
                             height: 40,
                             child: const Icon(
                               Icons.location_on,
-                              color: Color.from(alpha: 1, red: 1, green: 0.451, blue: 0),
+                              color: Color.fromARGB(255, 255, 115, 0),
                               size: 40,
                             ),
                           ),
@@ -128,7 +157,7 @@ class _HomePageState extends State<HomePage> {
                     CircleLayer(
                       circles: [
                         CircleMarker(
-                          point: const LatLng(41.0082, 28.9784),
+                          point: _currentUserLatLng ?? const LatLng(41.0082, 28.9784),
                           color: Colors.amber.withOpacity(0.1),
                           borderStrokeWidth: 2,
                           borderColor: Colors.amberAccent,
@@ -137,32 +166,48 @@ class _HomePageState extends State<HomePage> {
                         )
                       ],
                     ),
+                    if (_currentUserLatLng != null)
+                      MarkerLayer(
+                        markers: [
+                          Marker(
+                            point: _currentUserLatLng!,
+                            width: 50,
+                            height: 50,
+                            child: const Icon(
+                              Icons.my_location,
+                              color: Colors.blueAccent,
+                              size: 40,
+                            ),
+                          ),
+                        ],
+                      ),
                     if (_userMarkers.isNotEmpty)
                       MarkerLayer(
                         markers: _userMarkers,
                       ),
                   ],
                 ),
-
                 Positioned(
                   bottom: 16,
                   left: 0,
                   right: 0,
                   child: Center(
                     child: ElevatedButton.icon(
-                      onPressed: () {},
-                      icon: const Icon(Icons.view_list),
-                      label: Text('List View',
+                      onPressed: () {
+                        _startTrackingUser();
+                      },
+                      icon: const Icon(Icons.gps_fixed),
+                      label: Text('Track Me',
                         style: GoogleFonts.lato(
                           color: Colors.white,
                           fontSize: 14,
                           fontWeight: FontWeight.bold
-                        ),),
+                        ),
+                      ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor:const Color.from(alpha: 1, red: 1, green: 0.451, blue: 0),
+                        backgroundColor: const Color.fromARGB(255, 255, 115, 0),
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 32, vertical: 12),
+                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -184,7 +229,7 @@ class _HomePageState extends State<HomePage> {
           });
         },
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: const Color.from(alpha: 1, red: 1, green: 0.451, blue: 0),
+        selectedItemColor: const Color.fromARGB(255, 255, 115, 0),
         unselectedItemColor: Colors.grey,
         backgroundColor: Colors.white,
         elevation: 8,
