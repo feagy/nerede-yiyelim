@@ -23,7 +23,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -268,7 +268,7 @@ class _LoginHeadFooterPage extends StatelessWidget {
         textAlign: TextAlign.center,
         style: GoogleFonts.lato(
           fontSize: 32,
-          color: Colors.black,
+          color: const Color.fromARGB(255, 32, 32, 32),
           fontWeight: FontWeight.bold,
         ),
       ),

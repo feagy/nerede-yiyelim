@@ -252,12 +252,13 @@ class _DetailedRestaurantHeader extends StatelessWidget {
           children: [
             Row(
               children: [
-                Text(
-                  restaurantName ?? "NO NAME",
-                  style: GoogleFonts.lato(
-                    color: Colors.white,
-                    fontSize: 35,
-                    fontWeight: FontWeight.bold
+                SizedBox(child: Text(
+                    restaurantName ?? "NO NAME",
+                    style: GoogleFonts.lato(
+                      color: Colors.white,
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold
+                    ),
                   ),
                 ),
                 const SizedBox(width: 20),
@@ -292,15 +293,15 @@ class _DetailedRestaurantHeader extends StatelessWidget {
                   ),
                   rating: restaurantRating ?? 0.0,
                   itemCount: 5,
-                  itemSize: 25,
+                  itemSize: 22,
                   direction: Axis.horizontal,
                 ),
-                const SizedBox(width: 20),
+                const SizedBox(width: 10),
                 Text(
-                  "(${restaurantUserRatingCount ?? 0} Yorum)",
+                  "(${restaurantUserRatingCount ?? 0} Reviews)",
                   style: GoogleFonts.lato(
                     color: const Color.fromARGB(255, 224, 224, 224),
-                    fontSize: 20,
+                    fontSize: 18,
                     fontWeight: FontWeight.bold
                   ),
                 ),
@@ -528,7 +529,7 @@ class _DetailedRestaurantCommentsSection extends StatelessWidget {
               return Icon(
                 index < rating ? Icons.star_border_purple500_rounded : Icons.star_border,
                 color: const Color.fromARGB(255, 221, 133, 2),
-                size: 20,
+                size: 16,
               );
             }),
           ),

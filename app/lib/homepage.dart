@@ -33,7 +33,7 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _initUserLocation() async {
     final pos = await _locationService.getUserCurrentLocation();
-    if (pos != null) {
+    if (pos != null && mounted) {
       setState(() {
         _currentUserLatLng = LatLng(pos.latitude, pos.longitude);
       });

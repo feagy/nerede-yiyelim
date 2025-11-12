@@ -33,6 +33,7 @@ class _SignupPageState extends State<SignupPage> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
                 const _SignupHeaderPage(),
+                const _SignupPageHeaderFooter(),
                 const SizedBox(height: 20),
 
                 Column(
@@ -219,7 +220,7 @@ class _SignupPageState extends State<SignupPage> {
                       "Have you got a account? ",
                       style: GoogleFonts.lato(
                         fontSize: 14,
-                        color: Colors.black87,
+                        color: Colors.black54,
                       ),
                     ),
                     GestureDetector(
@@ -253,11 +254,11 @@ class _SignupHeaderPage extends StatelessWidget {
 
  @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
+    return
         Container(
-          margin: const EdgeInsets.only(top: 20),
+          margin: const EdgeInsets.only(top: 40),
           padding: const EdgeInsets.only(top: 90),
+          alignment: Alignment.center,
           height: 120,
           decoration: const BoxDecoration(
             image: DecorationImage(
@@ -266,26 +267,35 @@ class _SignupHeaderPage extends StatelessWidget {
             ),
           ),
           child: Text(
-            "NeredeYiyelim",
+            "NeredeYiyelim?",
             textAlign: TextAlign.center,
             style: GoogleFonts.lato(
               fontSize: 20,
               color: Colors.black,
               fontWeight: FontWeight.bold,
             )
-          ),
         ),
-        const SizedBox(height: 10),
-        Text(
+    );
+  }
+}
+
+class _SignupPageHeaderFooter extends StatelessWidget {
+  const _SignupPageHeaderFooter();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      alignment: Alignment.center,
+      padding: const EdgeInsets.fromLTRB(0, 20, 0, 10),
+      child:  Text(
           "Find the best restaurant near me that serves AI-themed cuisine.",
           textAlign: TextAlign.center,
           style: GoogleFonts.lato(
             fontSize: 14,
             color: const Color.fromARGB(255, 32, 32, 32),
             fontWeight: FontWeight.bold,
-          )
-        ),
-      ],
+            )
+          ),
     );
   }
 }
