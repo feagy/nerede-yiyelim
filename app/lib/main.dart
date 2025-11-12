@@ -58,10 +58,10 @@ class _MainNavigationState extends State<MainNavigation> {
   void initState() {
     super.initState();
     _pages = [
-      HomePage(keyAPI: widget.keyAPI),
       WelcomePage(),
-      SignupPage(),
       LoginPage(),
+      SignupPage(),
+      HomePage(keyAPI: widget.keyAPI),
       DetailedRestaurantPage(),
     ];
   }
@@ -84,20 +84,20 @@ class _MainNavigationState extends State<MainNavigation> {
         unselectedItemColor: Colors.grey,
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home Page',
-          ),
-          BottomNavigationBarItem(
             icon: Icon(Icons.waving_hand),
             label: 'Welcome Page',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.location_on),
+            label: 'Login Page',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person_add),
             label: 'Signup Page',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.location_on),
-            label: 'Login Page',
+            icon: Icon(Icons.home),
+            label: 'Home Page',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.restaurant),

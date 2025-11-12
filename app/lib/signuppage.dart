@@ -256,7 +256,7 @@ class _SignupHeaderPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return
         Container(
-          margin: const EdgeInsets.only(top: 40),
+          margin: const EdgeInsets.only(top: 44),
           padding: const EdgeInsets.only(top: 90),
           alignment: Alignment.center,
           height: 120,
