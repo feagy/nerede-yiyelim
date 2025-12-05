@@ -8,6 +8,7 @@ import 'package:app/locationfunc.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,48 +39,32 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
-// Ana Navigation Widget
-class MainNavigation extends StatefulWidget {
+class MainNavigation extends HookWidget {
   final String keyAPI;
   const MainNavigation({super.key, required this.keyAPI});
 
   @override
-  State<MainNavigation> createState() => _MainNavigationState();
-}
-
-class _MainNavigationState extends State<MainNavigation> {
-  int _selectedIndex = 0;
-
-  // Sayfaların listesi
-  late final List<Widget> _pages;
-
-  @override
-  void initState() {
-    super.initState();
-    _pages = [
-      WelcomePage(),
-      LoginPage(),
-      SignupPage(),
-      HomePage(keyAPI: widget.keyAPI),
-      DetailedRestaurantPage(),
-    ];
-  }
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final selectedIndex = useState(0);
+
+    final pages = useMemoized(() => [
+      const WelcomePage(),
+      const LoginPage(),
+      const SignupPage(),
+      HomePage(keyAPI: keyAPI),
+      const DetailedRestaurantPage(),
+    ], [keyAPI]);
+
+    void onItemTapped(int index) {
+      selectedIndex.value = index;
+    }
+
     return Scaffold(
-      body: _pages[_selectedIndex],
+      body: pages[selectedIndex.value],
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
+        currentIndex: selectedIndex.value,
+        onTap: onItemTapped,
         selectedItemColor: Colors.deepOrange,
         unselectedItemColor: Colors.grey,
         items: const [

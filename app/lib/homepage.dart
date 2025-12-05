@@ -1,78 +1,61 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:app/locationfunc.dart';
-class HomePage extends StatefulWidget {
+
+class HomePage extends HookWidget {
   final String keyAPI;
   const HomePage({super.key, required this.keyAPI});
 
   @override
-  State<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  late final MapController _mapController;
-  final List<Marker> _userMarkers = [];
-  int _selectedBottomTab = 0;
-  String _selectedFilter = 'Filtrele';
-
-  final LocationService _locationService = LocationService();
-  StreamSubscription? _locationStream;
-  LatLng? _currentUserLatLng;
-
-  @override
-  void initState() {
-    super.initState();
-    _mapController = MapController();
-
-    _initUserLocation();
-  }
-
-  Future<void> _initUserLocation() async {
-    final pos = await _locationService.getUserCurrentLocation();
-    if (pos != null && mounted) {
-      setState(() {
-        _currentUserLatLng = LatLng(pos.latitude, pos.longitude);
-      });
-      _mapController.move(_currentUserLatLng!, 15.0);
-    }
-  }
-
-  Future<void> _startTrackingUser() async {
-    _locationStream = await _locationService.startUpdateUserCurrentLocation(
-      onLocationChanged: (pos) {
-        final newLatLng = LatLng(pos.latitude, pos.longitude);
-        setState(() {
-          _currentUserLatLng = newLatLng;
-        });
-        _mapController.move(newLatLng, _mapController.camera.zoom);
-      },
-    );
-  }
-
-  @override
-  void dispose() {
-    _locationStream?.cancel();
-    _mapController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final mapController = useMemoized(() => MapController());
+    final userMarkers = useState<List<Marker>>([]);
+    final selectedBottomTab = useState(0);
+    final selectedFilter = useState('Filtrele');
+    final currentUserLatLng = useState<LatLng?>(null);
+    final locationService = useMemoized(() => LocationService());
+    final locationStream = useRef<StreamSubscription?>(null);
+
+    useEffect(() {
+      Future.microtask(() async {
+        final pos = await locationService.getUserCurrentLocation();
+        if (pos != null) {
+          currentUserLatLng.value = LatLng(pos.latitude, pos.longitude);
+          mapController.move(currentUserLatLng.value!, 15.0);
+        }
+      });
+      return () {
+        locationStream.value?.cancel();
+        mapController.dispose();
+      };
+    }, []);
+
+    Future<void> _initUserLocation() async {
+      final pos = await locationService.getUserCurrentLocation();
+      if (pos != null) {
+        currentUserLatLng.value = LatLng(pos.latitude, pos.longitude);
+        mapController.move(currentUserLatLng.value!, 15.0);
+      }
+    }
+
+    Future<void> _startTrackingUser() async {
+      locationStream.value = await locationService.startUpdateUserCurrentLocation(
+        onLocationChanged: (pos) {
+          final newLatLng = LatLng(pos.latitude, pos.longitude);
+          currentUserLatLng.value = newLatLng;
+          mapController.move(newLatLng, mapController.camera.zoom);
+        },
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(
-            Icons.menu,
-            color: Color.fromARGB(255, 29, 29, 29),
-          ),
-          onPressed: () {},
-        ),
         title: Text(
           "Nerede Yiyelim?",
           style: GoogleFonts.lato(
@@ -86,33 +69,14 @@ class _HomePageState extends State<HomePage> {
       body: Column(
         children: [
           Container(
-            color: Colors.white,
             padding: const EdgeInsets.all(8.0),
             child: TextField(
               decoration: InputDecoration(
                 hintText: "Please write what you want to eat/drink",
-                prefixIcon: const Icon(
-                  Icons.search_rounded,
-                  color: Color.fromARGB(255, 105, 105, 105),
-                ),
-                filled: true,
-                fillColor: Colors.grey[50],
+                prefixIcon: const Icon(Icons.search_rounded),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey[300]!),
                 ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey[300]!),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(
-                    color: Color.fromARGB(255, 255, 115, 0),
-                    width: 2,
-                  ),
-                ),
-                contentPadding: const EdgeInsets.symmetric(vertical: 12),
               ),
             ),
           ),
@@ -120,57 +84,49 @@ class _HomePageState extends State<HomePage> {
             child: Stack(
               children: [
                 FlutterMap(
-                  mapController: _mapController,
+                  mapController: mapController,
                   options: MapOptions(
                     initialCenter: const LatLng(41.0082, 28.9784),
                     initialZoom: 11.0,
-                    minZoom: 3.0,
-                    maxZoom: 18.0,
-                    interactionOptions: const InteractionOptions(
-                      flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
-                    ),
                     onTap: (tapPosition, point) {
-                      setState(() {
-                        _userMarkers.add(
-                          Marker(
-                            point: point,
-                            width: 40,
-                            height: 40,
-                            child: const Icon(
-                              Icons.location_on,
-                              color: Color.fromARGB(255, 255, 115, 0),
-                              size: 40,
-                            ),
+                      userMarkers.value = [
+                        ...userMarkers.value,
+                        Marker(
+                          point: point,
+                          width: 40,
+                          height: 40,
+                          child: const Icon(
+                            Icons.location_on,
+                            color: Color.fromARGB(255, 255, 115, 0),
+                            size: 40,
                           ),
-                        );
-                      });
+                        ),
+                      ];
                     },
                   ),
                   children: [
                     TileLayer(
                       urlTemplate:
-                          "https://api.maptiler.com/maps/hybrid/256/{z}/{x}/{y}.jpg?key=${widget.keyAPI}",
+                          "https://api.maptiler.com/maps/hybrid/256/{z}/{x}/{y}.jpg?key=$keyAPI",
                       userAgentPackageName: "com.example.app",
-                      tileProvider: NetworkTileProvider(),
-                      maxNativeZoom: 19,
                     ),
                     CircleLayer(
                       circles: [
                         CircleMarker(
-                          point: _currentUserLatLng ?? const LatLng(41.0082, 28.9784),
+                          point: currentUserLatLng.value ??
+                              const LatLng(41.0082, 28.9784),
                           color: Colors.amber.withOpacity(0.1),
-                          borderStrokeWidth: 2,
                           borderColor: Colors.amberAccent,
                           useRadiusInMeter: true,
                           radius: 500,
                         )
                       ],
                     ),
-                    if (_currentUserLatLng != null)
+                    if (currentUserLatLng.value != null)
                       MarkerLayer(
                         markers: [
                           Marker(
-                            point: _currentUserLatLng!,
+                            point: currentUserLatLng.value!,
                             width: 50,
                             height: 50,
                             child: const Icon(
@@ -181,10 +137,8 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ],
                       ),
-                    if (_userMarkers.isNotEmpty)
-                      MarkerLayer(
-                        markers: _userMarkers,
-                      ),
+                    if (userMarkers.value.isNotEmpty)
+                      MarkerLayer(markers: userMarkers.value),
                   ],
                 ),
                 Positioned(
@@ -193,26 +147,9 @@ class _HomePageState extends State<HomePage> {
                   right: 0,
                   child: Center(
                     child: ElevatedButton.icon(
-                      onPressed: () {
-                        _startTrackingUser();
-                      },
+                      onPressed: _startTrackingUser,
                       icon: const Icon(Icons.gps_fixed),
-                      label: Text('Track Me',
-                        style: GoogleFonts.lato(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color.fromARGB(255, 255, 115, 0),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        elevation: 4,
-                      ),
+                      label: const Text("Track Me"),
                     ),
                   ),
                 ),
@@ -222,66 +159,12 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedBottomTab,
-        onTap: (index) {
-          setState(() {
-            _selectedBottomTab = index;
-          });
-        },
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: const Color.fromARGB(255, 255, 115, 0),
-        unselectedItemColor: Colors.grey,
-        backgroundColor: Colors.white,
-        elevation: 8,
+        currentIndex: selectedBottomTab.value,
+        onTap: (index) => selectedBottomTab.value = index,
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.map),
-            label: 'Map',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            label: 'Profile',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Map'),
+          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Profile'),
         ],
-      ),
-    );
-  }
-
-  Widget _buildFilterChip(String label, IconData? icon, {bool isFirst = false}) {
-    final isSelected = _selectedFilter == label;
-
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedFilter = label;
-        });
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? Colors.orange : Colors.grey[100],
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (icon != null) ...[
-              Icon(
-                icon,
-                size: 18,
-                color: isSelected ? Colors.white : Colors.grey[700],
-              ),
-              const SizedBox(width: 6),
-            ],
-            Text(
-              label,
-              style: TextStyle(
-                color: isSelected ? Colors.white : Colors.grey[700],
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

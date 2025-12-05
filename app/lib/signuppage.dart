@@ -1,29 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 
-class SignupPage extends StatefulWidget {
+class SignupPage extends HookWidget {
   const SignupPage({super.key});
 
   @override
-  State<SignupPage> createState () => _SignupPageState();
-}
-
-class _SignupPageState extends State<SignupPage> {
-  final TextEditingController _usernameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  bool _obscurePassword = true;
-
-  @override
-  void dispose() {
-    _usernameController.dispose();
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final usernameController = useTextEditingController();
+    final emailController = useTextEditingController();
+    final passwordController = useTextEditingController();
+    final obscurePassword = useState(true);
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
@@ -32,219 +20,199 @@ class _SignupPageState extends State<SignupPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-                const _SignupHeaderPage(),
-                const _SignupPageHeaderFooter(),
-                const SizedBox(height: 20),
+              const _SignupHeaderPage(),
+              const _SignupPageHeaderFooter(),
+              const SizedBox(height: 20),
 
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Username",
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("Username",
                       style: GoogleFonts.lato(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    TextField(
-                      controller: _usernameController,
-                      decoration: InputDecoration(
-                        hintText: "Enter your username",
-                        hintStyle: GoogleFonts.lato(
                           fontSize: 14,
-                          color: Colors.grey[400],
-                        ),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.grey[300]!),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.grey[300]!),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color.from(alpha: 1, red: 1, green: 0.451, blue: 0)),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 16,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                
-                const SizedBox(height: 20),
-
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "E-mail",
-                      style: GoogleFonts.lato(
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black87)),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: usernameController,
+                    decoration: InputDecoration(
+                      hintText: "Enter your username",
+                      hintStyle: GoogleFonts.lato(
                         fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black87,
+                        color: Colors.grey[400],
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    TextField(
-                      controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      decoration: InputDecoration(
-                        hintText: "Enter your email",
-                        hintStyle: GoogleFonts.lato(
-                          fontSize: 14,
-                          color: Colors.grey[400],
-                        ),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.grey[300]!),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.grey[300]!),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0xFFFF7300)),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 16,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                
-                const SizedBox(height: 20),
-                
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Password",
-                      style: GoogleFonts.lato(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    TextField(
-                      controller: _passwordController,
-                      obscureText: _obscurePassword,
-                      decoration: InputDecoration(
-                        hintText: "Enter your password",
-                        hintStyle: GoogleFonts.lato(
-                          fontSize: 14,
-                          color: Colors.grey[400],
-                        ),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.grey[300]!),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.grey[300]!),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0xFFFF7300)),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 16,
-                        ),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _obscurePassword
-                                ? Icons.visibility_outlined
-                                : Icons.visibility_off_outlined,
-                            color: Colors.grey[600],
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _obscurePassword = !_obscurePassword;
-                            });
-                          },
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                
-                const SizedBox(height: 20),
-
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFF7300),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey[300]!),
                       ),
-                      elevation: 0,
-                    ),
-                    onPressed: () {
-                      // Create account action
-                    },
-                    child: Text(
-                      "Create Account",
-                      style: GoogleFonts.lato(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey[300]!),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide:
+                            const BorderSide(color: Color(0xFFFF7300)),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 16,
                       ),
                     ),
                   ),
-                ),
+                ],
+              ),
 
-                const SizedBox(height: 20),
+              const SizedBox(height: 20),
 
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "Have you got a account? ",
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("E-mail",
                       style: GoogleFonts.lato(
-                        fontSize: 14,
-                        color: Colors.black54,
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        // Navigate to login page
-                        Navigator.pop(context);
-                      },
-                      child: Text(
-                        "Log In",
-                        style: GoogleFonts.lato(
                           fontSize: 14,
-                          color: const Color(0xFFFF7300),
-                          fontWeight: FontWeight.w600,
-                        ),
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black87)),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: InputDecoration(
+                      hintText: "Enter your email",
+                      hintStyle: GoogleFonts.lato(
+                        fontSize: 14,
+                        color: Colors.grey[400],
+                      ),
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey[300]!),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey[300]!),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide:
+                            const BorderSide(color: Color(0xFFFF7300)),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 16,
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
+              ),
 
-                const SizedBox(height: 20),
+              const SizedBox(height: 20),
+
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("Password",
+                      style: GoogleFonts.lato(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black87)),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: passwordController,
+                    obscureText: obscurePassword.value,
+                    decoration: InputDecoration(
+                      hintText: "Enter your password",
+                      hintStyle: GoogleFonts.lato(
+                        fontSize: 14,
+                        color: Colors.grey[400],
+                      ),
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey[300]!),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey[300]!),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide:
+                            const BorderSide(color: Color(0xFFFF7300)),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 16,
+                      ),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          obscurePassword.value
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off_outlined,
+                          color: Colors.grey[600],
+                        ),
+                        onPressed: () {
+                          obscurePassword.value = !obscurePassword.value;
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 20),
+
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFF7300),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 0,
+                  ),
+                  onPressed: () {
+                    // Create account action
+                  },
+                  child: Text("Create Account",
+                      style: GoogleFonts.lato(
+                          fontSize: 16, fontWeight: FontWeight.w600)),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text("Have you got a account? ",
+                      style: GoogleFonts.lato(
+                          fontSize: 14, color: Colors.black54)),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
+                    child: Text("Log In",
+                        style: GoogleFonts.lato(
+                            fontSize: 14,
+                            color: const Color(0xFFFF7300),
+                            fontWeight: FontWeight.w600)),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 20),
             ],
           ),
         ),
-      )
+      ),
     );
   }
 }
@@ -252,29 +220,25 @@ class _SignupPageState extends State<SignupPage> {
 class _SignupHeaderPage extends StatelessWidget {
   const _SignupHeaderPage();
 
- @override
+  @override
   Widget build(BuildContext context) {
-    return
-        Container(
-          margin: const EdgeInsets.only(top: 44),
-          padding: const EdgeInsets.only(top: 90),
-          alignment: Alignment.center,
-          height: 120,
-          decoration: const BoxDecoration(
-            image: DecorationImage(
-              fit: BoxFit.contain,
-              image: AssetImage("images/image_logo.png")
-            ),
-          ),
-          child: Text(
-            "NeredeYiyelim?",
-            textAlign: TextAlign.center,
-            style: GoogleFonts.lato(
+    return Container(
+      margin: const EdgeInsets.only(top: 44),
+      padding: const EdgeInsets.only(top: 90),
+      alignment: Alignment.center,
+      height: 120,
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          fit: BoxFit.contain,
+          image: AssetImage("images/image_logo.png"),
+        ),
+      ),
+      child: Text("NeredeYiyelim?",
+          textAlign: TextAlign.center,
+          style: GoogleFonts.lato(
               fontSize: 20,
               color: Colors.black,
-              fontWeight: FontWeight.bold,
-            )
-        ),
+              fontWeight: FontWeight.bold)),
     );
   }
 }
@@ -287,15 +251,15 @@ class _SignupPageHeaderFooter extends StatelessWidget {
     return Container(
       alignment: Alignment.center,
       padding: const EdgeInsets.fromLTRB(0, 20, 0, 10),
-      child:  Text(
-          "Find the best restaurant near me that serves AI-themed cuisine.",
-          textAlign: TextAlign.center,
-          style: GoogleFonts.lato(
-            fontSize: 14,
-            color: const Color.fromARGB(255, 32, 32, 32),
-            fontWeight: FontWeight.bold,
-            )
-          ),
+      child: Text(
+        "Find the best restaurant near me that serves AI-themed cuisine.",
+        textAlign: TextAlign.center,
+        style: GoogleFonts.lato(
+          fontSize: 14,
+          color: const Color.fromARGB(255, 32, 32, 32),
+          fontWeight: FontWeight.bold,
+        ),
+      ),
     );
   }
 }

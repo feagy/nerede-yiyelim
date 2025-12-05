@@ -1,14 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 
-class WelcomePage extends StatefulWidget {
+class WelcomePage extends HookWidget{
   const WelcomePage({super.key});
-
-  @override
-  State<WelcomePage> createState () => _WelcomePage();
-}
-
-class _WelcomePage extends State<WelcomePage> {
 
   @override
   Widget build (BuildContext context) {
