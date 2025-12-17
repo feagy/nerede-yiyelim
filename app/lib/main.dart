@@ -1,5 +1,6 @@
 import 'package:app/firebase_options.dart';
 import 'package:app/homepage.dart';
+import 'package:app/loginpage.dart';
 import 'package:app/signuppage.dart';
 //import 'package:app/welcomepage.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -45,7 +46,7 @@ class MyApp extends StatelessWidget {
         // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: HomePage(keyAPI: keyAPI,),
+      home:HomePage(keyAPI: keyAPI),
     );
   }
 }
