@@ -1,4 +1,4 @@
-import 'package:app/Database/place.dart';
+import 'package:app/database/entity/place.dart';
 import 'package:floor/floor.dart';
 
 @dao
@@ -9,6 +9,15 @@ abstract class PlaceDto {
   @Query("SELECT * FROM Place WHERE placeName = :name")
   Future<Place?> findPlaceByName(String name);
 
-  @insert
+  @Query("SELECT COUNT(*) FROM Place")
+  Future<int?> countFavorites();
+
+  @delete
+  Future<int?> removePlace();
+
+  @delete
+  Future<int?> removeAllPlace();
+
+  @Insert(onConflict: OnConflictStrategy.rollback)
   Future<String> insertPlaceInDB(Place place);
 }
