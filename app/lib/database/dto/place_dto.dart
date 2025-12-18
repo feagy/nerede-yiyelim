@@ -3,6 +3,7 @@ import 'package:floor/floor.dart';
 
 @dao
 abstract class PlaceDto {
+  // We can use it as a stream for huge favorite lists
   @Query("SELECT * FROM Place")
   Future<List<Place>> findAllPlaces();
 
