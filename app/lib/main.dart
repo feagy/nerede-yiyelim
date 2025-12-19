@@ -1,8 +1,6 @@
 import 'package:app/firebase_options.dart';
 import 'package:app/homepage.dart';
-import 'package:app/loginpage.dart';
 import 'package:app/notification-test.dart';
-import 'package:app/signuppage.dart';
 //import 'package:app/welcomepage.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
