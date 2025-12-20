@@ -5,15 +5,15 @@ Bu bölüm, proje kapsamında planlanan geliştirmeler, iyileştirmeler ve düze
 ## Yapılacaklar Listesi
 
 - [ ] Evrensel State eklenecek.  
-- [+] Test için oluşturulan ekstra olarak konulan
+- [x] Test için oluşturulan ekstra olarak konulan
       navigator bar kalkacak.   
 - [ ] Mağazaların konumlarının gösteriminde kullanılan imleç simgelerine
       tıklama sonrası gelecek olan mini pencerelere yapılacak  
-- [+] Kullanıcı arayüzünde düzenlemeler  
+- [x] Kullanıcı arayüzünde düzenlemeler  
 - [ ] Hook yapısının doğru eklenip eklenmediği test edilmeli (hook_implementation branch'ı)
-- [+] Database eklenmesi yapılıyor ORM (Floor + sqflite).  
-- [+] Notification gelecek
-- [+] Navigator eklenecek
+- [x] Database eklenmesi yapılıyor ORM (Floor + sqflite).  
+- [x] Notification gelecek
+- [x] Navigator eklenecek
 - [ ] Navigator yapısının akışı güçlendirilecek
 ---
 
