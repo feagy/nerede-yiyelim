@@ -1,5 +1,7 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+import 'package:permission_handler/permission_handler.dart';
 
 class NotificationTest {
   static final FlutterLocalNotificationsPlugin _plugin =
@@ -12,33 +14,39 @@ class NotificationTest {
     const InitializationSettings initializationSettings =
         InitializationSettings(android: initializationSettingsAndroid);
 
+    tz.initializeTimeZones();
+    tz.setLocalLocation(tz.getLocation("Europe/Istanbul"));
+
+    await _requestNotificationPermission();
+
     await _plugin.initialize(initializationSettings);
   }
 
+  static Future<void> _requestNotificationPermission() async {
+    var status = await Permission.notification.status;
+    if (!status.isGranted) {
+      await Permission.notification.request();
+    }
+  }
+
   static Future<void> showNotificationSingle() async {
-    const AndroidNotificationDetails androidNotificationDetails =
-        AndroidNotificationDetails(
-          'single_notification_channel_id',
-          'single_notification_channel_name',
-          channelDescription: "This is single notification testing",
-          importance: Importance.max,
-          priority: Priority.high,
-        );
     await _plugin.zonedSchedule(
       0,
-      "Bizi Sevdiniz mi⁉️",
-      "O zaman bizi kullanmaya devam edin❤️❤️",
+      "Hatırlatma",
+      "3 gün sonra tekrar gel!",
       tz.TZDateTime.now(tz.local).add(const Duration(days: 3)),
       const NotificationDetails(
         android: AndroidNotificationDetails(
           'reminder_channel',
           'Reminder Notifications',
           channelDescription: 'Kullanıcı uzun süre gelmezse hatırlatma',
+          importance: Importance.max,
+          priority: Priority.high,
         ),
       ),
-      androidScheduleMode: AndroidScheduleMode.exact,
-      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
-      matchDateTimeComponents: DateTimeComponents.time,
+      androidScheduleMode: AndroidScheduleMode.inexact,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
     );
   }
 }

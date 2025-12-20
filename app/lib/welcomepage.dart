@@ -34,7 +34,9 @@ class _WelcomePage extends State<WelcomePage> {
                   ),
                 ),
                 // HERE LOGIN PAGE AND SIGN UP PAGE PAGES
-                onPressed: ()=> {}, 
+                onPressed: ()=> {
+                  Navigator.pushReplacementNamed(context, "/home")
+                }, 
               ),
             )
           ],
