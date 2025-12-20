@@ -66,6 +66,7 @@ class LocationService {
     } catch (e) {
       return null;
     }
+    return null;
   }
 
   Future<void> stopUserLocationUpdates() async {
