@@ -37,8 +37,6 @@ async function getNearbyPlaces(API_KEY, lat, lng, radius, maxCount = 20) {
                            places.photos`.replace(/\s+/g, ""),
     };
 
-
-    // places.googleMapsLinks,places.generativeSummary
     const response = await axios.post(url, body, { headers });
     const places = response.data.places?.map((p) => ({
         id: p.id,

@@ -1,5 +1,6 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
+admin.initializeApp();
 const cors = require("cors")({ origin: true });
 const { places } = require("./places.js");
 require("dotenv").config();
@@ -40,3 +41,6 @@ exports.getPhoto = functions.https.onRequest(async (req, res) => {
     res.send(response);
 });
          
+const reviewsApp = require("./reviews.js");
+exports.reviews = functions.https.onRequest(reviewsApp);
+        
