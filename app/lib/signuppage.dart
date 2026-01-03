@@ -1,3 +1,7 @@
+import 'package:app/loginpage.dart';
+import 'package:app/services/authservice.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -197,8 +201,14 @@ class _SignupPageState extends State<SignupPage> {
                       ),
                       elevation: 0,
                     ),
-                    onPressed: () {
-                      // Create account action
+                    onPressed: () async {
+                      try{
+                        await AuthService().createAccount(email: _emailController.text, password: _passwordController.text);
+                      } on FirebaseAuthException catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Authentication error")),
+                        );
+                      }
                     },
                     child: Text(
                       "Create Account",
@@ -213,19 +223,20 @@ class _SignupPageState extends State<SignupPage> {
                 const SizedBox(height: 20),
 
                 Row(
+                  spacing: 5,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
                       "Have you got a account? ",
                       style: GoogleFonts.lato(
                         fontSize: 14,
-                        color: Colors.black87,
+                        color:Colors.black54,
                       ),
                     ),
                     GestureDetector(
                       onTap: () {
-                        // Navigate to login page
-                        Navigator.pop(context);
+                        Navigator.push(context,
+                          MaterialPageRoute(builder: (context) => LoginPage()),);
                       },
                       child: Text(
                         "Log In",
@@ -236,6 +247,31 @@ class _SignupPageState extends State<SignupPage> {
                         ),
                       ),
                     ),
+                    Text(
+                      "or",
+                      style: GoogleFonts.lato(
+                        fontSize: 14,
+                        color: Colors.black54,
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pushReplacementNamed(context, "/home");
+                      },
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: const Size(0, 0),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: Text(
+                        "Contiune",
+                        style: GoogleFonts.lato(
+                          fontSize: 14,
+                          color: const Color(0xFFFF7300),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),                    
                   ],
                 ),
 
