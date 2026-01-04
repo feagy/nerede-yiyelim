@@ -49,6 +49,7 @@ dependencies:
   floor: ^1.4.0
   flutter_local_notifications: ^18.0.1
   timezone: ^0.10.1
+  http: ^1.2.0
 
 
 dev_dependencies:
