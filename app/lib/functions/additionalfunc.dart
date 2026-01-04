@@ -1,25 +1,33 @@
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:app/database/entity/account.dart';
+import 'package:app/database/dto/account_dto.dart';
 
-import 'package:app/detailedrestaurantpage.dart';
-import 'package:app/mappage.dart';
-import 'package:flutter/material.dart';
+Future<void> _pickAndSavePhoto(AccountDto dao, Account account) async {
+  final picker = ImagePicker();
+  final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
-class Additionalfunc {
-  static void changePage(int index, GlobalKey<NavigatorState> state, String keyAPI) {
-    switch (index) {
-      case 0:
-        state.currentState!.pushReplacement(MaterialPageRoute(builder: (_) => MapPage(keyAPI: keyAPI)));
-        break;
-      case 1:
-        //Navigator.pushReplacementNamed(context, "/profile");
-        break;
-      case 2:
-        //Navigator.pushReplacementNamed(context, "/favorites");
-        break;
-      case 3:
-        state.currentState!.pushReplacement(MaterialPageRoute(builder: (_) => DetailedRestaurantPage()));
-        break;
-      case 4:
-        //Navigator.pushReplacementNamed(context, "/settings");
-    }
+  if (pickedFile != null) {
+    final file = File(pickedFile.path);
+
+    // Uygulamanın dokümanlar klasörünü bul
+    final dir = await getApplicationDocumentsDirectory();
+    final localPath = "${dir.path}/profile_${account.id}.jpg";
+
+    // Dosyayı kopyala
+    await file.copy(localPath);
+
+    // Account objesini güncelle
+    final updatedAccount = Account(
+      id: account.id,
+      email: account.email,
+      userName: account.userName,
+      password: account.password,
+      photo: localPath, // yeni fotoğraf path’i
+    );
+
+    // DB’de güncelle
+    await dao.updateAccount(updatedAccount);
   }
 }

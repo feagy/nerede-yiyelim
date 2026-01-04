@@ -6,9 +6,15 @@ abstract class AccountDto {
   @Query("SELECT * FROM Account")
   Future<List<Account>> findAllAccounts();
 
-  @delete
-  Future<int?> removeAccount();
+  @insert
+  Future<int> insertAccount(Account account);
 
   @delete
-  Future<int?> removeAllAccount();
+  Future<int> removeAccount(Account account);
+
+  @Query("DELETE FROM Account")
+  Future<void> removeAllAccounts();
+
+  @update
+  Future<int> updateAccount(Account account);
 }

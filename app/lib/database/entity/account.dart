@@ -1,4 +1,3 @@
-
 import 'package:floor/floor.dart';
 
 @entity
@@ -12,5 +11,7 @@ class Account {
 
   final String password;
 
-  Account(this.id, this.email, this.userName, this.password);
+  final String? photo;
+
+  Account({required this.id, required this.email, required this.userName, required this.password, this.photo});
 }
