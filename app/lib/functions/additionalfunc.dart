@@ -2,7 +2,6 @@
 import 'package:app/detailedrestaurantpage.dart';
 import 'package:app/mappage.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 
 class Additionalfunc {
   static void changePage(int index, GlobalKey<NavigatorState> state, String keyAPI) {

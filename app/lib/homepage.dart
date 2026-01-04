@@ -1,13 +1,32 @@
 import 'dart:async';
 
 import 'package:app/detailedrestaurantpage.dart';
-import 'package:app/functions/additionalfunc.dart';
 import 'package:app/mappage.dart';
+import 'package:app/services/authservice.dart';
+import 'package:app/signuppage.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:latlong2/latlong.dart';
-import 'package:app/functions/locationfunc.dart';
+
+// BURADA OLAN SAYFALAR SAHTE SADECE AKIŞI DENEMEK İÇİN
+class FavoritesPage extends StatelessWidget {
+  const FavoritesPage({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(child: Text("Favorites Page")),
+    );
+  }
+}
+// BURADA OLAN SAYFALAR SAHTE SADECE AKIŞI DENEMEK İÇİN
+class SettingsPage extends StatelessWidget {
+  const SettingsPage({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(child: Text("Settings Page")),
+    );
+  }
+}
 
 class HomePage extends StatefulWidget {
   final String keyAPI;
@@ -27,23 +46,48 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Navigator(
-        // NavigatorState üzerinden sayfalar arası geçisi sağlamak.
-        // Burada olay şu bunu böyle yapınca routes'a ekleme yapmaya gerek kalmıyor.
-        // Böyle olunca daha mantıklı yoksa akışı yapmam lazım.
         key: _navigatorKey,
-        // Buradakinin amacı ayarları tutmak.
         onGenerateRoute: (settings) {
           return MaterialPageRoute(builder: (_) => MapPage(keyAPI: widget.keyAPI));
         },
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedBottomTab,
-        onTap: (index) {
+        onTap: (index) async {
           setState(() {
             _selectedBottomTab = index;
           });
 
-          Additionalfunc.changePage(index, _navigatorKey, widget.keyAPI);
+          switch(index) {
+            case 0:
+              _navigatorKey.currentState!.pushReplacement(
+                MaterialPageRoute(builder: (_) => MapPage(keyAPI: widget.keyAPI)),
+              );
+              break;
+            case 1:
+              final isLoggedIn = await AuthService().currentUser?.isAnonymous == true;
+              if(isLoggedIn) {
+                _navigatorKey.currentState!.pushReplacement(
+                  MaterialPageRoute(builder: (_) => SignupPage()),
+                );
+              }
+              break;
+            case 2:
+              _navigatorKey.currentState!.pushReplacement(
+                MaterialPageRoute(builder: (_) => const FavoritesPage()),
+              );
+              break;
+            case 3:
+              _navigatorKey.currentState!.pushReplacement(
+                MaterialPageRoute(builder: (_) => DetailedRestaurantPage()),
+              );
+              break;
+            case 4:
+              _navigatorKey.currentState!.pushReplacement(
+                MaterialPageRoute(builder: (_) => const SettingsPage()),
+              );
+              break;
+          }
         },
         type: BottomNavigationBarType.fixed,
         selectedItemColor: const Color.fromARGB(255, 255, 115, 0),
@@ -61,10 +105,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-
-  Widget _buildFilterChip(
-    String label,
-    IconData? icon) {
+  Widget _buildFilterChip(String label, IconData? icon) {
     final isSelected = _selectedFilter == label;
 
     return GestureDetector(

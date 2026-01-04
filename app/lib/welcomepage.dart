@@ -1,3 +1,4 @@
+import 'package:app/signuppage.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -34,8 +35,9 @@ class _WelcomePage extends State<WelcomePage> {
                   ),
                 ),
                 // HERE LOGIN PAGE AND SIGN UP PAGE PAGES
-                onPressed: ()=> {
-                  Navigator.pushReplacementNamed(context, "/home")
+                onPressed: () => {
+                  Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => SignupPage()),)
                 }, 
               ),
             )

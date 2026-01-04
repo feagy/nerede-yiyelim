@@ -1,3 +1,5 @@
+import 'package:app/forgetpasswordpage.dart';
+import 'package:app/signuppage.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -23,7 +25,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: const Color(0xFFFFFFFF),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -145,13 +147,17 @@ class _LoginPageState extends State<LoginPage> {
                   alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => ForgetPasswordPage()),
+                        );
                     },
                     child: Text(
                       "Forgot Password?",
                       style: GoogleFonts.lato(
                         fontSize: 13,
                         color: const Color(0xFFFF7300),
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -185,8 +191,9 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 
                 const SizedBox(height: 20),
-
+                Container(child:
                 Row(
+                  spacing: 5,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
@@ -198,6 +205,10 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     TextButton(
                       onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => SignupPage()),
+                        );
                       },
                       style: TextButton.styleFrom(
                         padding: EdgeInsets.zero,
@@ -213,9 +224,34 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                     ),
+                    Text(
+                      "or",
+                      style: GoogleFonts.lato(
+                        fontSize: 14,
+                        color: Colors.black54,
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pushReplacementNamed(context, "/home");
+                      },
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: const Size(0, 0),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: Text(
+                        "Contiune",
+                        style: GoogleFonts.lato(
+                          fontSize: 14,
+                          color: const Color(0xFFFF7300),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
-                
+                ),
                 const SizedBox(height: 40),
               ],
             ),

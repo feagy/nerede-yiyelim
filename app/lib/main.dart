@@ -1,8 +1,6 @@
-import 'package:app/detailedrestaurantpage.dart';
 import 'package:app/firebase_options.dart';
 import 'package:app/homepage.dart';
 import 'package:app/loginpage.dart';
-import 'package:app/mappage.dart';
 import 'package:app/notification/notification-test.dart';
 import 'package:app/signuppage.dart';
 import 'package:app/welcomepage.dart';
@@ -29,6 +27,8 @@ class MyApp extends StatelessWidget {
   final String keyAPI;
   const MyApp({super.key, required this.keyAPI});
 
+  // BUNU YAPMIŞIZ AMA TAM GEREKLİ Mİ BİLMİYORUM YAZA YAZA GENE YAPILIYOR..
+  // BUNU YAPABİLİRİZ YAPMAYA BİLİRİZ. AMA KALSIN BÜYÜK İHTİMALLE EN İYİ METOT BU.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
