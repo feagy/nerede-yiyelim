@@ -3,7 +3,8 @@
 Bu bölüm, proje kapsamında planlanan geliştirmeler, iyileştirmeler ve düzenlemeleri içerir.
 
 ## Yapılacaklar Listesi
-
+- [ ] Signup ve Signin kısımları için lokalde kaydetmek için 
+      gerekli fonksiyonları yazılıp kode eklenmesi gerekiyor.(dto ve functions kısımları + sayfalara ekstradan eklenecekler, kısmi olarak yaptım ben)
 - [ ] Evrensel State eklenecek.  
 - [x] Test için oluşturulan ekstra olarak konulan
       navigator bar kalkacak.   
