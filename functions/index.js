@@ -31,6 +31,34 @@ exports.searchPlaces = functions.https.onRequest((req, res) => {
     });
 });
 
+exports.searchPlacesText = functions.https.onRequest((req, res) => {
+    cors(req, res, async () => {
+        try {
+            const { textQuery, lat, lng, radius = 50000 } = req.query;
+
+            if (!lat || !lng) {
+                return res.status(400).json({ error: "lat ve lng zorunlu" });
+            }
+            if (!textQuery) {
+                return res.status(400).json({ error: "textQuery zorunlu" });
+            }
+            if (!GOOGLE_API_KEY) {
+                return res.status(500).json({ error: "API_KEY eksik" });
+            }
+
+            const results = await places.getNearbyPlacesText(GOOGLE_API_KEY, textQuery, lat, lng, radius);
+
+            return res.status(200).json({ places: results });
+        } catch (error) {
+            console.error(error.response?.data || error.message);
+            res.status(500).json({
+                error: "Google Places isteği başarısız",
+                detail: error.message,
+            });
+        }
+    });
+});
+
 exports.getPhoto = functions.https.onRequest(async (req, res) => {
     const { photoName, maxWidth = 400 } = req.query;
     if (!photoName) {
@@ -43,4 +71,7 @@ exports.getPhoto = functions.https.onRequest(async (req, res) => {
          
 const reviewsApp = require("./reviews.js");
 exports.reviews = functions.https.onRequest(reviewsApp);
+
+const favoritesApp = require("./favorites.js");
+exports.favorites = functions.https.onRequest(favoritesApp);
         
