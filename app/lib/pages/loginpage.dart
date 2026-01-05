@@ -180,21 +180,12 @@ class _LoginPageState extends State<LoginPage> {
                       elevation: 0,
                     ),
                     onPressed: () async {
-                      if (AuthService().currentUser?.emailVerified == false){
-                        try{
-                          await AuthService().currentUser?.sendEmailVerification();
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("We've sent an e-mail about verification. Please, verify your e-mail!")));  
-                        } on FirebaseAuthException catch(e) {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("We've sent an e-mail about verification before. Please, verify your e-mail!. Otherwise, there is a error try it later.")));
-                        }
-                      }else {
                         try{
                           await AuthService().signIn(email: _emailController.text, password: _passwordController.text);
                           Navigator.pushReplacementNamed(context, "/home");
                         } on FirebaseAuthException catch(e) {
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Authentication error. Please, try it later!")));
                         }
-                      }
                     },
                     child: Text(
                       "Login",

@@ -1,5 +1,5 @@
-import 'package:app/firebase_options.dart';
-import 'package:app/homepage.dart';
+import 'package:app/pages/firebase_options.dart';
+import 'package:app/pages/homepage.dart';
 import 'package:app/pages/loginpage.dart';
 import 'package:app/notification/notification-test.dart';
 import 'package:app/pages/signuppage.dart';

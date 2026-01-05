@@ -11,20 +11,17 @@ Future<void> _pickAndSavePhoto(AccountDto dao, Account account) async {
   if (pickedFile != null) {
     final file = File(pickedFile.path);
 
-    // Uygulamanın dokümanlar klasörünü bul
     final dir = await getApplicationDocumentsDirectory();
     final localPath = "${dir.path}/profile_${account.id}.jpg";
 
-    // Dosyayı kopyala
     await file.copy(localPath);
 
-    // Account objesini güncelle
     final updatedAccount = Account(
       id: account.id,
       email: account.email,
       userName: account.userName,
       password: account.password,
-      photo: localPath, // yeni fotoğraf path’i
+      photo: localPath,
     );
 
     // DB’de güncelle
