@@ -1,4 +1,5 @@
 import 'package:floor/floor.dart';
+import 'dart:convert';
 
 @entity
 class Place {
@@ -52,8 +53,8 @@ class Place {
       googleRatingCount: json['googleRatingCount'] as int?,
       type: json['type'] as String?,
       photoName: json['photoName'] as String?,
-      googleReviewsJson: json['reviews'] as String?,
-      openingHoursJson: json['openingHours'] as String?,
+      googleReviewsJson: jsonEncode(json['googleReviews']),
+      openingHoursJson: jsonEncode(json['openingHours']),
     );
   }
 }

@@ -153,7 +153,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                   onPressed: () async {
                     await FirebaseAuth.instance.signOut();
-                    Navigator.pop(context);
+                    Navigator.pushReplacementNamed(context, '/login');
                   },
                   child: Text(
                     "Çıkış Yap",
