@@ -4,6 +4,8 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:app/functions/locationfunc.dart';
+import 'package:app/database/entity/place.dart';
+import 'package:app/pages/mapmarkers.dart';
 
 class MapPage extends StatefulWidget {
   final String keyAPI;
@@ -20,7 +22,40 @@ class _MapPageState extends State<MapPage> {
   final LocationService _locationService = LocationService();
   StreamSubscription? _locationStream;
   LatLng? _currentUserLatLng;
-
+ 
+  List<Place> mockPlaces = [
+    Place(
+      id: '1',
+      placeName: 'Mock Place 1',
+      lat: 40.7128,
+      lng: -74.0060,
+      distance: 500,
+      phone: '123-456-7890',
+      address: '123 Mock St, New York, NY',
+      googleRating: 4.5,
+      googleRatingCount: 150,
+      type: 'restaurant',
+      photoName: 'mock_photo_1.jpg',
+      googleReviewsJson: '[]',
+      openingHoursJson: '{}',
+    ),
+    Place(
+      id: '2',
+      placeName: 'Mock Place 2',
+      lat: 40.7138,
+      lng: -74.0070,
+      distance: 300,
+      phone: '987-654-3210',
+      address: '456 Mock Ave, New York, NY',
+      googleRating: 4.0,
+      googleRatingCount: 200,
+      type: 'cafe',
+      photoName: 'mock_photo_2.jpg',
+      googleReviewsJson: '[]',
+      openingHoursJson: '{}',
+    ),
+  ];
+  
   @override
   void initState() {
     super.initState();
@@ -28,6 +63,73 @@ class _MapPageState extends State<MapPage> {
 
     _initUserLocation();
   }
+  
+  void _openPlaceSheet(Place p) {
+  showModalBottomSheet(
+    context: context,
+    showDragHandle: true,
+    isScrollControlled: false,
+    backgroundColor: Colors.transparent,
+    builder: (_) {
+      return SafeArea(
+        child: Container(
+          margin: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(18),
+            boxShadow: const [
+              BoxShadow(blurRadius: 20, spreadRadius: 2, offset: Offset(0, 8)),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      p.placeName,
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                  const Icon(Icons.restaurant),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  const Icon(Icons.star, size: 18, color: Colors.orange),
+                  const SizedBox(width: 4),
+                  Text("${p.googleRating}"),
+                  const SizedBox(width: 6),
+                  Text("(${p.googleRatingCount})", style: const TextStyle(color: Colors.black54)),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () {/* yol tarifi */},
+                      icon: const Icon(Icons.directions),
+                      label: const Text("Yol Tarifi Al"),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  OutlinedButton(
+                    onPressed: () {/* detay */},
+                    child: const Text("Detayları Gör"),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
 
   Future<void> _initUserLocation() async {
     final pos = await _locationService.getUserCurrentLocation();
@@ -133,6 +235,14 @@ class _MapPageState extends State<MapPage> {
                       ),
                     if (_userMarkers.isNotEmpty)
                       MarkerLayer(markers: _userMarkers),
+                    MarkerLayer(markers: MapMarkers.getPlaceMarkers<Place>(
+                      mockPlaces,
+                      (place) => LatLng(place.lat, place.lng),
+                      (place) {
+                    _openPlaceSheet(place);
+                     },
+                    )
+                  )
                   ],
                 ),
 
