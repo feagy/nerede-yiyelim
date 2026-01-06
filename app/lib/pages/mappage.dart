@@ -179,22 +179,6 @@ class _MapPageState extends State<MapPage> {
                     interactionOptions: const InteractionOptions(
                       flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
                     ),
-                    onTap: (tapPosition, point) {
-                      setState(() {
-                        _userMarkers.add(
-                          Marker(
-                            point: point,
-                            width: 40,
-                            height: 40,
-                            child: const Icon(
-                              Icons.location_on,
-                              color: Color.fromARGB(255, 255, 115, 0),
-                              size: 40,
-                            ),
-                          ),
-                        );
-                      });
-                    },
                   ),
                   children: [
                     TileLayer(
@@ -241,6 +225,7 @@ class _MapPageState extends State<MapPage> {
                       (place) {
                     _openPlaceSheet(place);
                      },
+                     context
                     )
                   )
                   ],
