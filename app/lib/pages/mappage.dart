@@ -64,72 +64,104 @@ class _MapPageState extends State<MapPage> {
     _initUserLocation();
   }
   
-  void _openPlaceSheet(Place p) {
-  showModalBottomSheet(
-    context: context,
-    showDragHandle: true,
-    isScrollControlled: false,
-    backgroundColor: Colors.transparent,
-    builder: (_) {
-      return SafeArea(
-        child: Container(
-          margin: const EdgeInsets.all(12),
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(18),
-            boxShadow: const [
-              BoxShadow(blurRadius: 20, spreadRadius: 2, offset: Offset(0, 8)),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
+  Future<void> _openPlaceSheet(Place p) async {
+    final sheetWidget = Container(
+      margin: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white, // arka plan beyaz
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: const [
+          BoxShadow(blurRadius: 20, spreadRadius: 2, offset: Offset(0, 8)),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      p.placeName,
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-                    ),
-                  ),
-                  const Icon(Icons.restaurant),
-                ],
+              Expanded(
+                child: Text(
+                  p.placeName,
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                ),
               ),
-              const SizedBox(height: 6),
-              Row(
-                children: [
-                  const Icon(Icons.star, size: 18, color: Colors.orange),
-                  const SizedBox(width: 4),
-                  Text("${p.googleRating}"),
-                  const SizedBox(width: 6),
-                  Text("(${p.googleRatingCount})", style: const TextStyle(color: Colors.black54)),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () {/* yol tarifi */},
-                      icon: const Icon(Icons.directions),
-                      label: const Text("Yol Tarifi Al"),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  OutlinedButton(
-                    onPressed: () {/* detay */},
-                    child: const Text("Detayları Gör"),
-                  ),
-                ],
+              if (p.type == 'restaurant')
+                const Icon(Icons.restaurant, color: Color.fromARGB(255, 255, 115, 0)),
+              if (p.type == 'cafe')
+                const Icon(Icons.local_cafe, color: Color.fromARGB(255, 255, 115, 0)),
+              if (p.type == 'pub')
+                const Icon(Icons.local_bar, color: Color.fromARGB(255, 255, 115, 0)),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              const Icon(Icons.star, size: 18, color: Color.fromARGB(255, 255, 115, 0)),
+              const SizedBox(width: 4),
+              Text("${p.googleRating}"),
+              const SizedBox(width: 6),
+              Text(
+                "(${p.googleRatingCount})",
+                style: const TextStyle(color: Colors.black54),
               ),
             ],
           ),
-        ),
-      );
-    },
-  );
-}
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 255, 115, 0), // turuncu
+                    foregroundColor: Colors.white, // ikon ve yazı beyaz
+                    textStyle: GoogleFonts.lato(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  onPressed: () {
+                    // Yol tarifi işlemi buraya
+                  },
+                  icon: const Icon(Icons.directions),
+                  label: const Text("Yol Tarifi Al"),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 255, 115, 0), // turuncu
+                    foregroundColor: Colors.white, // yazı beyaz
+                    textStyle: GoogleFonts.lato(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  onPressed: () {
+                    // Detay işlemi buraya
+                  },
+                  child: const Text("Detayları Gör"),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+
+    showDialog(
+      context: context,
+      builder: (_) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: sheetWidget,
+      ),
+    );
+  }
+
+
 
   Future<void> _initUserLocation() async {
     final pos = await _locationService.getUserCurrentLocation();
