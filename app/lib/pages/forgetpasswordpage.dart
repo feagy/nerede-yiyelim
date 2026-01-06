@@ -33,7 +33,7 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage> {
               children: [
                 const SizedBox(height: 40),
                 Text(
-                  "Forgot Password",
+                  "Şifremi Unuttum",
                   style: GoogleFonts.lato(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
@@ -46,7 +46,7 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Email Address",
+                      "E-posta",
                       style: GoogleFonts.lato(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -57,7 +57,7 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage> {
                     TextField(
                       controller: _emailController,
                       decoration: InputDecoration(
-                        hintText: "Enter your email",
+                        hintText: "E-posta gir",
                         hintStyle: GoogleFonts.lato(
                           fontSize: 14,
                           color: Colors.grey[400],
@@ -103,7 +103,7 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage> {
                         await AuthService().resetPassword(email: _emailController.text);
                       },
                     child: Text(
-                      "Send Reset Link",
+                      "Şifre Değiştirme Linki Gönder",
                       style: GoogleFonts.lato(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -118,7 +118,7 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      "Remember your password?",
+                      "Yoksa şifreni mi hatırladın?",
                       style: GoogleFonts.lato(
                         fontSize: 14,
                         color: Colors.black54,
@@ -132,7 +132,7 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage> {
                         );
                       },
                       child: Text(
-                        "Login",
+                        "Giriş Yap",
                         style: GoogleFonts.lato(
                           fontSize: 14,
                           color: const Color(0xFFFF7300),
@@ -141,7 +141,7 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage> {
                       ),
                     ),
                     Text(
-                      "or",
+                      "ya da",
                       style: GoogleFonts.lato(
                         fontSize: 14,
                         color: Colors.black54,
@@ -155,7 +155,7 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage> {
                         );
                       },
                       child: Text(
-                        "Sign Up",
+                        "Hesap Oluştur",
                         style: GoogleFonts.lato(
                           fontSize: 14,
                           color: const Color(0xFFFF7300),

@@ -287,7 +287,7 @@ class _MapPageState extends State<MapPage> {
                     ),
                     child: TextField(
                       decoration: InputDecoration(
-                        hintText: "Please write what you want to eat/drink",
+                        hintText: "Ne yemek istediğini gir ya da içmek istediğini",
                         prefixIcon: const Icon(
                           Icons.search_rounded,
                           color: Color.fromARGB(255, 105, 105, 105),
@@ -322,7 +322,7 @@ class _MapPageState extends State<MapPage> {
                         },
                         icon: const Icon(Icons.gps_fixed),
                         label: Text(
-                          'Track Me',
+                          'Beni Bul',
                           style: GoogleFonts.lato(
                             color: Colors.white,
                             fontSize: 14,

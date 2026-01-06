@@ -43,7 +43,7 @@ class _SignupPageState extends State<SignupPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Username",
+                      "Takma-ad",
                       style: GoogleFonts.lato(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -54,7 +54,7 @@ class _SignupPageState extends State<SignupPage> {
                     TextField(
                       controller: _usernameController,
                       decoration: InputDecoration(
-                        hintText: "Enter your username",
+                        hintText: "Takma-ad gir",
                         hintStyle: GoogleFonts.lato(
                           fontSize: 14,
                           color: Colors.grey[400],
@@ -88,7 +88,7 @@ class _SignupPageState extends State<SignupPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "E-mail",
+                      "E-posta",
                       style: GoogleFonts.lato(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -100,7 +100,7 @@ class _SignupPageState extends State<SignupPage> {
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
                       decoration: InputDecoration(
-                        hintText: "Enter your email",
+                        hintText: "E-posta gir",
                         hintStyle: GoogleFonts.lato(
                           fontSize: 14,
                           color: Colors.grey[400],
@@ -134,7 +134,7 @@ class _SignupPageState extends State<SignupPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Password",
+                      "Şifre",
                       style: GoogleFonts.lato(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -146,7 +146,7 @@ class _SignupPageState extends State<SignupPage> {
                       controller: _passwordController,
                       obscureText: _obscurePassword,
                       decoration: InputDecoration(
-                        hintText: "Enter your password",
+                        hintText: "Şifre gir",
                         hintStyle: GoogleFonts.lato(
                           fontSize: 14,
                           color: Colors.grey[400],
@@ -206,12 +206,12 @@ class _SignupPageState extends State<SignupPage> {
                         await AuthService().createAccount(email: _emailController.text, password: _passwordController.text);
                       } on FirebaseAuthException catch (e) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Authentication error")),
+                          SnackBar(content: Text("Giriş yaparken bir hata ile karşılaştık!")),
                         );
                       }
                     },
                     child: Text(
-                      "Create Account",
+                      "Hesap Oluştur",
                       style: GoogleFonts.lato(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -227,7 +227,7 @@ class _SignupPageState extends State<SignupPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      "Have you got a account? ",
+                      "Bir hesabın var mı?",
                       style: GoogleFonts.lato(
                         fontSize: 14,
                         color:Colors.black54,
@@ -239,7 +239,7 @@ class _SignupPageState extends State<SignupPage> {
                           MaterialPageRoute(builder: (context) => LoginPage()),);
                       },
                       child: Text(
-                        "Log In",
+                        "Giriş Yap",
                         style: GoogleFonts.lato(
                           fontSize: 14,
                           color: const Color(0xFFFF7300),
@@ -248,7 +248,7 @@ class _SignupPageState extends State<SignupPage> {
                       ),
                     ),
                     Text(
-                      "or",
+                      "ya da",
                       style: GoogleFonts.lato(
                         fontSize: 14,
                         color: Colors.black54,
@@ -264,7 +264,7 @@ class _SignupPageState extends State<SignupPage> {
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
                       child: Text(
-                        "Contiune",
+                        "Devam Et",
                         style: GoogleFonts.lato(
                           fontSize: 14,
                           color: const Color(0xFFFF7300),
@@ -302,7 +302,7 @@ class _SignupHeaderPage extends StatelessWidget {
             ),
           ),
           child: Text(
-            "NeredeYiyelim?",
+            "Nerede Yiyelim?",
             textAlign: TextAlign.center,
             style: GoogleFonts.lato(
               fontSize: 20,
@@ -313,7 +313,7 @@ class _SignupHeaderPage extends StatelessWidget {
         ),
         const SizedBox(height: 10),
         Text(
-          "Find the best restaurant near me that serves AI-themed cuisine.",
+          "Sana yakın en iyi restoranları bulmayı sağlıyoruz!",
           textAlign: TextAlign.center,
           style: GoogleFonts.lato(
             fontSize: 14,
