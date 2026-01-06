@@ -3,9 +3,8 @@ import 'package:floor/floor.dart';
 
 @Entity(tableName: 'favorites')
 class Favorite {
-  @PrimaryKey(autoGenerate: true)
+  @PrimaryKey()
   final int? id;
-
   final String placeId;
   final String userId;
   final String placeName;
@@ -22,7 +21,6 @@ class Favorite {
     this.rating,
     this.photoUrl,
   });
-
 }
 
 

@@ -1,13 +1,23 @@
 import 'dart:convert';
-
 import 'package:http/http.dart' as http;
 import 'package:app/database/entity/place.dart';
-
-// Test Edilecek
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class PlacesService {
-  final String baseUrl;  
-  PlacesService(this.baseUrl);
+  PlacesService._(this.baseUrl);
+
+  static PlacesService? _instance;
+  final String baseUrl;
+
+  factory PlacesService() {
+    final baseUrl = dotenv.env['PLACES_URL'];
+
+    if (baseUrl == null || baseUrl.isEmpty) {
+      throw Exception('PLACES_URL not found in .env');
+    }
+
+    return _instance ??= PlacesService._(baseUrl);
+  }
 
   Future<List<Place>> fetchPlaces({
     required String textQuery,
