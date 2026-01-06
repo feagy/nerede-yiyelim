@@ -69,12 +69,12 @@ class _HomePageState extends State<HomePage> {
               final isLoggedIn = await AuthService().currentUser?.isAnonymous == false;
               if(isLoggedIn) {
                   _navigatorKey.currentState!.pushReplacement(
-                  MaterialPageRoute(builder: (_) => ProfilePage()),
-                );
+                    MaterialPageRoute(builder: (_) => ProfilePage()),
+                  );
               } else {
-                  _navigatorKey.currentState!.pushReplacement(
-                  MaterialPageRoute(builder: (_) => SignupPage()),
-                );
+                Navigator.of(context, rootNavigator: true).pushReplacement( 
+                  MaterialPageRoute(builder: (_) => const SignupPage()), 
+                  );
               }
               break;
             case 2:

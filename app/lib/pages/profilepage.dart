@@ -153,8 +153,20 @@ class _ProfilePageState extends State<ProfilePage> {
                     elevation: 0,
                   ),
                   onPressed: () async {
-                    await FirebaseAuth.instance.signOut();
-                    Navigator.pushReplacementNamed(context, '/login');
+                    try{
+                      await FirebaseAuth.instance.signOut();
+                      Navigator.of(context, rootNavigator: true).pushReplacement( 
+                        MaterialPageRoute(builder: (_) => const LoginPage()), 
+                        );
+                    } on StateError catch(e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: const Text("Yönlendirme sırasında hata aldık. Lütfen, uygulamayı baştan başlatın!"))
+                      );
+                    } on FirebaseAuthException catch(e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: const Text("Hesaptan çıkarken bir hata ile karşılaştık. Lütfen, innternet bağlantınızın olduğuna emin olun ya da uygulamayı yeniden başlatın!"))
+                      );
+                    }
                   },
                   child: Text(
                     "Çıkış Yap",
