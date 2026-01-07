@@ -368,19 +368,19 @@ class _DetailedRestaurantInformationSection extends StatelessWidget {
           const SizedBox(height: 16),
           _buildInfoRow(
             icon: CupertinoIcons.location,
-            title: "Address",
+            title: "Adres",
             content: restaurantFormattedaddress ?? "Address not available",
           ),
           const SizedBox(height: 16),
           _buildInfoRow(
             icon: CupertinoIcons.clock,
-            title: "Opening Hours",
+            title: "Çalışma Saati",
             content: restaurantNextCloseTime ?? "Unknown",
           ),
           const SizedBox(height: 16),
           _buildInfoRow(
             icon: CupertinoIcons.phone,
-            title: "Phone",
+            title: "Telefon Numarası",
             content:
                 restaurantInternationalPhoneNumber ?? "Phone not available",
           ),
@@ -458,7 +458,7 @@ class _DetailedRestaurantCommentsSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "User Reviews",
+            "Kullanıcı Yorumları",
             style: GoogleFonts.lato(
               color: Colors.black,
               fontSize: 20,
@@ -468,7 +468,7 @@ class _DetailedRestaurantCommentsSection extends StatelessWidget {
           const SizedBox(height: 12),
           if (reviews.isEmpty)
             Text(
-              "No reviews available for this restaurant.",
+              "Henüz bir değerlendirme bulunmamaktadır.",
               style: GoogleFonts.lato(
                 fontSize: 16,
                 color: Colors.grey[700],

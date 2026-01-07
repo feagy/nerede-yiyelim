@@ -1,3 +1,4 @@
+import 'package:app/pages/loginpage.dart';
 import 'package:app/services/authservice.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -152,8 +153,20 @@ class _ProfilePageState extends State<ProfilePage> {
                     elevation: 0,
                   ),
                   onPressed: () async {
-                    await FirebaseAuth.instance.signOut();
-                    Navigator.pushReplacementNamed(context, '/login');
+                    try{
+                      await FirebaseAuth.instance.signOut();
+                      Navigator.of(context, rootNavigator: true).pushReplacement( 
+                        MaterialPageRoute(builder: (_) => const LoginPage()), 
+                        );
+                    } on StateError catch(e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: const Text("Yönlendirme sırasında hata aldık. Lütfen, uygulamayı baştan başlatın!"))
+                      );
+                    } on FirebaseAuthException catch(e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: const Text("Hesaptan çıkarken bir hata ile karşılaştık. Lütfen, innternet bağlantınızın olduğuna emin olun ya da uygulamayı yeniden başlatın!"))
+                      );
+                    }
                   },
                   child: Text(
                     "Çıkış Yap",
@@ -170,11 +183,21 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _updateProfile() async {
     if (user != null) {
-      await FirebaseFirestore.instance.collection('users').doc(user!.uid).set({
-        'nickname': _nicknameController.text,
-        'updatedAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
-
+      try {
+        await FirebaseFirestore.instance.collection('users').doc(user!.uid).set({
+          'nickname': _nicknameController.text,
+          'updatedAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+        await AuthService().currentUser?.updatePassword(_passwordController.text);
+      } on ArgumentError catch(e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Takma adını değiştirirken bir hata ile karşılaştık!")),
+        );
+      } on FirebaseAuthException catch(e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Parolanı değiştirirken bir hata ile karşılaştık!"))
+        );
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Profil güncellendi!")),
       );

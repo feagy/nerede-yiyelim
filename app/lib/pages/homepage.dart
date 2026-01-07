@@ -69,12 +69,12 @@ class _HomePageState extends State<HomePage> {
               final isLoggedIn = await AuthService().currentUser?.isAnonymous == false;
               if(isLoggedIn) {
                   _navigatorKey.currentState!.pushReplacement(
-                  MaterialPageRoute(builder: (_) => ProfilePage()),
-                );
+                    MaterialPageRoute(builder: (_) => ProfilePage()),
+                  );
               } else {
-                  _navigatorKey.currentState!.pushReplacement(
-                  MaterialPageRoute(builder: (_) => SignupPage()),
-                );
+                Navigator.of(context, rootNavigator: true).pushReplacement( 
+                  MaterialPageRoute(builder: (_) => const SignupPage()), 
+                  );
               }
               break;
             case 2:
@@ -101,10 +101,9 @@ class _HomePageState extends State<HomePage> {
         elevation: 8,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Map'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Profile'),
-          BottomNavigationBarItem(icon: Icon(Icons.favorite_border_rounded), label: 'Favorites'),
-          BottomNavigationBarItem(icon: Icon(Icons.maps_home_work_rounded), label: 'Place'),
-          BottomNavigationBarItem(icon: Icon(Icons.settings_rounded), label: 'Settings'),
+          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Profil'),
+          BottomNavigationBarItem(icon: Icon(Icons.favorite_border_rounded), label: 'Favoriler'),
+          BottomNavigationBarItem(icon: Icon(Icons.maps_home_work_rounded), label: 'Mekan'),
         ],
       ),
     );

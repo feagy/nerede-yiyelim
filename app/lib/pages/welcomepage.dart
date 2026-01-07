@@ -26,7 +26,7 @@ class _WelcomePage extends State<WelcomePage> {
               margin: const EdgeInsets.only(bottom: 20),
               child: ElevatedButton.icon(
                 icon: const Icon(Icons.mail_outlined, size: 20),
-                label: const Text("Continue with mail"),
+                label: const Text("E-posta ile Devam Et"),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color.fromARGB(255, 255, 115, 0),
                   foregroundColor: Colors.white,
@@ -79,7 +79,7 @@ class _WelcomePageSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("Discover Your Next Favorite Meal",
+          Text("Bir sonraki favori yemeğini bul!",
             textAlign: TextAlign.center,
             style: GoogleFonts.lato(
               color: const Color.fromARGB(255, 0, 0, 0),
@@ -88,7 +88,7 @@ class _WelcomePageSection extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          Text("Discover personalized restaurant recommendations based on your location and preferences. Find the perfect place for every occasion.",
+          Text("Kişiselleştirilmiş yorumlar ve puanlar ile sana, sana yakın olan en iyi restorantları getiriyoruz.",
             textAlign: TextAlign.center,
             style: GoogleFonts.lato(
               color: const Color.fromARGB(255, 32, 32, 32),

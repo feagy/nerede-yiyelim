@@ -44,7 +44,7 @@ class _LoginPageState extends State<LoginPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Email or Phone Number",
+                      "E-posta",
                       style: GoogleFonts.lato(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -55,7 +55,7 @@ class _LoginPageState extends State<LoginPage> {
                     TextField(
                       controller: _emailController,
                       decoration: InputDecoration(
-                        hintText: "Enter your email or phone number",
+                        hintText: "E-posta gir",
                         hintStyle: GoogleFonts.lato(
                           fontSize: 14,
                           color: Colors.grey[400],
@@ -89,7 +89,7 @@ class _LoginPageState extends State<LoginPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Password",
+                      "Şifre",
                       style: GoogleFonts.lato(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -101,7 +101,7 @@ class _LoginPageState extends State<LoginPage> {
                       controller: _passwordController,
                       obscureText: _obscurePassword,
                       decoration: InputDecoration(
-                        hintText: "Enter your password",
+                        hintText: "Şifre gir",
                         hintStyle: GoogleFonts.lato(
                           fontSize: 14,
                           color: Colors.grey[400],
@@ -155,7 +155,7 @@ class _LoginPageState extends State<LoginPage> {
                         );
                     },
                     child: Text(
-                      "Forgot Password?",
+                      "Şifreni mi unuttun?",
                       style: GoogleFonts.lato(
                         fontSize: 13,
                         color: const Color(0xFFFF7300),
@@ -188,7 +188,7 @@ class _LoginPageState extends State<LoginPage> {
                         }
                     },
                     child: Text(
-                      "Login",
+                      "Giriş Yap",
                       style: GoogleFonts.lato(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -204,7 +204,7 @@ class _LoginPageState extends State<LoginPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      "Don't have an account? ",
+                      "Hesabın yok mu? ",
                       style: GoogleFonts.lato(
                         fontSize: 14,
                         color: Colors.black54,
@@ -223,7 +223,7 @@ class _LoginPageState extends State<LoginPage> {
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
                       child: Text(
-                        "Sign Up",
+                        "Hesap Oluştur",
                         style: GoogleFonts.lato(
                           fontSize: 14,
                           color: const Color(0xFFFF7300),
@@ -232,7 +232,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                     Text(
-                      "or",
+                      "ya da",
                       style: GoogleFonts.lato(
                         fontSize: 14,
                         color: Colors.black54,
@@ -248,7 +248,7 @@ class _LoginPageState extends State<LoginPage> {
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
                       child: Text(
-                        "Contiune",
+                        "Devam Et",
                         style: GoogleFonts.lato(
                           fontSize: 14,
                           color: const Color(0xFFFF7300),
@@ -286,7 +286,7 @@ class _LoginHeaderPage extends StatelessWidget {
         ),
       ),
       child: Text(
-        "NeredeYiyelim?",
+        "Nerede Yiyelim?",
         textAlign: TextAlign.center,
         style: GoogleFonts.lato(
           fontSize: 20,
@@ -307,7 +307,7 @@ class _LoginHeadFooterPage extends StatelessWidget {
       alignment: Alignment.center,
       padding: const EdgeInsets.fromLTRB(0, 20, 0, 10),
       child: Text(
-        "Welcome Back",
+        "Hoşgeldin",
         textAlign: TextAlign.center,
         style: GoogleFonts.lato(
           fontSize: 32,
