@@ -1,6 +1,3 @@
-
-//sunucuda da tutmak gerekirse kullanılacak
-
 const express = require("express");
 const cors = require("cors");
 const admin = require("firebase-admin");
@@ -13,23 +10,30 @@ app.use(express.json());
 app.post("/addFavorite", async (req, res) => {
   try {
     const db = admin.firestore();
-    const { placeId, userId, placeName, placeAdress, rating, photoUrl } = req.body || {};
+    const { placeId, userId, placeName, placeAddress, rating, photoUrl } = req.body || {};
 
-    if (!placeId || !userId || !placeName || !placeAdress || !rating || !photoUrl) {
+    if (!placeId || !userId || !placeName || !placeAddress || !rating || !photoUrl) {
       return res.status(400).json({ error: "Missing fields" });
     }
-    await db.collection("favorites").add({
+
+    const favoriteId = `${placeId}_${userId}`;
+    const ref = db.collection("favorites").doc(favoriteId);
+
+    await ref.create({
       placeId,
       userId,
       placeName,
-      placeAdress,
+      placeAddress,
       rating,
       photoUrl,
     });
     return res.status(200).json({ message: "Favorite added successfully" });
   } catch (error) {
+    if (error?.code === 6) {
+      return res.status(409).json({ error: "Favorite already exists" });
+    }
     console.error("addFavorite error:", error);
-    return res.status(500).json({ error: "Server error" });
+    return res.status(500).json({ error: "Server error", details: String(error) });
   }
 });
 
@@ -53,18 +57,26 @@ app.get("/readFavorites", async (req, res) => {
   }
 });
 
-app.delete("/deleteFavorite", async (req, res) => {
+app.delete("/deleteFavorite/:favoriteId", async (req, res) => {
   try {
     const db = admin.firestore();
-    const { favoriteId } = req.body || {};
+    const { favoriteId } = req.params;
     if (!favoriteId) {
       return res.status(400).json({ error: "favoriteId is required" });
     }
-    await db.collection("favorites").doc(favoriteId).delete();
+    
+    const ref  = db.collection("favorites").doc(favoriteId);
+    const snap = await ref.get();
+
+    if (!snap.exists) {
+      return res.status(404).json({ error: "Favorite not found" });
+    }
+
+    await ref.delete();
     return res.status(200).json({ message: "Favorite deleted successfully" });
   } catch (error) {
     console.error("deleteFavorite error:", error);
-    return res.status(500).json({ error: "Server error" });
+    return res.status(500).json({ error: "Server error", details: String(error) });
   }
 });
 
