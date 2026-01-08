@@ -115,6 +115,47 @@ app.get("/readReviews", async (req, res) => {
   }
 });
 
+app.get("/readReviewsByUser", async (req, res) => {
+  try {
+    const db = admin.firestore();
+    const { userId, limit = 20, cursor } = req.query;
+    if (!userId) {
+      return res.status(400).json({ error: "userId is required" });
+    }
+    const lim = Math.min(parseInt(limit, 10) || 20, 50);
+    let q = db  
+      .collection("reviews")
+      .where("userId", "==", String(userId))
+      .orderBy("createdAt", "desc")
+      .limit(lim);
+
+    if (cursor) {
+      const lastDoc = await db.collection("reviews").doc(String(cursor)).get();
+      if (lastDoc.exists) {
+        q = q.startAfter(lastDoc);
+      } else {
+        return res.status(400).json({ error: "Invalid cursor" });
+      }
+    }
+
+    const snap = await q.get();
+
+    const items = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+
+    const nextCursor = snap.docs.length ? snap.docs[snap.docs.length - 1].id : null;
+
+    return res.status(200).json({
+      ok: true,
+      items,
+      nextCursor,
+      hasMore: items.length === lim,
+    });
+  } catch (e) {
+    console.error("get reviews by user error:", e);
+    return res.status(500).json({ error: String(e) });
+  }
+});
+
 app.delete("/deleteReview/:reviewId", async (req, res) => {
   try {
     const db = admin.firestore();

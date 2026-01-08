@@ -3,6 +3,7 @@ module.exports.places = {
     getNearbyPlaces,
     getPlacePhoto,
     getNearbyPlacesText,
+    generateReviewSummary,
 };
 async function getNearbyPlaces(API_KEY, lat, lng, radius, maxCount = 20) {
     const url = "https://places.googleapis.com/v1/places:searchNearby";
@@ -143,3 +144,42 @@ async function getPlacePhoto(API_KEY, photoName, maxWidth) {
     return response.data;
 }
 
+async function generateReviewSummary(LLM_URL, reviews, model="qwen2.5:7b-instruct") {
+    const payload = {
+        model: model,
+        stream: false,
+        messages: [
+            { 
+              role: "system", 
+              content: `
+                Sen restoran yorumlarını özetleyen bir asistansın. Kullanıcıdan gelen yorumları analiz edip kısa ve öz bir şekilde artılarını ve eksilerini belirtmelisin.
+                Kurallar:
+                - Cevabı SADECE Türkçe yaz.
+                - Çıktıda sadece bir paragraflık çok uzun olmayan genel bir özet yap.
+                - İncelemelerde belirtilmişse sevilen yemeklerden/içeceklerden bahset.
+                - Yorumlarda geçmeyen bilgi uydurma; kesin konuşma (ör. "kesinlikle") kullanma.
+                - Tutarlı bir dil kullan.
+                - Tekrar etme, çok uzatma.
+                - Kibar ve profesyonel ol.
+                - Eğerki yorum sayısı az ve genel bir değerlendirme yapmak mümkün değilse şu mesajı ver: "Yorum sayısı yetersiz olduğu için genel bir değerlendirme yapılamıyor.".
+                - Anlamadığın ve muğlak yerleri özete dahil etme.
+                - Yorumlarda bahsedilen spesifik isimleri (mekan, kişi, yemek vs.) kullanma.
+                - Yorumlarda verilen önerilerden bahsetme.
+                - Sadece mekanın kalitesi hakkında yapılandırılmış bir özet yap.
+                `
+            },
+            { 
+              role: "user", 
+              content: `Yorumlar:\n- ${reviews.map(r => r.trim()).join("\n- ")}` 
+            }
+        ],
+        options: { temperature: 0.3 }
+    };
+
+    const response = await axios.post(LLM_URL, payload, {
+        headers: { "Content-Type": "application/json" },
+        timeout: 120000,
+    });
+
+    return response.data?.message?.content || "Yorum özeti oluşturulamadı.";
+  }

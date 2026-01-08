@@ -125,6 +125,30 @@ class ReviewsService {
     return ReviewsResponse.fromJson(decoded);
   }
 
+  Future<ReviewsResponse> readReviewsByUser({
+    required String userId,
+    int limit = 20,
+    String? cursor,
+  }) async {
+    final uri = Uri.parse('$baseUrl/readReviewsByUser')
+        .replace(queryParameters: {
+          'userId': userId,
+          'limit': limit.toString(),
+          if (cursor != null && cursor.isNotEmpty) 'cursor': cursor,
+        });
+    
+    final response = await http.get(uri, headers: {
+      'Content-Type': 'application/json',
+    });
+
+    if (response.statusCode != 200) {
+      throw Exception('HTTP ${response.statusCode}: ${response.body}');
+    }
+
+    final decoded = json.decode(response.body) as Map<String, dynamic>;
+    return ReviewsResponse.fromJson(decoded);
+  }
+
   Future<void> deleteReview({
     required String reviewId,
   }) async {

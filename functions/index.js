@@ -5,6 +5,7 @@ const cors = require("cors")({ origin: true });
 const { places } = require("./places.js");
 require("dotenv").config();
 const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
+const LLM_URL = process.env.LLM_URL;
 
 exports.searchPlaces = functions.https.onRequest((req, res) => {
     cors(req, res, async () => {
@@ -74,4 +75,27 @@ exports.reviews = functions.https.onRequest(reviewsApp);
 
 const favoritesApp = require("./favorites.js");
 exports.favorites = functions.https.onRequest(favoritesApp);
+
+exports.aiSummary = functions.https.onRequest({ timeoutSeconds: 120, memory: "1GiB" }, async (req, res) => {
+    cors(req, res, async () => {
+        try {
+            const { reviews, model } = req.body;
+
+            if (!reviews || reviews.length === 0) {
+                return res.status(200).json({ summary: "Restoran hakkında hiç yorum bulunmamaktadır." });
+            }
+             
+            if (!reviews.every(r => typeof r === "string")) {
+                return res.status(400).json({ error: "reviews must be an array of strings" });
+            }
+            
+
+            const summary = await places.generateReviewSummary(LLM_URL, reviews, model);    
+            return res.status(200).json({ summary });
+        } catch (error) {
+            console.error(error.response?.data || error.message);
+            res.status(500).json({ error: "Yorum özeti oluşturulamadı", detail: error.message });
+        }
+    });
+});            
         
