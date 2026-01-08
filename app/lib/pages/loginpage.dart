@@ -183,7 +183,9 @@ class _LoginPageState extends State<LoginPage> {
                     },
                     child: Text(
                       "Giriş Yap",
-                      style: Theme.of(context).textTheme.displayLarge
+                      style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                        color: Colors.white
+                      )
                     ),
                   ),
                 ),

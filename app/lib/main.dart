@@ -8,6 +8,8 @@ import 'package:app/pages/welcomepage.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:provider/provider.dart';
+import 'package:app/global/universaltheme.dart';
 
 
 Future main() async {
@@ -20,7 +22,12 @@ Future main() async {
 
   final String apiKey = dotenv.env['MAPTILER_MAPS_API_KEY'] ?? '';
 
-  runApp(MyApp(keyAPI: apiKey));
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => ThemeProvider(),
+      child: MyApp(keyAPI: apiKey),
+      ),
+    );
 }
 
 class MyApp extends StatelessWidget {
@@ -31,14 +38,19 @@ class MyApp extends StatelessWidget {
   // BUNU YAPABİLİRİZ YAPMAYA BİLİRİZ. AMA KALSIN BÜYÜK İHTİMALLE EN İYİ METOT BU.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      initialRoute: "/",
-      routes: {
-        "/": (context) => WelcomePage(),
-        "/login": (context) => LoginPage(),
-        "/signup": (context) => SignupPage(),
-        "/home": (context) => HomePage(keyAPI: keyAPI),
-      },
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return  MaterialApp(
+          theme: themeProvider.themeData,
+          initialRoute: "/",
+          routes: {
+            "/": (context) => WelcomePage(),
+            "/login": (context) => LoginPage(),
+            "/signup": (context) => SignupPage(),
+            "/home": (context) => HomePage(keyAPI: keyAPI),
+          },
+        );
+      }
     );
   }
 }

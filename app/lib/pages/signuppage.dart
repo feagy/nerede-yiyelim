@@ -209,7 +209,9 @@ class _SignupPageState extends State<SignupPage> {
                     },
                     child: Text(
                       "Hesap Oluştur",
-                      style: Theme.of(context).textTheme.displayLarge
+                      style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                        color: Colors.white
+                      )
                     ),
                   ),
                 ),

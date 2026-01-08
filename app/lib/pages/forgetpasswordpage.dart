@@ -100,15 +100,18 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage> {
                       },
                     child: Text(
                       "Şifre Değiştirme Linki Gönder",
-                      style: Theme.of(context).textTheme.displayLarge
+                      style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                        color: Colors.white
+                      )
                     ),
                   ),
                 ),
 
                 const SizedBox(height: 10),
-                Row(
+                Wrap(
                   spacing: 5,
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  alignment: WrapAlignment.center,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     Text(
                       "Yoksa şifreni mi hatırladın?",

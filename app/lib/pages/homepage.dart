@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:app/pages/detailedrestaurantpage.dart';
 import 'package:app/pages/mappage.dart';
 import 'package:app/pages/profilepage.dart';
+import 'package:app/pages/settingspage.dart';
 import 'package:app/services/authservice.dart';
 import 'package:app/pages/signuppage.dart';
 import 'package:flutter/material.dart';
@@ -89,7 +90,7 @@ class _HomePageState extends State<HomePage> {
               break;
             case 4:
               _navigatorKey.currentState!.pushReplacement(
-                MaterialPageRoute(builder: (_) => const SettingsPage()),
+                MaterialPageRoute(builder: (_) => const FontSettingsPage()),
               );
               break;
           }
@@ -104,6 +105,7 @@ class _HomePageState extends State<HomePage> {
           BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Profil'),
           BottomNavigationBarItem(icon: Icon(Icons.favorite_border_rounded), label: 'Favoriler'),
           BottomNavigationBarItem(icon: Icon(Icons.maps_home_work_rounded), label: 'Mekan'),
+          BottomNavigationBarItem(icon: Icon(Icons.settings_accessibility_rounded), label: 'Ayarlar'),
         ],
       ),
     );
