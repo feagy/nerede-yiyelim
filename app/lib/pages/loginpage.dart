@@ -45,10 +45,9 @@ class _LoginPageState extends State<LoginPage> {
                   children: [
                     Text(
                       "E-posta",
-                      style: GoogleFonts.lato(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
+                      style: Theme.of(context).textTheme.displayMedium?.copyWith(
                         color: Colors.black87,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -56,8 +55,7 @@ class _LoginPageState extends State<LoginPage> {
                       controller: _emailController,
                       decoration: InputDecoration(
                         hintText: "E-posta gir",
-                        hintStyle: GoogleFonts.lato(
-                          fontSize: 14,
+                        hintStyle: Theme.of(context).textTheme.displayMedium?.copyWith(
                           color: Colors.grey[400],
                         ),
                         filled: true,
@@ -90,10 +88,9 @@ class _LoginPageState extends State<LoginPage> {
                   children: [
                     Text(
                       "Şifre",
-                      style: GoogleFonts.lato(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
+                      style: Theme.of(context).textTheme.displayMedium?.copyWith(
                         color: Colors.black87,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -102,8 +99,7 @@ class _LoginPageState extends State<LoginPage> {
                       obscureText: _obscurePassword,
                       decoration: InputDecoration(
                         hintText: "Şifre gir",
-                        hintStyle: GoogleFonts.lato(
-                          fontSize: 14,
+                        hintStyle: Theme.of(context).textTheme.displayMedium?.copyWith(
                           color: Colors.grey[400],
                         ),
                         filled: true,
@@ -156,10 +152,8 @@ class _LoginPageState extends State<LoginPage> {
                     },
                     child: Text(
                       "Şifreni mi unuttun?",
-                      style: GoogleFonts.lato(
-                        fontSize: 13,
-                        color: const Color(0xFFFF7300),
-                        fontWeight: FontWeight.w600,
+                      style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                          color: const Color(0xFFFF7300),
                       ),
                     ),
                   ),
@@ -189,10 +183,7 @@ class _LoginPageState extends State<LoginPage> {
                     },
                     child: Text(
                       "Giriş Yap",
-                      style: GoogleFonts.lato(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: Theme.of(context).textTheme.displayLarge
                     ),
                   ),
                 ),
@@ -205,10 +196,9 @@ class _LoginPageState extends State<LoginPage> {
                   children: [
                     Text(
                       "Hesabın yok mu? ",
-                      style: GoogleFonts.lato(
-                        fontSize: 14,
-                        color: Colors.black54,
-                      ),
+                      style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                          color: Colors.black54,
+                        ),
                     ),
                     TextButton(
                       onPressed: () {
@@ -224,19 +214,16 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       child: Text(
                         "Hesap Oluştur",
-                        style: GoogleFonts.lato(
-                          fontSize: 14,
+                        style: Theme.of(context).textTheme.displayMedium?.copyWith(
                           color: const Color(0xFFFF7300),
-                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
                     Text(
                       "ya da",
-                      style: GoogleFonts.lato(
-                        fontSize: 14,
-                        color: Colors.black54,
-                      ),
+                      style:  Theme.of(context).textTheme.displayMedium?.copyWith(
+                          color: Colors.black54,
+                        ),
                     ),
                     TextButton(
                       onPressed: () {
@@ -249,10 +236,8 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       child: Text(
                         "Devam Et",
-                        style: GoogleFonts.lato(
-                          fontSize: 14,
+                        style:  Theme.of(context).textTheme.displayMedium?.copyWith(
                           color: const Color(0xFFFF7300),
-                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
@@ -288,10 +273,9 @@ class _LoginHeaderPage extends StatelessWidget {
       child: Text(
         "Nerede Yiyelim?",
         textAlign: TextAlign.center,
-        style: GoogleFonts.lato(
-          fontSize: 20,
-          color: Colors.black,
-          fontWeight: FontWeight.bold,
+        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              color: Colors.black,
+              fontWeight: FontWeight.bold
         ),
       ),
     );
@@ -309,10 +293,9 @@ class _LoginHeadFooterPage extends StatelessWidget {
       child: Text(
         "Hoşgeldin",
         textAlign: TextAlign.center,
-        style: GoogleFonts.lato(
-          fontSize: 32,
-          color: Colors.black,
-          fontWeight: FontWeight.bold,
+        style: Theme.of(context).textTheme.displayMedium?.copyWith(
+            color: const Color.fromARGB(255, 32, 32, 32),
+            fontWeight: FontWeight.bold,
         ),
       ),
     );

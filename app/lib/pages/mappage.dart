@@ -83,7 +83,9 @@ class _MapPageState extends State<MapPage> {
               Expanded(
                 child: Text(
                   p.placeName,
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w700
+                  ),
                 ),
               ),
               if (p.type == 'restaurant')
@@ -115,14 +117,11 @@ class _MapPageState extends State<MapPage> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color.fromARGB(255, 255, 115, 0), // turuncu
                     foregroundColor: Colors.white, // ikon ve yazı beyaz
-                    textStyle: GoogleFonts.lato(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
+                    textStyle: Theme.of(context).textTheme.displaySmall?.copyWith(
                       color: Colors.white,
                     ),
                   ),
                   onPressed: () {
-                    // Yol tarifi işlemi buraya
                   },
                   icon: const Icon(Icons.directions),
                   label: const Text("Yol Tarifi Al"),
@@ -132,16 +131,13 @@ class _MapPageState extends State<MapPage> {
               Expanded(
                 child: OutlinedButton(
                   style: OutlinedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 255, 115, 0), // turuncu
-                    foregroundColor: Colors.white, // yazı beyaz
-                    textStyle: GoogleFonts.lato(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                    backgroundColor: const Color.fromARGB(255, 255, 115, 0),
+                    foregroundColor: Colors.white,
+                    textStyle: Theme.of(context).textTheme.displaySmall?.copyWith(
+                      color: Colors.white
                     ),
                   ),
                   onPressed: () {
-                    // Detay işlemi buraya
                   },
                   child: const Text("Detayları Gör"),
                 ),
@@ -270,10 +266,9 @@ class _MapPageState extends State<MapPage> {
                   child: Center(
                     child: Text(
                       "Nerede Yiyelim?",
-                      style: GoogleFonts.lato(
-                        color: const Color.fromARGB(255, 255, 115, 0),
-                        fontSize: 30,
+                      style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                         fontWeight: FontWeight.bold,
+                        color: const Color.fromARGB(255, 255, 115, 0),
                         shadows: [
                           Shadow(
                             color: const Color.fromARGB(223, 77, 42, 10),
@@ -340,9 +335,8 @@ class _MapPageState extends State<MapPage> {
                         icon: const Icon(Icons.gps_fixed),
                         label: Text(
                           'Beni Bul',
-                          style: GoogleFonts.lato(
+                          style: Theme.of(context).textTheme.displayMedium?.copyWith(
                             color: Colors.white,
-                            fontSize: 14,
                             fontWeight: FontWeight.bold,
                           ),
                         ),

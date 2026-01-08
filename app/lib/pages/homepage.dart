@@ -137,7 +137,7 @@ class _HomePageState extends State<HomePage> {
             ],
             Text(
               label,
-              style: GoogleFonts.lato(
+              style: Theme.of(context).textTheme.displaySmall?.copyWith(
                 color: isSelected ? Colors.white : Colors.grey[700],
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),

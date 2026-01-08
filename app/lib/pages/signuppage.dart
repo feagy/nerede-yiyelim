@@ -44,20 +44,19 @@ class _SignupPageState extends State<SignupPage> {
                   children: [
                     Text(
                       "Takma-ad",
-                      style: GoogleFonts.lato(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
+                      style: Theme.of(context).textTheme.displayMedium?.copyWith(
                         color: Colors.black87,
-                      ),
+                        fontWeight: FontWeight.w500
+                      )
                     ),
                     const SizedBox(height: 8),
                     TextField(
                       controller: _usernameController,
                       decoration: InputDecoration(
                         hintText: "Takma-ad gir",
-                        hintStyle: GoogleFonts.lato(
-                          fontSize: 14,
+                        hintStyle: Theme.of(context).textTheme.displayMedium?.copyWith(
                           color: Colors.grey[400],
+                          fontWeight: FontWeight.normal
                         ),
                         filled: true,
                         fillColor: Colors.white,
@@ -89,10 +88,9 @@ class _SignupPageState extends State<SignupPage> {
                   children: [
                     Text(
                       "E-posta",
-                      style: GoogleFonts.lato(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
+                      style:  Theme.of(context).textTheme.displayMedium?.copyWith(
                         color: Colors.black87,
+                        fontWeight: FontWeight.w500
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -101,9 +99,9 @@ class _SignupPageState extends State<SignupPage> {
                       keyboardType: TextInputType.emailAddress,
                       decoration: InputDecoration(
                         hintText: "E-posta gir",
-                        hintStyle: GoogleFonts.lato(
-                          fontSize: 14,
+                        hintStyle: Theme.of(context).textTheme.displayMedium?.copyWith(
                           color: Colors.grey[400],
+                          fontWeight: FontWeight.normal
                         ),
                         filled: true,
                         fillColor: Colors.white,
@@ -135,10 +133,9 @@ class _SignupPageState extends State<SignupPage> {
                   children: [
                     Text(
                       "Şifre",
-                      style: GoogleFonts.lato(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
+                      style: Theme.of(context).textTheme.displayMedium?.copyWith(
                         color: Colors.black87,
+                        fontWeight: FontWeight.w500
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -147,9 +144,9 @@ class _SignupPageState extends State<SignupPage> {
                       obscureText: _obscurePassword,
                       decoration: InputDecoration(
                         hintText: "Şifre gir",
-                        hintStyle: GoogleFonts.lato(
-                          fontSize: 14,
+                        hintStyle: Theme.of(context).textTheme.displayMedium?.copyWith(
                           color: Colors.grey[400],
+                          fontWeight: FontWeight.normal
                         ),
                         filled: true,
                         fillColor: Colors.white,
@@ -212,10 +209,7 @@ class _SignupPageState extends State<SignupPage> {
                     },
                     child: Text(
                       "Hesap Oluştur",
-                      style: GoogleFonts.lato(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: Theme.of(context).textTheme.displayLarge
                     ),
                   ),
                 ),
@@ -228,9 +222,9 @@ class _SignupPageState extends State<SignupPage> {
                   children: [
                     Text(
                       "Bir hesabın var mı?",
-                      style: GoogleFonts.lato(
-                        fontSize: 14,
-                        color:Colors.black54,
+                      style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                        color: Colors.black54,
+                        fontWeight: FontWeight.normal
                       ),
                     ),
                     GestureDetector(
@@ -239,19 +233,17 @@ class _SignupPageState extends State<SignupPage> {
                           MaterialPageRoute(builder: (context) => LoginPage()),);
                       },
                       child: Text(
-                        "Giriş Yap",
-                        style: GoogleFonts.lato(
-                          fontSize: 14,
-                          color: const Color(0xFFFF7300),
-                          fontWeight: FontWeight.w600,
+                          "Giriş Yap",
+                          style:  Theme.of(context).textTheme.displayMedium?.copyWith(
+                            color: const Color(0xFFFF7300),
                         ),
                       ),
                     ),
                     Text(
                       "ya da",
-                      style: GoogleFonts.lato(
-                        fontSize: 14,
+                      style: Theme.of(context).textTheme.displayMedium?.copyWith(
                         color: Colors.black54,
+                        fontWeight: FontWeight.normal
                       ),
                     ),
                     TextButton(
@@ -263,12 +255,11 @@ class _SignupPageState extends State<SignupPage> {
                         minimumSize: const Size(0, 0),
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
-                      child: Text(
+                      child: 
+                      Text(
                         "Devam Et",
-                        style: GoogleFonts.lato(
-                          fontSize: 14,
-                          color: const Color(0xFFFF7300),
-                          fontWeight: FontWeight.w600,
+                        style:  Theme.of(context).textTheme.displayMedium?.copyWith(
+                            color: const Color(0xFFFF7300),
                         ),
                       ),
                     ),                    
@@ -304,22 +295,20 @@ class _SignupHeaderPage extends StatelessWidget {
           child: Text(
             "Nerede Yiyelim?",
             textAlign: TextAlign.center,
-            style: GoogleFonts.lato(
-              fontSize: 20,
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               color: Colors.black,
-              fontWeight: FontWeight.bold,
-            )
+              fontWeight: FontWeight.bold
+            ),
           ),
         ),
         const SizedBox(height: 10),
         Text(
           "Sana yakın en iyi restoranları bulmayı sağlıyoruz!",
           textAlign: TextAlign.center,
-          style: GoogleFonts.lato(
-            fontSize: 14,
+          style: Theme.of(context).textTheme.displayMedium?.copyWith(
             color: const Color.fromARGB(255, 32, 32, 32),
             fontWeight: FontWeight.bold,
-          )
+          ),
         ),
       ],
     );

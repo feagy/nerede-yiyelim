@@ -135,7 +135,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   onPressed: _updateProfile,
                   child: Text(
                     "Bilgileri Güncelle",
-                    style: GoogleFonts.lato(fontSize: 16, fontWeight: FontWeight.w600),
+                    style: Theme.of(context).textTheme.displayLarge
                   ),
                 ),
               ),
@@ -170,7 +170,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   },
                   child: Text(
                     "Çıkış Yap",
-                    style: GoogleFonts.lato(fontSize: 16, fontWeight: FontWeight.w600),
+                    style: Theme.of(context).textTheme.displayLarge,
                   ),
                 ),
               ),
@@ -219,10 +219,8 @@ class _ProfilePageState extends State<ProfilePage> {
       children: [
         Text(
           label,
-          style: GoogleFonts.lato(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: Colors.black87,
+          style: Theme.of(context).textTheme.displayMedium?.copyWith(
+            color: Colors.black87
           ),
         ),
         const SizedBox(height: 8),

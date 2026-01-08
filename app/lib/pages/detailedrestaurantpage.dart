@@ -254,10 +254,9 @@ class _DetailedRestaurantHeader extends StatelessWidget {
               children: [
                 Text(
                   restaurantName ?? "NO NAME",
-                  style: GoogleFonts.lato(
+                  style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
                     color: Colors.white,
-                    fontSize: 35,
-                    fontWeight: FontWeight.bold
                   ),
                 ),
                 const SizedBox(width: 20),
@@ -271,12 +270,11 @@ class _DetailedRestaurantHeader extends StatelessWidget {
                   ),
                   child: Text(
                     isOpen == true ? "Open" : "Closed",
-                    style: GoogleFonts.lato(
+                    style:  Theme.of(context).textTheme.displayMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
                       color: isOpen == true
-                       ? const Color.fromARGB(255, 0, 150, 0) 
-                       : const Color.fromARGB(255, 200, 0, 0),
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold
+                        ? const Color.fromARGB(255, 0, 150, 0) 
+                        : const Color.fromARGB(255, 200, 0, 0),
                     ),
                   ),
                 )
@@ -298,10 +296,9 @@ class _DetailedRestaurantHeader extends StatelessWidget {
                 const SizedBox(width: 20),
                 Text(
                   "(${restaurantUserRatingCount ?? 0} Yorum)",
-                  style: GoogleFonts.lato(
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
                     color: const Color.fromARGB(255, 224, 224, 224),
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold
                   ),
                 ),
               ],
@@ -349,20 +346,18 @@ class _DetailedRestaurantInformationSection extends StatelessWidget {
           // I WILL DO IT WITH FLUTTER MAP. LEMME DO IT. - IHSAN 
           // IF ANYONE WANT TO DO WATCH THIS https://www.youtube.com/watch?v=9L9Arynobzo&list=PLOEXB48nQMqMqhfwVsechVSYJBNrhZiNo
           Text("AI-Generated Summary",
-            style: GoogleFonts.lato(
-              color: const Color.fromARGB(255, 0, 0, 0),
-              fontSize: 20,
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.bold,
+              color: const Color.fromARGB(255, 0, 0, 0),
             ),
           ),
           const SizedBox(height: 8),
           Text(
             restaurantGenerativeSummary ??
                 "There is not a generative summary for this restaurant",
-            style: GoogleFonts.lato(
+            style: Theme.of(context).textTheme.displayLarge?.copyWith(
+              fontWeight: FontWeight.bold,
               color: const Color.fromARGB(255, 32, 32, 32),
-              fontSize: 16,
-              
             ),
           ),
           const SizedBox(height: 16),
@@ -370,12 +365,14 @@ class _DetailedRestaurantInformationSection extends StatelessWidget {
             icon: CupertinoIcons.location,
             title: "Adres",
             content: restaurantFormattedaddress ?? "Address not available",
+            context: context
           ),
           const SizedBox(height: 16),
           _buildInfoRow(
             icon: CupertinoIcons.clock,
             title: "Çalışma Saati",
             content: restaurantNextCloseTime ?? "Unknown",
+            context: context
           ),
           const SizedBox(height: 16),
           _buildInfoRow(
@@ -383,6 +380,7 @@ class _DetailedRestaurantInformationSection extends StatelessWidget {
             title: "Telefon Numarası",
             content:
                 restaurantInternationalPhoneNumber ?? "Phone not available",
+            context: context
           ),
           const SizedBox(height: 16),
         ],
@@ -394,6 +392,7 @@ class _DetailedRestaurantInformationSection extends StatelessWidget {
     required IconData icon,
     required String title,
     required String content,
+    required BuildContext context,
   }) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -406,19 +405,18 @@ class _DetailedRestaurantInformationSection extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: GoogleFonts.lato(
-                  color: const Color.fromARGB(255, 0, 0, 0),
-                  fontSize: 14,
+                style: Theme.of(context).textTheme.displayMedium?.copyWith(
                   fontWeight: FontWeight.bold,
+                  color: const Color.fromARGB(255, 0, 0, 0),
                 ),
               ),
               const SizedBox(height: 4),
               Text(
                 content,
-                style: GoogleFonts.lato(
+                style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
                   color: const Color.fromARGB(255, 80, 80, 80),
-                  fontSize: 14,
-                ),
+                ), 
               ),
             ],
           ),
@@ -459,29 +457,27 @@ class _DetailedRestaurantCommentsSection extends StatelessWidget {
         children: [
           Text(
             "Kullanıcı Yorumları",
-            style: GoogleFonts.lato(
-              color: Colors.black,
-              fontSize: 20,
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.bold,
-            ),
+            ), 
           ),
           const SizedBox(height: 12),
           if (reviews.isEmpty)
             Text(
               "Henüz bir değerlendirme bulunmamaktadır.",
-              style: GoogleFonts.lato(
-                fontSize: 16,
-                color: Colors.grey[700],
-              ),
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.normal,
+                color: Colors.grey[700]
+              ), 
             )
           else
-            ...reviews.map((r) => _buildReviewCard(r)),
+            ...reviews.map((r) => _buildReviewCard(r, context)),
         ],
       ),
     );
   }
 
-  Widget _buildReviewCard(dynamic review) {
+  Widget _buildReviewCard(dynamic review, BuildContext context) {
     // güvenli veri alma
     final String author = review["author"] ?? "Anonymous";
     final double rating = (review["rating"] ?? 0).toDouble();
@@ -505,17 +501,16 @@ class _DetailedRestaurantCommentsSection extends StatelessWidget {
             children: [
               Text(
                 author,
-                style: GoogleFonts.lato(
-                  fontSize: 16,
+                style: Theme.of(context).textTheme.displayLarge?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
+                  color: Colors.black87
+                ), 
               ),
               Text(
                 date,
-                style: GoogleFonts.lato(
-                  fontSize: 13,
-                  color: Colors.grey[600],
+                style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                  fontWeight: FontWeight.normal,
+                  color: Colors.grey[600]
                 ),
               ),
             ],
@@ -538,9 +533,9 @@ class _DetailedRestaurantCommentsSection extends StatelessWidget {
           // Yorum
           Text(
             text,
-            style: GoogleFonts.lato(
-              fontSize: 15,
-              color: Colors.black87,
+            style: Theme.of(context).textTheme.displayMedium?.copyWith(
+              fontWeight: FontWeight.normal,
+              color: Colors.black87
             ),
           ),
         ],

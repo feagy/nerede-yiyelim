@@ -42,9 +42,7 @@ class MapMarkers {
                       const Icon(Icons.local_bar, size: 14, color: Colors.white),
                     Text(
                       (item as Place).placeName,
-                      style: GoogleFonts.lato(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
+                      style: Theme.of(context).textTheme.displaySmall?.copyWith(
                         color: Colors.white,
                       ),
                     ),
@@ -58,11 +56,9 @@ class MapMarkers {
                   const SizedBox(width: 4),
                   Text(
                       "${(item as Place).googleRating}",
-                      style: GoogleFonts.lato(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
+                      style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                          color: Colors.white,
+                      ), 
                     ),
                 ],
               ),

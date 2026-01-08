@@ -81,19 +81,16 @@ class _WelcomePageSection extends StatelessWidget {
         children: [
           Text("Bir sonraki favori yemeğini bul!",
             textAlign: TextAlign.center,
-            style: GoogleFonts.lato(
-              color: const Color.fromARGB(255, 0, 0, 0),
-              fontSize: 32,
-              fontWeight: FontWeight.bold
-            ),
+            style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+              color: const Color.fromARGB(255, 0, 0, 0)
+            )
           ),
           const SizedBox(height: 8),
           Text("Kişiselleştirilmiş yorumlar ve puanlar ile sana, sana yakın olan en iyi restorantları getiriyoruz.",
             textAlign: TextAlign.center,
-            style: GoogleFonts.lato(
+            style: Theme.of(context).textTheme.displayLarge?.copyWith(
               color: const Color.fromARGB(255, 32, 32, 32),
-              fontSize: 16
-            ),
+            )
           ),
         ],
       ),

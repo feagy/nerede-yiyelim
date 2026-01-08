@@ -34,10 +34,8 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage> {
                 const SizedBox(height: 40),
                 Text(
                   "Şifremi Unuttum",
-                  style: GoogleFonts.lato(
-                    fontSize: 28,
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: Colors.black,
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -47,8 +45,7 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage> {
                   children: [
                     Text(
                       "E-posta",
-                      style: GoogleFonts.lato(
-                        fontSize: 14,
+                      style: Theme.of(context).textTheme.displayMedium?.copyWith(
                         fontWeight: FontWeight.w500,
                         color: Colors.black87,
                       ),
@@ -58,8 +55,7 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage> {
                       controller: _emailController,
                       decoration: InputDecoration(
                         hintText: "E-posta gir",
-                        hintStyle: GoogleFonts.lato(
-                          fontSize: 14,
+                        hintStyle: Theme.of(context).textTheme.displayMedium?.copyWith(
                           color: Colors.grey[400],
                         ),
                         filled: true,
@@ -104,10 +100,7 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage> {
                       },
                     child: Text(
                       "Şifre Değiştirme Linki Gönder",
-                      style: GoogleFonts.lato(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: Theme.of(context).textTheme.displayLarge
                     ),
                   ),
                 ),
@@ -119,10 +112,9 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage> {
                   children: [
                     Text(
                       "Yoksa şifreni mi hatırladın?",
-                      style: GoogleFonts.lato(
-                        fontSize: 14,
+                      style: Theme.of(context).textTheme.displayMedium?.copyWith(
                         color: Colors.black54,
-                      ),
+                      )
                     ),
                     TextButton(
                       onPressed: () {
@@ -133,19 +125,16 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage> {
                       },
                       child: Text(
                         "Giriş Yap",
-                        style: GoogleFonts.lato(
-                          fontSize: 14,
+                        style:  Theme.of(context).textTheme.displayMedium?.copyWith(
                           color: const Color(0xFFFF7300),
-                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
                     Text(
                       "ya da",
-                      style: GoogleFonts.lato(
-                        fontSize: 14,
+                      style: Theme.of(context).textTheme.displayMedium?.copyWith(
                         color: Colors.black54,
-                      ),
+                      )
                     ),
                     TextButton(
                       onPressed: () {
@@ -156,10 +145,8 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage> {
                       },
                       child: Text(
                         "Hesap Oluştur",
-                        style: GoogleFonts.lato(
-                          fontSize: 14,
+                        style:  Theme.of(context).textTheme.displayMedium?.copyWith(
                           color: const Color(0xFFFF7300),
-                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
