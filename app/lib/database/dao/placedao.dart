@@ -2,7 +2,7 @@ import 'package:app/database/entity/place.dart';
 import 'package:floor/floor.dart';
 
 @dao
-abstract class PlaceDto {
+abstract class PlaceDao {
   // We can use it as a stream for huge favorite lists
   @Query("SELECT * FROM Place")
   Future<List<Place>> findAllPlaces();
@@ -20,5 +20,5 @@ abstract class PlaceDto {
   Future<void> removeAllPlace();
 
   @Insert(onConflict: OnConflictStrategy.rollback)
-  Future<String> insertPlaceInDB(Place place);
+  Future<int> insertPlaceInDB(Place place);
 }

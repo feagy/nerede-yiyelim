@@ -10,8 +10,9 @@ class Review {
   final String? placeAddress;
   final int rating;
   final String? comment;
-  final DateTime createdAt;
-  final DateTime updatedAt;
+  // DateTime desteklenmiyor sadece double, int, string, bool desteknliyor.
+  final int createdAt; // millisecondsSinceEpoch 
+  final int updatedAt;
 
   Review({
     required this.id,
@@ -49,8 +50,12 @@ class Review {
       placeAddress: json['placeAddress'] as String?,
       rating: (json['rating'] as num).toInt(),
       comment: json['comment'] as String?,
-      createdAt: _parseFirestoreTimestamp(json['createdAt']) ?? DateTime.now(),
-      updatedAt: _parseFirestoreTimestamp(json['updatedAt']) ?? DateTime.now(),
+      // Bunun dönüşüm böyle oluyor. Eğer değiştriecekeniz değiştirin daha iyisi varsa.
+      createdAt: _parseFirestoreTimestamp(json['createdAt'])?.millisecondsSinceEpoch 
+           ?? DateTime.now().millisecondsSinceEpoch,
+      updatedAt: _parseFirestoreTimestamp(json['updatedAt'])?.millisecondsSinceEpoch 
+           ?? DateTime.now().millisecondsSinceEpoch,
+
     );
   }
 }
