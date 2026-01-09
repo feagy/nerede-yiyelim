@@ -94,7 +94,6 @@ async function getNearbyPlacesText(API_KEY, textQuery, lat, lng, radius, maxCoun
                            places.location,
                            places.rating,
                            places.userRatingCount,
-                           places.reviews,
                            places.primaryTypeDisplayName,
                            places.photos`.replace(/\s+/g, ""),
     };
@@ -109,11 +108,6 @@ async function getNearbyPlacesText(API_KEY, textQuery, lat, lng, radius, maxCoun
         openingHours: p.regularOpeningHours || null,
         rating: p.rating || null,
         userRatingCount: p.userRatingCount || null,
-        reviews: p.reviews?.map((r) => ({
-          name: r.authorAttribution?.displayName || "Yazar Yok",
-          text: r.originalText?.text || "Yorum Yok",
-          rating: r.rating || 0,
-        })) ||null,
         type: p.primaryTypeDisplayName?.text || "",
         lat: p.location?.latitude,
         lng: p.location?.longitude,
@@ -144,7 +138,7 @@ async function getPlacePhoto(API_KEY, photoName, maxWidth) {
     return response.data;
 }
 
-async function generateReviewSummary(LLM_URL, reviews, model="qwen2.5:7b-instruct") {
+async function generateReviewSummary(LLM_URL, reviews, model="gemma3:4b") {
     const payload = {
         model: model,
         stream: false,
@@ -152,7 +146,7 @@ async function generateReviewSummary(LLM_URL, reviews, model="qwen2.5:7b-instruc
             { 
               role: "system", 
               content: `
-                Sen restoran yorumlarını özetleyen bir asistansın. Kullanıcıdan gelen yorumları analiz edip kısa ve öz bir şekilde artılarını ve eksilerini belirtmelisin.
+                Sen restoran yorumlarını özetleyen bir asistansın. Kullanıcıdan gelen yorumları analiz edip kısa ve öz bir şekilde genel bir değerlendirme yapacaksın.
                 Kurallar:
                 - Cevabı SADECE Türkçe yaz.
                 - Çıktıda sadece bir paragraflık çok uzun olmayan genel bir özet yap.
@@ -164,7 +158,6 @@ async function generateReviewSummary(LLM_URL, reviews, model="qwen2.5:7b-instruc
                 - Eğerki yorum sayısı az ve genel bir değerlendirme yapmak mümkün değilse şu mesajı ver: "Yorum sayısı yetersiz olduğu için genel bir değerlendirme yapılamıyor.".
                 - Anlamadığın ve muğlak yerleri özete dahil etme.
                 - Yorumlarda bahsedilen spesifik isimleri (mekan, kişi, yemek vs.) kullanma.
-                - Yorumlarda verilen önerilerden bahsetme.
                 - Sadece mekanın kalitesi hakkında yapılandırılmış bir özet yap.
                 `
             },

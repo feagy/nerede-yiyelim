@@ -180,7 +180,7 @@ app.delete("/deleteReview/:reviewId", async (req, res) => {
   }
 });
 
-app.get("/getAverageRating", async (req, res) => {
+app.get("/getReviewSummary", async (req, res) => {
   try {
     const db = admin.firestore();
     const { placeId } = req.query;
@@ -203,7 +203,7 @@ app.get("/getAverageRating", async (req, res) => {
     });
 
     const averageRating = count > 0 ? parseFloat((totalRating / count).toFixed(2)) : 0;
-    return res.status(200).json({ ok: true, averageRating });
+    return res.status(200).json({ ok: true, averageRating, ratingCount: count });
   } catch (e) {
     console.error("get average rating error:", e);
     return res.status(500).json({ error: String(e) });

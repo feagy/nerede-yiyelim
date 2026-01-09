@@ -1,11 +1,13 @@
 import 'package:floor/floor.dart';
-
-import 'entity/place.dart';
-import 'dto/place_dto.dart';
+import 'entity/favorite.dart';
+import 'dao/favoritesdao.dart';
+import 'entity/review.dart';
+import 'dao/reviewsdao.dart';
 
 // part 'database.g.dart'; // Yapılacak
 
-@Database(version: 1, entities: [Place])
+@Database(version: 1, entities: [Favorite, Review])
 abstract class AppDataBase extends FloorDatabase {
-  PlaceDto get placeDto;
+  FavoritesDao get favoritesDao;
+  ReviewsDao get reviewsDao;
 }

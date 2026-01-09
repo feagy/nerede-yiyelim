@@ -29,6 +29,23 @@ class ReviewsResponse {
   }
 }
 
+class ReviewsSummary {
+  final double averageRating;
+  final int ratingCount;
+
+  ReviewsSummary({
+    required this.averageRating,
+    required this.ratingCount,
+  });
+
+  factory ReviewsSummary.fromJson(Map<String, dynamic> json) {
+    return ReviewsSummary(
+      averageRating: (json['averageRating'] as num?)?.toDouble() ?? 0.0,
+      ratingCount: (json['ratingCount'] as int?) ?? 0,
+    );
+  }
+}
+
 class ReviewsService {
   ReviewsService._(this.baseUrl);
 
@@ -166,10 +183,10 @@ class ReviewsService {
     }
   }
 
-  Future<double> getAverageRating({
+  Future<ReviewsSummary> getReviewSummary({
     required String placeId,
   }) async {
-    final uri = Uri.parse('$baseUrl/getAverageRating')
+    final uri = Uri.parse('$baseUrl/getReviewSummary')
         .replace(queryParameters: {
           'placeId': placeId,
         });
@@ -183,6 +200,6 @@ class ReviewsService {
     }
 
     final decoded = json.decode(response.body) as Map<String, dynamic>;
-    return (decoded['averageRating'] as num).toDouble();
+    return ReviewsSummary.fromJson(decoded);
   }
 }

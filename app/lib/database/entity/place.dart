@@ -49,11 +49,10 @@ class Place {
       address: (json['address'] as String?) ?? 'Adress yok',
       lat: (json['lat'] as num).toDouble(),
       lng: (json['lng'] as num).toDouble(),
-      googleRating: (json['googleRating'] as num?)?.toDouble() ?? 0.0,
-      googleRatingCount: json['googleRatingCount'] as int?,
+      googleRating: (json['rating'] as num?)?.toDouble() ?? 0.0,
+      googleRatingCount: json['userRatingCount'] as int?,
       type: json['type'] as String?,
       photoName: json['photoName'] as String?,
-      googleReviewsJson: jsonEncode(json['googleReviews']),
       openingHoursJson: jsonEncode(json['openingHours']),
     );
   }

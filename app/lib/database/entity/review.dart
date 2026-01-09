@@ -1,6 +1,8 @@
+import 'package:floor/floor.dart';
 
-
+@Entity(tableName: 'reviews')
 class Review {
+  @PrimaryKey()
   final String id;
   final String userId;
   final String placeId;

@@ -89,7 +89,6 @@ exports.aiSummary = functions.https.onRequest({ timeoutSeconds: 120, memory: "1G
                 return res.status(400).json({ error: "reviews must be an array of strings" });
             }
             
-
             const summary = await places.generateReviewSummary(LLM_URL, reviews, model);    
             return res.status(200).json({ summary });
         } catch (error) {
