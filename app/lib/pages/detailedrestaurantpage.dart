@@ -266,11 +266,14 @@ class _DetailedRestaurantHeader extends StatelessWidget {
           children: [
             Row(
               children: [
-                Text(
-                  restaurantName ?? "NO NAME",
-                  style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                Flexible(
+                  child: Text(
+                    restaurantName ?? "NO NAME",
+                    style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 const SizedBox(width: 20),

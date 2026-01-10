@@ -147,7 +147,6 @@ class _MapPageState extends State<MapPage> {
         ],
       ),
     );
-
     showDialog(
       context: context,
       builder: (_) =>
