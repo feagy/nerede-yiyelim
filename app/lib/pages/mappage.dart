@@ -19,6 +19,7 @@ class MapPage extends StatefulWidget {
   State<MapPage> createState() => _MapPageState();
 }
 
+
 class _MapPageState extends State<MapPage> {
   late final MapController _mapController;
   final TextEditingController _queryController = TextEditingController();
@@ -30,11 +31,23 @@ class _MapPageState extends State<MapPage> {
 
   List<Place> nearbyPlaces = [];
 
+//Sliver box için veri
+  final List<String> categories = [
+    "Pizza",
+    "Burger",
+    "Kebap",
+    "Tatlı",
+    "Kahve",
+    "Sushi",
+    "Döner",
+    ];
+  int selectedCategoryIndex = 0;
+  String get selectedCategory => categories[selectedCategoryIndex];
+
   @override
   void initState() {
     super.initState();
     _mapController = MapController();
-
     _initUserLocation();
   }
 
@@ -294,8 +307,8 @@ class _MapPageState extends State<MapPage> {
                             color: const Color.fromARGB(255, 255, 115, 0),
                             shadows: [
                               Shadow(
-                                color: const Color.fromARGB(223, 77, 42, 10),
-                                blurRadius: 16,
+                                color:  Colors.black,
+                                blurRadius: 12,
                                 offset: Offset(0, 4),
                               ),
                             ],
@@ -310,17 +323,58 @@ class _MapPageState extends State<MapPage> {
                   right: MediaQuery.of(context).size.height * 0.04,
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Colors.transparent,
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black,
-                          blurRadius: 16,
+                          blurRadius: 50,
                           offset: Offset(0, 4),
                         ),
                       ],
                     ),
-                    child: TextField(
+                    child: SizedBox(
+                    height: 48,
+                    child: Material(
+                      type: MaterialType.transparency,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                        itemCount: categories.length,
+                        separatorBuilder: (_, __) => const SizedBox(width: 8),
+                        itemBuilder: (context, index) {
+                          final isSelected = selectedCategoryIndex == index;
+                      
+                          return ChoiceChip(
+                            label: Text(
+                              categories[index],
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: isSelected ? Colors.white : const Color.fromARGB(255, 255, 115, 0),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            selected: isSelected,
+                            selectedColor: const Color.fromARGB(255, 255, 115, 0),
+                            backgroundColor: Colors.transparent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              side: BorderSide(
+                                color: const Color.fromARGB(255, 255, 115, 0),
+                                width: 1,
+                              ),
+                            ),
+                            onSelected: (selected) async {
+                              setState(() {
+                                selectedCategoryIndex = index; // tek seçim
+                              });
+                          },
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                    /* child: TextField(
                       controller: _queryController,
                       decoration: InputDecoration(
                         hintText:
@@ -334,7 +388,7 @@ class _MapPageState extends State<MapPage> {
                           vertical: 12,
                         ),
                       ),
-                    ),
+                    ), */
                   ),
                 ),
 
@@ -348,83 +402,94 @@ class _MapPageState extends State<MapPage> {
                         boxShadow: [
                           BoxShadow(
                             color: const Color.fromARGB(255, 0, 0, 0),
-                            blurRadius: 12,
+                            blurRadius: 50,
                             offset: Offset(0, 4),
                           ),
                         ],
                       ),
-                      child: Column(
+                      child: Row(
+                        spacing: 12,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          ElevatedButton.icon(
-                            onPressed: () {
-                              _startTrackingUser();
-                            },
-                            icon: const Icon(Icons.gps_fixed),
-                            label: Text(
-                              'Beni Bul',
-                              style: Theme.of(context).textTheme.displayMedium
-                                  ?.copyWith(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsetsGeometry.directional(start: 10),
+                              child: ElevatedButton.icon(
+                                onPressed: () {
+                                  _startTrackingUser();
+                                },
+                                icon: const Icon(Icons.gps_fixed),
+                                label: Text(
+                                  'Beni Bul',
+                                  style: Theme.of(context).textTheme.displayMedium
+                                      ?.copyWith(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color.fromARGB(
+                                    255,
+                                    255,
+                                    115,
+                                    0,
                                   ),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color.fromARGB(
-                                255,
-                                255,
-                                115,
-                                0,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 32,
+                                    vertical: 12,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  elevation: 4,
+                                ),
                               ),
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 32,
-                                vertical: 12,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              elevation: 4,
                             ),
                           ),
-                          ElevatedButton.icon(
-                            onPressed: () async {
-                              nearbyPlaces = await _fetchPlaces(
-                                textQuery: _queryController.text,
-                                lat: 40.9917, //_currentUserLatLng?.latitude ??,
-                                lng:
-                                    28.8517, //_currentUserLatLng?.longitude ??,
-                                radius: 5000,
-                              );
-                              setState(() {
-                                nearbyPlaces = nearbyPlaces;
-                              });
-                            },
-                            icon: const Icon(Icons.gps_fixed),
-                            label: Text(
-                              'Mekan Bul',
-                              style: Theme.of(context).textTheme.displayMedium
-                                  ?.copyWith(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsetsGeometry.directional(end: 10),
+                              child: ElevatedButton.icon(
+                                onPressed: () async {
+                                  nearbyPlaces = await _fetchPlaces(
+                                    textQuery: selectedCategory,
+                                    lat: 40.9917, //_currentUserLatLng?.latitude ??,
+                                    lng:
+                                        28.8517, //_currentUserLatLng?.longitude ??,
+                                    radius: 5000,
+                                  );
+                                  setState(() {
+                                    nearbyPlaces = nearbyPlaces;
+                                  });
+                                },
+                                icon: const Icon(Icons.gps_fixed),
+                                label: Text(
+                                  'Mekan Bul',
+                                  style: Theme.of(context).textTheme.displayMedium
+                                      ?.copyWith(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color.fromARGB(
+                                    255,
+                                    255,
+                                    115,
+                                    0,
                                   ),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color.fromARGB(
-                                255,
-                                255,
-                                115,
-                                0,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 32,
+                                    vertical: 12,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  elevation: 4,
+                                ),
                               ),
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 32,
-                                vertical: 12,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              elevation: 4,
                             ),
                           ),
                         ],

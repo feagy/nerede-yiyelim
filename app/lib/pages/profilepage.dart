@@ -1,4 +1,5 @@
 import 'package:app/pages/loginpage.dart';
+import 'package:app/pages/reviewpage.dart';
 import 'package:app/services/authservice.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -59,10 +60,6 @@ class _ProfilePageState extends State<ProfilePage> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.black, size: 20),
-          onPressed: () => Navigator.pop(context),
-        ),
         title: Text(
           "Profilim",
           style: GoogleFonts.lato(color: Colors.black, fontWeight: FontWeight.bold),
@@ -135,8 +132,41 @@ class _ProfilePageState extends State<ProfilePage> {
                   onPressed: _updateProfile,
                   child: Text(
                     "Bilgileri Güncelle",
-                    style: Theme.of(context).textTheme.displayLarge
+                    style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                          color: Colors.white,
+                        ),
                   ),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+// Yorum butonu
+               SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryColor,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    elevation: 0,
+                  ),
+                  // review sayfasına gönderme
+                 onPressed:(){ Navigator.push(
+                       context,
+                        MaterialPageRoute(
+                        builder: (context) => ReviewPage(
+                              ),
+                            ),
+                          ); },
+                  child: Flexible(
+                      child: Text('Yorumlarıma Göz At',
+                        style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                          color: Colors.white,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
                 ),
               ),
 
@@ -170,7 +200,9 @@ class _ProfilePageState extends State<ProfilePage> {
                   },
                   child: Text(
                     "Çıkış Yap",
-                    style: Theme.of(context).textTheme.displayLarge,
+                    style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                          color: Colors.white,
+                        ),
                   ),
                 ),
               ),
