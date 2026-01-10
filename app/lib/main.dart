@@ -35,7 +35,7 @@ Future main() async {
 
   final String apiKey = dotenv.env['MAPTILER_MAPS_API_KEY'] ?? '';
 
-  // Servisleri register et
+  
   getIt.registerSingleton<PlacesService>(PlacesService());
   getIt.registerSingleton<FavoritesService>(FavoritesService());
   getIt.registerSingleton<ReviewsService>(ReviewsService());

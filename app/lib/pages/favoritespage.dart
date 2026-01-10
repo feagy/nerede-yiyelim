@@ -68,6 +68,37 @@ class _FavoritesPageState extends State<FavoritesPage> {
     });
   }
 
+
+
+// Delete confirmation
+  
+  Future<void> _confirmDelete(Favorite favorite) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Emin misin?'),
+        content: const Text('Bu yorumu silmek istediğine emin misin?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('İptal'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Sil'),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true) {
+      setState(() {
+        _favorites.removeWhere((r) => r.id == favorite.id);
+      });
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -114,9 +145,9 @@ class _FavoritesPageState extends State<FavoritesPage> {
                       ),
                       trailing: IconButton(
                         icon: const Icon(Icons.delete),
-                        onPressed: () {
-                          _removeFavorite(fav.id);
-                        },
+                        onPressed: () => _confirmDelete(fav), 
+                          
+                        
                       ),
                       onTap: () {
                        /* Navigator.push(
