@@ -14,19 +14,16 @@ class FavoritesPage extends StatelessWidget {
   const FavoritesPage({super.key});
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(child: Text("Favorites Page")),
-    );
+    return Scaffold(body: Center(child: Text("Favorites Page")));
   }
 }
+
 // BURADA OLAN SAYFALAR SAHTE SADECE AKIŞI DENEMEK İÇİN
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(child: Text("Settings Page")),
-    );
+    return Scaffold(body: Center(child: Text("Settings Page")));
   }
 }
 
@@ -50,7 +47,9 @@ class _HomePageState extends State<HomePage> {
       body: Navigator(
         key: _navigatorKey,
         onGenerateRoute: (settings) {
-          return MaterialPageRoute(builder: (_) => MapPage(keyAPI: widget.keyAPI));
+          return MaterialPageRoute(
+            builder: (_) => MapPage(keyAPI: widget.keyAPI),
+          );
         },
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -60,22 +59,25 @@ class _HomePageState extends State<HomePage> {
             _selectedBottomTab = index;
           });
 
-          switch(index) {
+          switch (index) {
             case 0:
               _navigatorKey.currentState!.pushReplacement(
-                MaterialPageRoute(builder: (_) => MapPage(keyAPI: widget.keyAPI)),
+                MaterialPageRoute(
+                  builder: (_) => MapPage(keyAPI: widget.keyAPI),
+                ),
               );
               break;
             case 1:
-              final isLoggedIn = await AuthService().currentUser?.isAnonymous == false;
-              if(isLoggedIn) {
-                  _navigatorKey.currentState!.pushReplacement(
-                    MaterialPageRoute(builder: (_) => ProfilePage()),
-                  );
+              final isLoggedIn =
+                  await AuthService().currentUser?.isAnonymous == false;
+              if (isLoggedIn) {
+                _navigatorKey.currentState!.pushReplacement(
+                  MaterialPageRoute(builder: (_) => ProfilePage()),
+                );
               } else {
-                Navigator.of(context, rootNavigator: true).pushReplacement( 
-                  MaterialPageRoute(builder: (_) => const SignupPage()), 
-                  );
+                Navigator.of(context, rootNavigator: true).pushReplacement(
+                  MaterialPageRoute(builder: (_) => const SignupPage()),
+                );
               }
               break;
             case 2:
@@ -84,9 +86,9 @@ class _HomePageState extends State<HomePage> {
               );
               break;
             case 3:
-              _navigatorKey.currentState!.pushReplacement(
+              /* _navigatorKey.currentState!.pushReplacement(
                 MaterialPageRoute(builder: (_) => DetailedRestaurantPage()),
-              );
+              ); */
               break;
             case 4:
               _navigatorKey.currentState!.pushReplacement(
@@ -102,10 +104,22 @@ class _HomePageState extends State<HomePage> {
         elevation: 8,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Map'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Profil'),
-          BottomNavigationBarItem(icon: Icon(Icons.favorite_border_rounded), label: 'Favoriler'),
-          BottomNavigationBarItem(icon: Icon(Icons.maps_home_work_rounded), label: 'Mekan'),
-          BottomNavigationBarItem(icon: Icon(Icons.settings_accessibility_rounded), label: 'Ayarlar'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            label: 'Profil',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.favorite_border_rounded),
+            label: 'Favoriler',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.maps_home_work_rounded),
+            label: 'Mekan',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings_accessibility_rounded),
+            label: 'Ayarlar',
+          ),
         ],
       ),
     );

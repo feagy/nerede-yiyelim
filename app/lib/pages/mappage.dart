@@ -9,6 +9,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:app/functions/locationfunc.dart';
 import 'package:app/database/entity/place.dart';
 import 'package:app/pages/mapmarkers.dart';
+import 'detailedrestaurantpage.dart';
 
 class MapPage extends StatefulWidget {
   final String keyAPI;
@@ -127,7 +128,14 @@ class _MapPageState extends State<MapPage> {
                       context,
                     ).textTheme.displaySmall?.copyWith(color: Colors.white),
                   ),
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => DetailedRestaurantPage(place: p),
+                      ),
+                    );
+                  },
                   child: const Text("Detayları Gör"),
                 ),
               ),
@@ -370,8 +378,9 @@ class _MapPageState extends State<MapPage> {
                             onPressed: () async {
                               nearbyPlaces = await _fetchPlaces(
                                 textQuery: _queryController.text,
-                                lat: 0, //_currentUserLatLng?.latitude ??,
-                                lng: 0, //_currentUserLatLng?.longitude ??,
+                                lat: 40.9917, //_currentUserLatLng?.latitude ??,
+                                lng:
+                                    28.8517, //_currentUserLatLng?.longitude ??,
                                 radius: 5000,
                               );
                               setState(() {

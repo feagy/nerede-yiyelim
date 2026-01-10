@@ -1,10 +1,11 @@
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
-
+import 'package:app/database/entity/place.dart';
+import 'package:app/services/placephotoservice.dart';
+import 'package:get_it/get_it.dart';
 /*
 
   GETTERING DESIGN MUST BE CHANGED BEFORE DEPLOYMENT.
@@ -15,27 +16,20 @@ final restaurant = {
   "name": "Mikla Restaurant",
   "id": "mikla-istanbul",
   "displayName": {"text": "Mikla"},
-  "types": [
-    "restaurant",
-    "fine_dining",
-    "point_of_interest",
-    "establishment"
-  ],
+  "types": ["restaurant", "fine_dining", "point_of_interest", "establishment"],
   "primaryType": "restaurant",
   "primaryTypeDisplayName": {"text": "Fine Dining Restaurant"},
   "nationalPhoneNumber": "0212 293 56 56",
   "internationalPhoneNumber": "+90 212 293 56 56",
-  "formattedAddress": "The Marmara Pera, Meşrutiyet Cd. No:15, 34430 Beyoğlu/İstanbul, Türkiye",
+  "formattedAddress":
+      "The Marmara Pera, Meşrutiyet Cd. No:15, 34430 Beyoğlu/İstanbul, Türkiye",
   "shortFormattedAddress": "Meşrutiyet Cd. No:15, Beyoğlu",
   "postalAddress": {
     "regionCode": "TR",
     "postalCode": "34430",
     "administrativeArea": "İstanbul",
     "locality": "Beyoğlu",
-    "addressLines": [
-      "Meşrutiyet Cd. No:15",
-      "The Marmara Pera Hotel"
-    ]
+    "addressLines": ["Meşrutiyet Cd. No:15", "The Marmara Pera Hotel"],
   },
   "location": {"latitude": 41.031203, "longitude": 28.9716919},
   "rating": 4.7,
@@ -47,23 +41,41 @@ final restaurant = {
       "author": "Selin Arslan",
       "rating": 5,
       "text": "Manzara muhteşem, yemekler yaratıcı ve çok lezzetli!",
-      "publishTime": "2025-10-12T20:15:00Z"
+      "publishTime": "2025-10-12T20:15:00Z",
     },
     {
       "author": "Emre Demir",
       "rating": 4,
       "text": "Servis çok iyi ama fiyatlar biraz yüksek.",
-      "publishTime": "2025-09-05T18:45:00Z"
-    }
+      "publishTime": "2025-09-05T18:45:00Z",
+    },
   ],
   "regularOpeningHours": {
     "periods": [
-      {"open": {"day": 1, "hour": 18, "minute": 0}, "close": {"day": 2, "hour": 0, "minute": 0}},
-      {"open": {"day": 2, "hour": 18, "minute": 0}, "close": {"day": 3, "hour": 0, "minute": 0}},
-      {"open": {"day": 3, "hour": 18, "minute": 0}, "close": {"day": 4, "hour": 0, "minute": 0}},
-      {"open": {"day": 4, "hour": 18, "minute": 0}, "close": {"day": 5, "hour": 0, "minute": 0}},
-      {"open": {"day": 5, "hour": 18, "minute": 0}, "close": {"day": 6, "hour": 1, "minute": 0}},
-      {"open": {"day": 6, "hour": 18, "minute": 0}, "close": {"day": 0, "hour": 1, "minute": 0}}
+      {
+        "open": {"day": 1, "hour": 18, "minute": 0},
+        "close": {"day": 2, "hour": 0, "minute": 0},
+      },
+      {
+        "open": {"day": 2, "hour": 18, "minute": 0},
+        "close": {"day": 3, "hour": 0, "minute": 0},
+      },
+      {
+        "open": {"day": 3, "hour": 18, "minute": 0},
+        "close": {"day": 4, "hour": 0, "minute": 0},
+      },
+      {
+        "open": {"day": 4, "hour": 18, "minute": 0},
+        "close": {"day": 5, "hour": 0, "minute": 0},
+      },
+      {
+        "open": {"day": 5, "hour": 18, "minute": 0},
+        "close": {"day": 6, "hour": 1, "minute": 0},
+      },
+      {
+        "open": {"day": 6, "hour": 18, "minute": 0},
+        "close": {"day": 0, "hour": 1, "minute": 0},
+      },
     ],
     "weekdayDescriptions": [
       "Pazartesi: 18:00 - 00:00",
@@ -72,11 +84,11 @@ final restaurant = {
       "Perşembe: 18:00 - 00:00",
       "Cuma: 18:00 - 01:00",
       "Cumartesi: 18:00 - 01:00",
-      "Pazar: Kapalı"
+      "Pazar: Kapalı",
     ],
     "openNow": false,
     "nextOpenTime": "2025-11-03T18:00:00+03:00",
-    "nextCloseTime": "2025-11-04T00:00:00+03:00"
+    "nextCloseTime": "2025-11-04T00:00:00+03:00",
   },
   "timeZone": {"id": "Europe/Istanbul"},
   "photos": [
@@ -85,23 +97,26 @@ final restaurant = {
       "widthPx": 1280,
       "heightPx": 960,
       "authorAttributions": ["@MiklaRestaurant"],
-      "photoUri": "https://www.miklarestaurant.com/images/gallery/mikla1.jpg"
-    }
+      "photoUri": "https://www.miklarestaurant.com/images/gallery/mikla1.jpg",
+    },
   ],
   "businessStatus": "OPERATIONAL",
   "priceLevel": "PRICE_LEVEL_EXPENSIVE",
   "editorialSummary": {
-    "text": "Modern Türk mutfağını dünya standartlarında sunan, Boğaz manzaralı fine dining restoran."
+    "text":
+        "Modern Türk mutfağını dünya standartlarında sunan, Boğaz manzaralı fine dining restoran.",
   },
   "generativeSummary": {
     "overview": {
-      "text": "Mikla Restaurant, İstanbul'un en seçkin fine dining mekanlarından biridir. Modern Türk mutfağını yaratıcı dokunuşlarla sunarken, Boğaz manzarasıyla misafirlerine unutulmaz bir deneyim yaşatır.",
-      "languageCode": "tr"
+      "text":
+          "Mikla Restaurant, İstanbul'un en seçkin fine dining mekanlarından biridir. Modern Türk mutfağını yaratıcı dokunuşlarla sunarken, Boğaz manzarasıyla misafirlerine unutulmaz bir deneyim yaşatır.",
+      "languageCode": "tr",
     },
     "description": {
-      "text": "The Marmara Pera Oteli'nin terasında yer alan Mikla, şef Mehmet Gürs'ün vizyonuyla geleneksel Anadolu tatlarını modern gastronomiyle birleştirir. Ziyaretçiler servis kalitesi, etkileyici şehir manzarası ve şarap menüsünü özellikle övmektedir. Hem yerli hem yabancı gurmeler tarafından İstanbul'un en iyi restoranlarından biri olarak gösterilmektedir.",
-      "languageCode": "tr"
-    }
+      "text":
+          "The Marmara Pera Oteli'nin terasında yer alan Mikla, şef Mehmet Gürs'ün vizyonuyla geleneksel Anadolu tatlarını modern gastronomiyle birleştirir. Ziyaretçiler servis kalitesi, etkileyici şehir manzarası ve şarap menüsünü özellikle övmektedir. Hem yerli hem yabancı gurmeler tarafından İstanbul'un en iyi restoranlarından biri olarak gösterilmektedir.",
+      "languageCode": "tr",
+    },
   },
   "paymentOptions": {"acceptsCreditCards": true, "acceptsCashOnly": false},
   "parkingOptions": {"valetParking": true, "streetParking": false},
@@ -113,22 +128,29 @@ final restaurant = {
   "reservable": true,
   "accessibilityOptions": {
     "wheelchairAccessibleEntrance": true,
-    "wheelchairAccessibleRestroom": true
+    "wheelchairAccessibleRestroom": true,
   },
-  "pureServiceAreaBusiness": false
+  "pureServiceAreaBusiness": false,
 };
 
-
 class DetailedRestaurantPage extends StatefulWidget {
-  const DetailedRestaurantPage({super.key});
+  final Place place;
+  const DetailedRestaurantPage({super.key, required this.place});
 
   @override
-  State<DetailedRestaurantPage> createState () => _DetailedRestaurantPage();
+  State<DetailedRestaurantPage> createState() => _DetailedRestaurantPage();
 }
 
 class _DetailedRestaurantPage extends State<DetailedRestaurantPage> {
-  String? get restaurantMapUri => restaurant["googleMapsUri"] as String?; 
-  
+  late Place place;
+
+  @override
+  void initState() {
+    super.initState();
+    place = widget.place;
+  }
+
+  String? get restaurantMapUri => restaurant["googleMapsUri"] as String?;
   Future<void> _openGoogleMaps() async {
     if (restaurantMapUri != null) {
       final Uri url = Uri.parse(restaurantMapUri!);
@@ -139,67 +161,59 @@ class _DetailedRestaurantPage extends State<DetailedRestaurantPage> {
       }
     }
   }
-  
-  @override
-  Widget build (BuildContext context) {
-    // IT WILL COMPLETELY CHANGE
-    print("=== RESTAURANT DATA DEBUG ===");
-    print("Restaurant: $restaurant");
-    print("regularOpeningHours: ${restaurant["regularOpeningHours"]}");
-    print("generativeSummary: ${restaurant["generativeSummary"]}");
 
+  @override
+  Widget build(BuildContext context) {
     final regularHours = restaurant["regularOpeningHours"] as Map?;
     final generativeSummary = restaurant["generativeSummary"] as Map?;
     final overview = generativeSummary?["overview"] as Map?;
 
-    print("regularHours: $regularHours");
-    print("generativeSummary: $generativeSummary");
-    print("overview: $overview");
-    print("overview text: ${overview?["text"]}");
-    print("openNow: ${regularHours?["openNow"]}");
-    print("nextCloseTime: ${regularHours?["nextCloseTime"]}");
-    print("=== END DEBUG ===");
-    
     return Scaffold(
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Column(
           children: [
             _DetailedRestaurantHeader(
-              restaurantName: restaurant["name"] as String?,
-              restaurantPhotoUri: "https://lh3.googleusercontent.com/gps-cs-s/AG0ilSxF1kIayE8ncojdeqpOhlFkHB3Gf_JsOxBtWFnIMfAoVql5IQST8TIYYapEtCrkPBZjWV3Sz9nBICXKq3ZxvFfHCPEeXUFoEqtdsFB8nXFHVmsaXup_mU9nRpGJgIrmeOZwAByBLQ=s680-w680-h510-rw",
-              restaurantRating: restaurant["rating"] as double?,
-              restaurantUserRatingCount: restaurant["userRatingCount"] as int?,
+              restaurantName: place.placeName,
+              restaurantPhotoUri: GetIt.I<PlacePhotoService>().getPhotoUrl(
+                place.photoName ?? "",
+                400,
+              ),
+              restaurantRating: place.googleRating,
+              restaurantUserRatingCount: place.googleRatingCount,
               isOpen: regularHours?["openNow"] as bool?,
             ),
             _DetailedRestaurantInformationSection(
-              restaurantFormattedaddress: restaurant["formattedAddress"] as String?,
+              restaurantFormattedaddress: place.address,
               restaurantGenerativeSummary: overview?["text"] as String?,
-              restaurantInternationalPhoneNumber: restaurant["internationalPhoneNumber"] as String?,
-              restaurantNextCloseTime: regularHours?["nextCloseTime"] as String?,
+              restaurantInternationalPhoneNumber: place.phone,
+              restaurantNextCloseTime:
+                  regularHours?["nextCloseTime"] as String?,
             ),
             if (restaurantMapUri != null)
-            Container(
-              alignment: Alignment.center,
-              margin: const EdgeInsets.only(bottom: 20),
-              child: ElevatedButton.icon(
-                onPressed: _openGoogleMaps,
-                icon: const Icon(Icons.map, size: 20),
-                label: const Text("Open in Google Maps"),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4285F4),
-                  foregroundColor: Colors.white,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+              Container(
+                alignment: Alignment.center,
+                margin: const EdgeInsets.only(bottom: 20),
+                child: ElevatedButton.icon(
+                  onPressed: _openGoogleMaps,
+                  icon: const Icon(Icons.map, size: 20),
+                  label: const Text("Open in Google Maps"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF4285F4),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                 ),
               ),
-            ),
             _DetailedRestaurantCommentsSection(
               restaurantReviews: restaurant["reviews"] as List<dynamic>?,
-            )
+            ),
           ],
         ),
       ),
@@ -208,33 +222,33 @@ class _DetailedRestaurantPage extends State<DetailedRestaurantPage> {
 }
 
 class _DetailedRestaurantHeader extends StatelessWidget {
-
   // They will change as final
-  // and this application right now will terminate itself cause lack of API 
+  // and this application right now will terminate itself cause lack of API
   final String? restaurantPhotoUri;
   final String? restaurantName;
   final double? restaurantRating;
   final int? restaurantUserRatingCount;
   final bool? isOpen;
 
-
   const _DetailedRestaurantHeader({
     this.restaurantPhotoUri,
     this.restaurantName,
     this.restaurantRating,
     this.restaurantUserRatingCount,
-    this.isOpen
+    this.isOpen,
   });
 
- @override
+  @override
   Widget build(BuildContext context) {
     return Container(
       height: 250,
       decoration: BoxDecoration(
-        image: restaurantPhotoUri != null ? DecorationImage(
-          image: NetworkImage(restaurantPhotoUri!),
-          fit: BoxFit.cover,
-        ) : null,
+        image: restaurantPhotoUri != null
+            ? DecorationImage(
+                image: NetworkImage(restaurantPhotoUri!),
+                fit: BoxFit.cover,
+              )
+            : null,
       ),
       child: Container(
         padding: const EdgeInsets.all(20),
@@ -243,7 +257,7 @@ class _DetailedRestaurantHeader extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Colors.transparent, Colors.black.withOpacity(0.7)]
+            colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
           ),
         ),
         child: Column(
@@ -261,23 +275,26 @@ class _DetailedRestaurantHeader extends StatelessWidget {
                 ),
                 const SizedBox(width: 20),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     borderRadius: const BorderRadius.all(Radius.circular(5)),
-                    color: isOpen == true 
-                     ? const Color.fromARGB(255, 220, 255, 220) 
-                     : const Color.fromARGB(255, 255, 220, 220) 
+                    color: isOpen == true
+                        ? const Color.fromARGB(255, 220, 255, 220)
+                        : const Color.fromARGB(255, 255, 220, 220),
                   ),
                   child: Text(
                     isOpen == true ? "Open" : "Closed",
-                    style:  Theme.of(context).textTheme.displayMedium?.copyWith(
+                    style: Theme.of(context).textTheme.displayMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: isOpen == true
-                        ? const Color.fromARGB(255, 0, 150, 0) 
-                        : const Color.fromARGB(255, 200, 0, 0),
+                          ? const Color.fromARGB(255, 0, 150, 0)
+                          : const Color.fromARGB(255, 200, 0, 0),
                     ),
                   ),
-                )
+                ),
               ],
             ),
             const SizedBox(height: 8),
@@ -302,7 +319,7 @@ class _DetailedRestaurantHeader extends StatelessWidget {
                   ),
                 ),
               ],
-            )
+            ),
           ],
         ),
       ),
@@ -343,9 +360,10 @@ class _DetailedRestaurantInformationSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // I WILL DO IT WITH FLUTTER MAP. LEMME DO IT. - IHSAN 
+          // I WILL DO IT WITH FLUTTER MAP. LEMME DO IT. - IHSAN
           // IF ANYONE WANT TO DO WATCH THIS https://www.youtube.com/watch?v=9L9Arynobzo&list=PLOEXB48nQMqMqhfwVsechVSYJBNrhZiNo
-          Text("AI-Generated Summary",
+          Text(
+            "AI-Generated Summary",
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.bold,
               color: const Color.fromARGB(255, 0, 0, 0),
@@ -365,14 +383,14 @@ class _DetailedRestaurantInformationSection extends StatelessWidget {
             icon: CupertinoIcons.location,
             title: "Adres",
             content: restaurantFormattedaddress ?? "Address not available",
-            context: context
+            context: context,
           ),
           const SizedBox(height: 16),
           _buildInfoRow(
             icon: CupertinoIcons.clock,
             title: "Çalışma Saati",
             content: restaurantNextCloseTime ?? "Unknown",
-            context: context
+            context: context,
           ),
           const SizedBox(height: 16),
           _buildInfoRow(
@@ -380,7 +398,7 @@ class _DetailedRestaurantInformationSection extends StatelessWidget {
             title: "Telefon Numarası",
             content:
                 restaurantInternationalPhoneNumber ?? "Phone not available",
-            context: context
+            context: context,
           ),
           const SizedBox(height: 16),
         ],
@@ -416,7 +434,7 @@ class _DetailedRestaurantInformationSection extends StatelessWidget {
                 style: Theme.of(context).textTheme.displayMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: const Color.fromARGB(255, 80, 80, 80),
-                ), 
+                ),
               ),
             ],
           ),
@@ -429,9 +447,7 @@ class _DetailedRestaurantInformationSection extends StatelessWidget {
 class _DetailedRestaurantCommentsSection extends StatelessWidget {
   final List<dynamic>? restaurantReviews;
 
-  const _DetailedRestaurantCommentsSection({
-    this.restaurantReviews,
-  });
+  const _DetailedRestaurantCommentsSection({this.restaurantReviews});
 
   @override
   Widget build(BuildContext context) {
@@ -457,9 +473,9 @@ class _DetailedRestaurantCommentsSection extends StatelessWidget {
         children: [
           Text(
             "Kullanıcı Yorumları",
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-            ), 
+            style: Theme.of(
+              context,
+            ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
           if (reviews.isEmpty)
@@ -467,8 +483,8 @@ class _DetailedRestaurantCommentsSection extends StatelessWidget {
               "Henüz bir değerlendirme bulunmamaktadır.",
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.normal,
-                color: Colors.grey[700]
-              ), 
+                color: Colors.grey[700],
+              ),
             )
           else
             ...reviews.map((r) => _buildReviewCard(r, context)),
@@ -503,14 +519,14 @@ class _DetailedRestaurantCommentsSection extends StatelessWidget {
                 author,
                 style: Theme.of(context).textTheme.displayLarge?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: Colors.black87
-                ), 
+                  color: Colors.black87,
+                ),
               ),
               Text(
                 date,
                 style: Theme.of(context).textTheme.displayMedium?.copyWith(
                   fontWeight: FontWeight.normal,
-                  color: Colors.grey[600]
+                  color: Colors.grey[600],
                 ),
               ),
             ],
@@ -521,7 +537,9 @@ class _DetailedRestaurantCommentsSection extends StatelessWidget {
           Row(
             children: List.generate(5, (index) {
               return Icon(
-                index < rating ? Icons.star_border_purple500_rounded : Icons.star_border,
+                index < rating
+                    ? Icons.star_border_purple500_rounded
+                    : Icons.star_border,
                 color: const Color.fromARGB(255, 221, 133, 2),
                 size: 20,
               );
@@ -535,14 +553,11 @@ class _DetailedRestaurantCommentsSection extends StatelessWidget {
             text,
             style: Theme.of(context).textTheme.displayMedium?.copyWith(
               fontWeight: FontWeight.normal,
-              color: Colors.black87
+              color: Colors.black87,
             ),
           ),
         ],
       ),
     );
   }
-
 }
-
-
