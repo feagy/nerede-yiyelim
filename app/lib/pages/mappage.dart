@@ -34,7 +34,6 @@ class _MapPageState extends State<MapPage> {
   void initState() {
     super.initState();
     _mapController = MapController();
-
     _initUserLocation();
   }
 
