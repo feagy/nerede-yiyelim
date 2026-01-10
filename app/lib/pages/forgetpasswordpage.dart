@@ -108,17 +108,16 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage> {
                 ),
 
                 const SizedBox(height: 10),
-                Wrap(
-                  spacing: 5,
-                  alignment: WrapAlignment.center,
-                  crossAxisAlignment: WrapCrossAlignment.center,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      "Yoksa şifreni mi hatırladın?",
+                      "Yoksa şifreni mi hatırladın? ",
                       style: Theme.of(context).textTheme.displayMedium?.copyWith(
                         color: Colors.black54,
-                      )
+                      ),
                     ),
+
                     TextButton(
                       onPressed: () {
                         Navigator.pushReplacement(
@@ -126,19 +125,26 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage> {
                           MaterialPageRoute(builder: (context) => const LoginPage()),
                         );
                       },
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: const Size(0, 0),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
                       child: Text(
                         "Giriş Yap",
-                        style:  Theme.of(context).textTheme.displayMedium?.copyWith(
+                        style: Theme.of(context).textTheme.displayMedium?.copyWith(
                           color: const Color(0xFFFF7300),
                         ),
                       ),
                     ),
+
                     Text(
-                      "ya da",
+                      " ya da ",
                       style: Theme.of(context).textTheme.displayMedium?.copyWith(
                         color: Colors.black54,
-                      )
+                      ),
                     ),
+
                     TextButton(
                       onPressed: () {
                         Navigator.pushReplacement(
@@ -146,9 +152,14 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage> {
                           MaterialPageRoute(builder: (context) => const SignupPage()),
                         );
                       },
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: const Size(0, 0),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
                       child: Text(
-                        "Hesap Oluştur",
-                        style:  Theme.of(context).textTheme.displayMedium?.copyWith(
+                        "Oluştur",
+                        style: Theme.of(context).textTheme.displayMedium?.copyWith(
                           color: const Color(0xFFFF7300),
                         ),
                       ),

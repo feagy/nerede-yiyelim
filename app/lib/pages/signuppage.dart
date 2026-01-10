@@ -1,3 +1,4 @@
+import 'package:app/functions/additionalfunc.dart';
 import 'package:app/pages/loginpage.dart';
 import 'package:app/services/authservice.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -201,9 +202,19 @@ class _SignupPageState extends State<SignupPage> {
                     onPressed: () async {
                       try{
                         await AuthService().createAccount(email: _emailController.text, password: _passwordController.text);
+                          try{
+                            if(await signInAndSaveAccount(email: _emailController.text, password: _passwordController.text)){
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Hesabınızı hızlı girişe kayıt ettik. Bundan sonra doğrudan hızlı giriş ile girebilirsiniz.")));
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Hızlı girişe hesabı saklarken hata ile karşılaştık!")));
+                            }
+                            Navigator.pushReplacementNamed(context, "/home");
+                          } on FirebaseAuthException catch(e) {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("E-postanız ya da şifreniz hatalı! Lütfen, tekrar deneyiniz.")));
+                          }
                       } on FirebaseAuthException catch (e) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Giriş yaparken bir hata ile karşılaştık!")),
+                          SnackBar(content: Text("Hesap oluştururken yaparken bir hata ile karşılaştık!")),
                         );
                       }
                     },
@@ -267,7 +278,6 @@ class _SignupPageState extends State<SignupPage> {
                     ),                    
                   ],
                 ),
-
                 const SizedBox(height: 20),
             ],
           ),

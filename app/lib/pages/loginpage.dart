@@ -1,6 +1,10 @@
+import 'package:app/database/entity/account.dart';
+import 'package:app/database/services/localdbservice.dart';
+import 'package:app/functions/additionalfunc.dart';
 import 'package:app/pages/forgetpasswordpage.dart';
 import 'package:app/pages/signuppage.dart';
 import 'package:app/services/authservice.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -175,10 +179,14 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     onPressed: () async {
                         try{
-                          await AuthService().signIn(email: _emailController.text, password: _passwordController.text);
+                          if(await signInAndSaveAccount(email: _emailController.text, password: _passwordController.text)){
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Hesabınızı hızlı girişe kayıt ettik. Bundan sonra doğrudan hızlı giriş ile girebilirsiniz.")));
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Hızlı girişe hesabı saklarken hata ile karşılaştık!")));
+                          }
                           Navigator.pushReplacementNamed(context, "/home");
                         } on FirebaseAuthException catch(e) {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Authentication error. Please, try it later!")));
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("E-postanız ya da şifreniz hatalı! Lütfen, tekrar deneyiniz.")));
                         }
                     },
                     child: Text(

@@ -184,11 +184,15 @@ class _ProfilePageState extends State<ProfilePage> {
   Future<void> _updateProfile() async {
     if (user != null) {
       try {
-        await FirebaseFirestore.instance.collection('users').doc(user!.uid).set({
+        if (_nicknameController.text != "") {
+          await FirebaseFirestore.instance.collection('users').doc(user!.uid).set({
           'nickname': _nicknameController.text,
           'updatedAt': FieldValue.serverTimestamp(),
         }, SetOptions(merge: true));
-        await AuthService().currentUser?.updatePassword(_passwordController.text);
+        }
+        if (_passwordController.text != ""){
+          await AuthService().currentUser?.updatePassword(_passwordController.text);
+        }
       } on ArgumentError catch(e) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Takma adını değiştirirken bir hata ile karşılaştık!")),
