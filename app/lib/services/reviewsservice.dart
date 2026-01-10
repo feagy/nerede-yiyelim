@@ -33,10 +33,7 @@ class ReviewsSummary {
   final double averageRating;
   final int ratingCount;
 
-  ReviewsSummary({
-    required this.averageRating,
-    required this.ratingCount,
-  });
+  ReviewsSummary({required this.averageRating, required this.ratingCount});
 
   factory ReviewsSummary.fromJson(Map<String, dynamic> json) {
     return ReviewsSummary(
@@ -71,12 +68,10 @@ class ReviewsService {
     required String placeAddress,
   }) async {
     final uri = Uri.parse('$baseUrl/addReview');
-    
+
     final response = await http.post(
       uri,
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: {'Content-Type': 'application/json'},
       body: json.encode({
         'placeId': placeId,
         'userId': userId,
@@ -91,7 +86,7 @@ class ReviewsService {
       throw Exception('HTTP ${response.statusCode}: ${response.body}');
     }
   }
-  
+
   Future<void> updateReview({
     required String placeId,
     required String userId,
@@ -99,12 +94,10 @@ class ReviewsService {
     required String comment,
   }) async {
     final uri = Uri.parse('$baseUrl/updateReview');
-    
+
     final response = await http.put(
       uri,
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: {'Content-Type': 'application/json'},
       body: json.encode({
         'placeId': placeId,
         'userId': userId,
@@ -117,22 +110,24 @@ class ReviewsService {
       throw Exception('HTTP ${response.statusCode}: ${response.body}');
     }
   }
-  
+
   Future<ReviewsResponse> readReviews({
     required String placeId,
     int limit = 20,
     String? cursor,
   }) async {
-    final uri = Uri.parse('$baseUrl/readReviews')
-        .replace(queryParameters: {
-          'placeId': placeId,
-          'limit': limit.toString(),
-          if (cursor != null && cursor.isNotEmpty) 'cursor': cursor,
-        });
-    
-    final response = await http.get(uri, headers: {
-      'Content-Type': 'application/json',
-    });
+    final uri = Uri.parse('$baseUrl/readReviews').replace(
+      queryParameters: {
+        'placeId': placeId,
+        'limit': limit.toString(),
+        if (cursor != null && cursor.isNotEmpty) 'cursor': cursor,
+      },
+    );
+
+    final response = await http.get(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+    );
 
     if (response.statusCode != 200) {
       throw Exception('HTTP ${response.statusCode}: ${response.body}');
@@ -147,16 +142,18 @@ class ReviewsService {
     int limit = 20,
     String? cursor,
   }) async {
-    final uri = Uri.parse('$baseUrl/readReviewsByUser')
-        .replace(queryParameters: {
-          'userId': userId,
-          'limit': limit.toString(),
-          if (cursor != null && cursor.isNotEmpty) 'cursor': cursor,
-        });
-    
-    final response = await http.get(uri, headers: {
-      'Content-Type': 'application/json',
-    });
+    final uri = Uri.parse('$baseUrl/readReviewsByUser').replace(
+      queryParameters: {
+        'userId': userId,
+        'limit': limit.toString(),
+        if (cursor != null && cursor.isNotEmpty) 'cursor': cursor,
+      },
+    );
+
+    final response = await http.get(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+    );
 
     if (response.statusCode != 200) {
       throw Exception('HTTP ${response.statusCode}: ${response.body}');
@@ -166,16 +163,12 @@ class ReviewsService {
     return ReviewsResponse.fromJson(decoded);
   }
 
-  Future<void> deleteReview({
-    required String reviewId,
-  }) async {
+  Future<void> deleteReview({required String reviewId}) async {
     final uri = Uri.parse('$baseUrl/deleteReview/$reviewId');
-    
+
     final response = await http.delete(
       uri,
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: {'Content-Type': 'application/json'},
     );
 
     if (response.statusCode != 200) {
@@ -183,17 +176,15 @@ class ReviewsService {
     }
   }
 
-  Future<ReviewsSummary> getReviewSummary({
-    required String placeId,
-  }) async {
-    final uri = Uri.parse('$baseUrl/getReviewSummary')
-        .replace(queryParameters: {
-          'placeId': placeId,
-        });
-    
-    final response = await http.get(uri, headers: {
-      'Content-Type': 'application/json',
-    });
+  Future<ReviewsSummary> getReviewSummary({required String placeId}) async {
+    final uri = Uri.parse(
+      '$baseUrl/getReviewSummary',
+    ).replace(queryParameters: {'placeId': placeId});
+
+    final response = await http.get(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+    );
 
     if (response.statusCode != 200) {
       throw Exception('HTTP ${response.statusCode}: ${response.body}');

@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:app/database/entity/favorites.dart';
+import 'package:app/database/entity/favorite.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 // Uygulamada Test Edilecek
@@ -30,12 +30,10 @@ class FavoritesService {
     required String photoUrl,
   }) async {
     final uri = Uri.parse('$baseUrl/addFavorite');
-    
+
     final response = await http.post(
       uri,
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: {'Content-Type': 'application/json'},
       body: json.encode({
         'placeId': placeId,
         'userId': userId,
@@ -53,12 +51,10 @@ class FavoritesService {
 
   Future<void> deleteFavorite(String favoriteId) async {
     final uri = Uri.parse('$baseUrl/deleteFavorite/$favoriteId');
-    
+
     final response = await http.delete(
       uri,
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: {'Content-Type': 'application/json'},
     );
 
     if (response.statusCode != 200) {
@@ -68,16 +64,13 @@ class FavoritesService {
 
   //read favorites for a user
   Future<List<Favorite>> readFavorites(String userId) async {
-    final uri = Uri.parse('$baseUrl/readFavorites')
-        .replace(queryParameters: {
-          'userId': userId,
-        });
-    
+    final uri = Uri.parse(
+      '$baseUrl/readFavorites',
+    ).replace(queryParameters: {'userId': userId});
+
     final response = await http.get(
       uri,
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: {'Content-Type': 'application/json'},
     );
 
     if (response.statusCode != 200) {

@@ -6,14 +6,21 @@ import 'package:app/pages/loginpage.dart';
 import 'package:app/notification/notification-test.dart';
 import 'package:app/pages/signuppage.dart';
 import 'package:app/pages/welcomepage.dart';
-//import 'package:app/welcomepage.dart';
+import 'package:app/services/aisummaryservice.dart';
+import 'package:app/services/authservice.dart';
+import 'package:app/services/placephotoservice.dart';
+import 'package:app/services/placesservice.dart';
+import 'package:app/services/favoritesservice.dart';
+import 'package:app/services/reviewsservice.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:floor/floor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:get_it/get_it.dart';
 import 'package:provider/provider.dart';
 import 'package:app/global/universaltheme.dart';
 
+final getIt = GetIt.instance;
 
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,12 +34,19 @@ Future main() async {
 
   final String apiKey = dotenv.env['MAPTILER_MAPS_API_KEY'] ?? '';
 
+  // Servisleri register et
+  getIt.registerSingleton<PlacesService>(PlacesService());
+  getIt.registerSingleton<FavoritesService>(FavoritesService());
+  getIt.registerSingleton<ReviewsService>(ReviewsService());
+  getIt.registerSingleton<PlacePhotoService>(PlacePhotoService());
+  getIt.registerSingleton<AISummaryService>(AISummaryService());
+
   runApp(
     ChangeNotifierProvider(
       create: (_) => ThemeProvider(),
       child: MyApp(keyAPI: apiKey, database: db),
-      ),
-    );
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -40,13 +54,11 @@ class MyApp extends StatelessWidget {
   final AppDataBase database;
   const MyApp({super.key, required this.keyAPI, required this.database});
 
-  // BUNU YAPMIŞIZ AMA TAM GEREKLİ Mİ BİLMİYORUM YAZA YAZA GENE YAPILIYOR..
-  // BUNU YAPABİLİRİZ YAPMAYA BİLİRİZ. AMA KALSIN BÜYÜK İHTİMALLE EN İYİ METOT BU.
   @override
   Widget build(BuildContext context) {
     return Consumer<ThemeProvider>(
       builder: (context, themeProvider, child) {
-        return  MaterialApp(
+        return MaterialApp(
           theme: themeProvider.themeData,
           initialRoute: "/",
           routes: {
@@ -56,7 +68,7 @@ class MyApp extends StatelessWidget {
             "/home": (context) => HomePage(keyAPI: keyAPI),
           },
         );
-      }
+      },
     );
   }
 }

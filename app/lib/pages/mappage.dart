@@ -1,6 +1,9 @@
 import 'dart:async';
+import 'package:app/services/placesservice.dart';
+import 'package:app/services/reviewsservice.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:app/functions/locationfunc.dart';
@@ -17,45 +20,15 @@ class MapPage extends StatefulWidget {
 
 class _MapPageState extends State<MapPage> {
   late final MapController _mapController;
+  final TextEditingController _queryController = TextEditingController();
   final List<Marker> _userMarkers = [];
 
   final LocationService _locationService = LocationService();
   StreamSubscription? _locationStream;
   LatLng? _currentUserLatLng;
- 
-  List<Place> mockPlaces = [
-    Place(
-      id: '1',
-      placeName: 'Mock Place 1',
-      lat: 40.7128,
-      lng: -74.0060,
-      distance: 500,
-      phone: '123-456-7890',
-      address: '123 Mock St, New York, NY',
-      googleRating: 4.5,
-      googleRatingCount: 150,
-      type: 'restaurant',
-      photoName: 'mock_photo_1.jpg',
-      googleReviewsJson: '[]',
-      openingHoursJson: '{}',
-    ),
-    Place(
-      id: '2',
-      placeName: 'Mock Place 2',
-      lat: 40.7138,
-      lng: -74.0070,
-      distance: 300,
-      phone: '987-654-3210',
-      address: '456 Mock Ave, New York, NY',
-      googleRating: 4.0,
-      googleRatingCount: 200,
-      type: 'cafe',
-      photoName: 'mock_photo_2.jpg',
-      googleReviewsJson: '[]',
-      openingHoursJson: '{}',
-    ),
-  ];
-  
+
+  List<Place> nearbyPlaces = [];
+
   @override
   void initState() {
     super.initState();
@@ -63,7 +36,7 @@ class _MapPageState extends State<MapPage> {
 
     _initUserLocation();
   }
-  
+
   Future<void> _openPlaceSheet(Place p) async {
     final sheetWidget = Container(
       margin: const EdgeInsets.all(12),
@@ -84,22 +57,35 @@ class _MapPageState extends State<MapPage> {
                 child: Text(
                   p.placeName,
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w700
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
               if (p.type == 'restaurant')
-                const Icon(Icons.restaurant, color: Color.fromARGB(255, 255, 115, 0)),
+                const Icon(
+                  Icons.restaurant,
+                  color: Color.fromARGB(255, 255, 115, 0),
+                ),
               if (p.type == 'cafe')
-                const Icon(Icons.local_cafe, color: Color.fromARGB(255, 255, 115, 0)),
+                const Icon(
+                  Icons.local_cafe,
+                  color: Color.fromARGB(255, 255, 115, 0),
+                ),
               if (p.type == 'pub')
-                const Icon(Icons.local_bar, color: Color.fromARGB(255, 255, 115, 0)),
+                const Icon(
+                  Icons.local_bar,
+                  color: Color.fromARGB(255, 255, 115, 0),
+                ),
             ],
           ),
           const SizedBox(height: 6),
           Row(
             children: [
-              const Icon(Icons.star, size: 18, color: Color.fromARGB(255, 255, 115, 0)),
+              const Icon(
+                Icons.star,
+                size: 18,
+                color: Color.fromARGB(255, 255, 115, 0),
+              ),
               const SizedBox(width: 4),
               Text("${p.googleRating}"),
               const SizedBox(width: 6),
@@ -115,14 +101,18 @@ class _MapPageState extends State<MapPage> {
               Expanded(
                 child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 255, 115, 0), // turuncu
+                    backgroundColor: const Color.fromARGB(
+                      255,
+                      255,
+                      115,
+                      0,
+                    ), // turuncu
                     foregroundColor: Colors.white, // ikon ve yazı beyaz
-                    textStyle: Theme.of(context).textTheme.displaySmall?.copyWith(
-                      color: Colors.white,
-                    ),
+                    textStyle: Theme.of(
+                      context,
+                    ).textTheme.displaySmall?.copyWith(color: Colors.white),
                   ),
-                  onPressed: () {
-                  },
+                  onPressed: () {},
                   icon: const Icon(Icons.directions),
                   label: const Text("Yol Tarifi Al"),
                 ),
@@ -133,12 +123,11 @@ class _MapPageState extends State<MapPage> {
                   style: OutlinedButton.styleFrom(
                     backgroundColor: const Color.fromARGB(255, 255, 115, 0),
                     foregroundColor: Colors.white,
-                    textStyle: Theme.of(context).textTheme.displaySmall?.copyWith(
-                      color: Colors.white
-                    ),
+                    textStyle: Theme.of(
+                      context,
+                    ).textTheme.displaySmall?.copyWith(color: Colors.white),
                   ),
-                  onPressed: () {
-                  },
+                  onPressed: () {},
                   child: const Text("Detayları Gör"),
                 ),
               ),
@@ -150,14 +139,25 @@ class _MapPageState extends State<MapPage> {
 
     showDialog(
       context: context,
-      builder: (_) => Dialog(
-        backgroundColor: Colors.transparent,
-        child: sheetWidget,
-      ),
+      builder: (_) =>
+          Dialog(backgroundColor: Colors.transparent, child: sheetWidget),
     );
   }
 
-
+  Future<List<Place>> _fetchPlaces({
+    required String textQuery,
+    required double lat,
+    required double lng,
+    required int radius,
+  }) async {
+    final placesService = GetIt.I<PlacesService>();
+    return placesService.fetchPlaces(
+      textQuery: textQuery,
+      lat: lat,
+      lng: lng,
+      radius: radius,
+    );
+  }
 
   Future<void> _initUserLocation() async {
     final pos = await _locationService.getUserCurrentLocation();
@@ -247,15 +247,16 @@ class _MapPageState extends State<MapPage> {
                       ),
                     if (_userMarkers.isNotEmpty)
                       MarkerLayer(markers: _userMarkers),
-                    MarkerLayer(markers: MapMarkers.getPlaceMarkers<Place>(
-                      mockPlaces,
-                      (place) => LatLng(place.lat, place.lng),
-                      (place) {
-                    _openPlaceSheet(place);
-                     },
-                     context
-                    )
-                  )
+                    MarkerLayer(
+                      markers: MapMarkers.getPlaceMarkers<Place>(
+                        nearbyPlaces,
+                        (place) => LatLng(place.lat, place.lng),
+                        (place) {
+                          _openPlaceSheet(place);
+                        },
+                        context,
+                      ),
+                    ),
                   ],
                 ),
 
@@ -266,17 +267,18 @@ class _MapPageState extends State<MapPage> {
                   child: Center(
                     child: Text(
                       "Nerede Yiyelim?",
-                      style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: const Color.fromARGB(255, 255, 115, 0),
-                        shadows: [
-                          Shadow(
-                            color: const Color.fromARGB(223, 77, 42, 10),
-                            blurRadius: 16,
-                            offset: Offset(0, 4),
+                      style: Theme.of(context).textTheme.headlineLarge
+                          ?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: const Color.fromARGB(255, 255, 115, 0),
+                            shadows: [
+                              Shadow(
+                                color: const Color.fromARGB(223, 77, 42, 10),
+                                blurRadius: 16,
+                                offset: Offset(0, 4),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
                     ),
                   ),
                 ),
@@ -298,8 +300,10 @@ class _MapPageState extends State<MapPage> {
                       ],
                     ),
                     child: TextField(
+                      controller: _queryController,
                       decoration: InputDecoration(
-                        hintText: "Ne yemek istediğini gir ya da içmek istediğini",
+                        hintText:
+                            "Ne yemek istediğini gir ya da içmek istediğini",
                         prefixIcon: const Icon(
                           Icons.search_rounded,
                           color: Color.fromARGB(255, 105, 105, 105),
@@ -328,35 +332,80 @@ class _MapPageState extends State<MapPage> {
                           ),
                         ],
                       ),
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          _startTrackingUser();
-                        },
-                        icon: const Icon(Icons.gps_fixed),
-                        label: Text(
-                          'Beni Bul',
-                          style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              _startTrackingUser();
+                            },
+                            icon: const Icon(Icons.gps_fixed),
+                            label: Text(
+                              'Beni Bul',
+                              style: Theme.of(context).textTheme.displayMedium
+                                  ?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color.fromARGB(
+                                255,
+                                255,
+                                115,
+                                0,
+                              ),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 32,
+                                vertical: 12,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              elevation: 4,
+                            ),
                           ),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color.fromARGB(
-                            255,
-                            255,
-                            115,
-                            0,
+                          ElevatedButton.icon(
+                            onPressed: () async {
+                              nearbyPlaces = await _fetchPlaces(
+                                textQuery: _queryController.text,
+                                lat: 0, //_currentUserLatLng?.latitude ??,
+                                lng: 0, //_currentUserLatLng?.longitude ??,
+                                radius: 5000,
+                              );
+                              setState(() {
+                                nearbyPlaces = nearbyPlaces;
+                              });
+                            },
+                            icon: const Icon(Icons.gps_fixed),
+                            label: Text(
+                              'Mekan Bul',
+                              style: Theme.of(context).textTheme.displayMedium
+                                  ?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color.fromARGB(
+                                255,
+                                255,
+                                115,
+                                0,
+                              ),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 32,
+                                vertical: 12,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              elevation: 4,
+                            ),
                           ),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 32,
-                            vertical: 12,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          elevation: 4,
-                        ),
+                        ],
                       ),
                     ),
                   ),
@@ -368,5 +417,4 @@ class _MapPageState extends State<MapPage> {
       ),
     );
   }
-
 }

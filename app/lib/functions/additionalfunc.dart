@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:app/database/entity/account.dart';
+
 /*
 Future<void> _pickAndSavePhoto(AccountDto dao, Account account) async {
   final picker = ImagePicker();
@@ -31,16 +32,19 @@ Future<void> _pickAndSavePhoto(AccountDto dao, Account account) async {
   }
 }
 */
-Future<bool> signInAndSaveAccount({ required String email, required String password }) async {
+Future<bool> signInAndSaveAccount({
+  required String email,
+  required String password,
+}) async {
   try {
     final db = await LocalServices.getDatabase();
     await AuthService().signIn(email: email, password: password);
-    
+
     final doc = await FirebaseFirestore.instance
         .collection('users')
         .doc(AuthService().currentUser!.uid)
         .get();
-    
+
     if (doc.exists) {
       await db.accountDao.insertAccount(
         Account(

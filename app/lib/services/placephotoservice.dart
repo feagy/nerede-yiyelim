@@ -23,10 +23,12 @@ class PlacePhotoService {
   }
 
   String getPhotoUrl(String photoName, int maxWidth) {
-    final uri = Uri.parse(baseUrl).replace(queryParameters: {
-      'photoName': photoName,
-      'maxWidth': maxWidth.toString(),
-    });
+    final uri = Uri.parse(baseUrl).replace(
+      queryParameters: {
+        'photoName': photoName,
+        'maxWidth': maxWidth.toString(),
+      },
+    );
     return uri.toString();
   }
 }

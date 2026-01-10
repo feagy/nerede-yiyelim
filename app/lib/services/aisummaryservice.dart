@@ -22,13 +22,8 @@ class AISummaryService {
 
     final response = await http.post(
       uri,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: json.encode({
-        'reviews': reviews,
-        'model': model,
-      }),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({'reviews': reviews, 'model': model}),
     );
 
     if (response.statusCode != 200) {
