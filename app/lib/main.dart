@@ -19,6 +19,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
 import 'package:provider/provider.dart';
 import 'package:app/global/universaltheme.dart';
+import 'package:app/pages/reviewpage.dart';
 
 final getIt = GetIt.instance;
 
