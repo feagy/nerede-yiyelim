@@ -128,13 +128,16 @@ class _MapPageState extends State<MapPage> {
                       context,
                     ).textTheme.displaySmall?.copyWith(color: Colors.white),
                   ),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => DetailedRestaurantPage(place: p),
-                      ),
-                    );
+                  onPressed: () async {
+                    Navigator.of(context, rootNavigator: true).pop();
+                    await Future.delayed(const Duration(milliseconds: 100));
+                    if (mounted) {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => DetailedRestaurantPage(place: p),
+                        ),
+                      );
+                    }
                   },
                   child: const Text("Detayları Gör"),
                 ),
@@ -175,6 +178,20 @@ class _MapPageState extends State<MapPage> {
       });
       _mapController.move(_currentUserLatLng!, 15.0);
     }
+  }
+
+    // BEN KOYDUM GÜN 10.01.2026
+  Future<Marker> _buildUserMarker() async {
+    return Marker(
+      point: _currentUserLatLng!,
+      width: 50,
+      height: 50,
+      child: const Icon(
+        Icons.my_location,
+        color: Colors.blueAccent,
+        size: 40,
+      ),
+    );
   }
 
   Future<void> _startTrackingUser() async {
@@ -239,20 +256,17 @@ class _MapPageState extends State<MapPage> {
                       ],
                     ),
                     if (_currentUserLatLng != null)
-                      MarkerLayer(
-                        markers: [
-                          Marker(
-                            point: _currentUserLatLng!,
-                            width: 50,
-                            height: 50,
-                            child: const Icon(
-                              Icons.my_location,
-                              color: Colors.blueAccent,
-                              size: 40,
-                            ),
-                          ),
-                        ],
-                      ),
+                      FutureBuilder(
+                        future: _buildUserMarker(), 
+                        builder: (context, snapshot) {
+                            if (snapshot.connectionState == ConnectionState.waiting) {
+                              return const Center(child: CircularProgressIndicator());
+                            }
+                            return MarkerLayer(
+                              markers: [snapshot.data!],
+                            );
+                          }
+                        ),
                     if (_userMarkers.isNotEmpty)
                       MarkerLayer(markers: _userMarkers),
                     MarkerLayer(
