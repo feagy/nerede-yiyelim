@@ -22,48 +22,52 @@ class MapMarkers {
         child: GestureDetector(
           onTap: () => onMarkerTap(item),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-                  Container(
+              Container(
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: const Color.fromARGB(255, 255, 115, 0),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                padding: EdgeInsets.all(10),
+                padding: const EdgeInsets.all(10),
                 child: Row(
-                  spacing: 4,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    if ((item as Place).type == 'restaurant') 
+                    if ((item as Place).type == 'restaurant')
                       const Icon(Icons.restaurant, size: 14, color: Colors.white),
-                    if ((item as Place).type == 'cafe') 
+                    if ((item as Place).type == 'cafe')
                       const Icon(Icons.local_cafe, size: 14, color: Colors.white),
                     if ((item as Place).type == "pub")
                       const Icon(Icons.local_bar, size: 14, color: Colors.white),
-                    Text(
-                      (item as Place).placeName,
-                      style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                        color: Colors.white,
+                    Flexible(
+                      child: Text(
+                        (item as Place).placeName,
+                        style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                          color: Colors.white,
+                        ),
+                        overflow: TextOverflow.ellipsis,                      
                       ),
                     ),
                   ],
-                )
+                ),
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   const Icon(Icons.star, size: 18, color: Colors.orange),
                   const SizedBox(width: 4),
                   Text(
-                      "${(item as Place).googleRating}",
-                      style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                          color: Colors.white,
-                      ), 
+                    "${(item as Place).googleRating}",
+                    style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                      color: Colors.white,
                     ),
+                  ),
                 ],
               ),
             ],
-          )
+          ),
         ),
       );
     }).toList();
