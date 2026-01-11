@@ -10,6 +10,7 @@ import 'package:app/functions/locationfunc.dart';
 import 'package:app/database/entity/place.dart';
 import 'package:app/pages/mapmarkers.dart';
 import 'detailedrestaurantpage.dart';
+import 'package:app/states/MapStateStore.dart';
 
 class MapPage extends StatefulWidget {
   final String keyAPI;
@@ -24,7 +25,7 @@ class _MapPageState extends State<MapPage> {
   late final MapController _mapController;
   final TextEditingController _queryController = TextEditingController();
   final List<Marker> _userMarkers = [];
-
+  late final MapStateStore _mapStateStore;
   final LocationService _locationService = LocationService();
   StreamSubscription? _locationStream;
   LatLng? _currentUserLatLng;
@@ -47,7 +48,10 @@ class _MapPageState extends State<MapPage> {
   @override
   void initState() {
     super.initState();
+    _mapStateStore = GetIt.instance<MapStateStore>();
     _mapController = MapController();
+    nearbyPlaces = _mapStateStore.nearbyPlaces;
+    selectedCategoryIndex = _mapStateStore.selectedCategoryIndex;
     _initUserLocation();
   }
 
@@ -366,8 +370,9 @@ class _MapPageState extends State<MapPage> {
                             ),
                             onSelected: (selected) async {
                               setState(() {
-                                selectedCategoryIndex = index; // tek seçim
+                                selectedCategoryIndex = index;
                               });
+                              _mapStateStore.setSelectedCategoryIndex(index);
                           },
                           );
                         },
@@ -452,16 +457,16 @@ class _MapPageState extends State<MapPage> {
                               padding: const EdgeInsetsGeometry.directional(end: 10),
                               child: ElevatedButton.icon(
                                 onPressed: () async {
-                                  nearbyPlaces = await _fetchPlaces(
+                                  final results = await _fetchPlaces(
                                     textQuery: selectedCategory,
                                     lat: 40.9917, //_currentUserLatLng?.latitude ??,
-                                    lng:
-                                        28.8517, //_currentUserLatLng?.longitude ??,
+                                    lng: 28.8517, //_currentUserLatLng?.longitude ??,
                                     radius: 5000,
                                   );
                                   setState(() {
-                                    nearbyPlaces = nearbyPlaces;
+                                    nearbyPlaces = results;
                                   });
+                                  _mapStateStore.setPlaces(results);
                                 },
                                 icon: const Icon(Icons.gps_fixed),
                                 label: Text(
