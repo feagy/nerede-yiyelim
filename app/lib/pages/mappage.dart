@@ -11,6 +11,7 @@ import 'package:app/database/entity/place.dart';
 import 'package:app/pages/mapmarkers.dart';
 import 'detailedrestaurantpage.dart';
 import 'package:app/states/MapStateStore.dart';
+import 'package:flutter_xlider/flutter_xlider.dart';
 
 class MapPage extends StatefulWidget {
   final String keyAPI;
@@ -31,6 +32,10 @@ class _MapPageState extends State<MapPage> {
   LatLng? _currentUserLatLng;
 
   List<Place> nearbyPlaces = [];
+
+//Radyüs slider
+int _radius = 1000; // metre
+bool _showRadiusSlider = false;  
 
 //Sliver box için veri
   final List<String> categories = [
@@ -209,7 +214,75 @@ class _MapPageState extends State<MapPage> {
       ),
     );
   }
+  //
+  Widget _buildVerticalRadiusSlider() {
+    if (!_showRadiusSlider) return const SizedBox();
 
+    return Positioned(
+      right: 10,
+      bottom: 100,
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 300),
+        opacity: _showRadiusSlider ? 1.0 : 0.0,
+        child: Container(
+          height: 250,
+          width: 50,
+          padding: const EdgeInsetsGeometry.directional(),
+          decoration: BoxDecoration(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                blurRadius: 10,
+                color: Colors.black.withOpacity(0.2),
+              )
+            ],
+          ),
+          child: RotatedBox(
+            quarterTurns: -1,
+            child: Slider(
+              inactiveColor: Colors.white,
+              activeColor: const Color.fromARGB(255, 255, 115, 0),
+              min: 50,
+              max: 5000,
+              divisions: 9,
+              value: _radius.toDouble(),
+              label: "${(_radius / 1000).toStringAsFixed(1)} km",
+              onChanged: (value) {
+                setState(() {
+                  _radius = value.toInt();
+                });
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+
+
+  Widget _buildRadiusToggleButton() {
+    return Positioned(
+      right: 16,
+      bottom: 30,
+      child: FloatingActionButton(
+        heroTag: "radius_button",
+        backgroundColor: const Color.fromARGB(255, 255, 115, 0),
+        child: Icon(
+          _showRadiusSlider ? Icons.close : Icons.radar,
+          color: Colors.white,
+        ),
+        onPressed: () {
+          setState(() {
+            _showRadiusSlider = !_showRadiusSlider;
+          });
+        },
+      ),
+    );
+  }
+
+  //
   Future<void> _startTrackingUser() async {
     _locationStream = await _locationService.startUpdateUserCurrentLocation(
       onLocationChanged: (pos) {
@@ -267,7 +340,7 @@ class _MapPageState extends State<MapPage> {
                           borderStrokeWidth: 2,
                           borderColor: Colors.amberAccent,
                           useRadiusInMeter: true,
-                          radius: 500,
+                          radius: _radius.toDouble(),
                         ),
                       ],
                     ),
@@ -396,7 +469,18 @@ class _MapPageState extends State<MapPage> {
                     ), */
                   ),
                 ),
-
+                Positioned(
+                  right: 0,
+                  bottom: MediaQuery.of(context).size.height * 0.15,
+                  child: Padding(
+                          padding: const EdgeInsets.only(right: 10,bottom: 4),
+                          child: Column(
+                            children: [
+                              _buildVerticalRadiusSlider(),
+                               _buildRadiusToggleButton(),
+                            ],
+                          ),
+                        ),),
                 Positioned(
                   bottom: MediaQuery.of(context).size.height * 0.04,
                   left: 0,
@@ -412,90 +496,106 @@ class _MapPageState extends State<MapPage> {
                           ),
                         ],
                       ),
-                      child: Row(
-                        spacing: 12,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsetsGeometry.directional(start: 10),
-                              child: ElevatedButton.icon(
-                                onPressed: () {
-                                  _startTrackingUser();
-                                },
-                                icon: const Icon(Icons.gps_fixed),
-                                label: Text(
-                                  'Beni Bul',
-                                  style: Theme.of(context).textTheme.displayMedium
-                                      ?.copyWith(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                ),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color.fromARGB(
-                                    255,
-                                    255,
-                                    115,
-                                    0,
-                                  ),
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 32,
-                                    vertical: 12,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  elevation: 4,
-                                ),
-                              ),
+                      child: Column(
+                        children: 
+                        [/* Padding(
+                          padding: const EdgeInsets.only(right: 10,bottom: 4),
+                          child: Align(
+                            alignment: AlignmentGeometry.centerRight,
+                            child: Column(
+                              children: [
+                                _buildVerticalRadiusSlider(),
+                                 _buildRadiusToggleButton(),
+                              ],
                             ),
                           ),
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsetsGeometry.directional(end: 10),
-                              child: ElevatedButton.icon(
-                                onPressed: () async {
-                                  final results = await _fetchPlaces(
-                                    textQuery: selectedCategory,
-                                    lat: 40.9917, //_currentUserLatLng?.latitude ??,
-                                    lng: 28.8517, //_currentUserLatLng?.longitude ??,
-                                    radius: 5000,
-                                  );
-                                  setState(() {
-                                    nearbyPlaces = results;
-                                  });
-                                  _mapStateStore.setPlaces(results);
-                                },
-                                icon: const Icon(Icons.gps_fixed),
-                                label: Text(
-                                  'Mekan Bul',
-                                  style: Theme.of(context).textTheme.displayMedium
-                                      ?.copyWith(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
+                        ), */
+                          Row(
+                            spacing: 12,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsetsGeometry.directional(start: 10),
+                                  child: ElevatedButton.icon(
+                                    onPressed: () {
+                                      _startTrackingUser();
+                                    },
+                                    icon: const Icon(Icons.gps_fixed),
+                                    label: Text(
+                                      'Beni Bul',
+                                      style: Theme.of(context).textTheme.displayMedium
+                                          ?.copyWith(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                    ),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color.fromARGB(
+                                        255,
+                                        255,
+                                        115,
+                                        0,
                                       ),
-                                ),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color.fromARGB(
-                                    255,
-                                    255,
-                                    115,
-                                    0,
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 32,
+                                        vertical: 12,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      elevation: 4,
+                                    ),
                                   ),
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 32,
-                                    vertical: 12,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  elevation: 4,
                                 ),
                               ),
-                            ),
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsetsGeometry.directional(end: 10),
+                                  child: ElevatedButton.icon(
+                                    onPressed: () async {
+                                      final results = await _fetchPlaces(
+                                        textQuery: selectedCategory,
+                                        lat: 40.9917, //_currentUserLatLng?.latitude ??,
+                                        lng: 28.8517, //_currentUserLatLng?.longitude ??,
+                                        radius: _radius,
+                                      );
+                                      setState(() {
+                                        nearbyPlaces = results;
+                                      });
+                                      _mapStateStore.setPlaces(results);
+                                    },
+                                    icon: const Icon(Icons.gps_fixed),
+                                    label: Text(
+                                      'Mekan Bul',
+                                      style: Theme.of(context).textTheme.displayMedium
+                                          ?.copyWith(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                    ),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color.fromARGB(
+                                        255,
+                                        255,
+                                        115,
+                                        0,
+                                      ),
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 32,
+                                        vertical: 12,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      elevation: 4,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
