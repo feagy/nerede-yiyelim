@@ -6,6 +6,8 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:app/database/entity/place.dart';
 import 'package:app/services/placephotoservice.dart';
 import 'package:get_it/get_it.dart';
+import 'package:app/database/entity/review.dart';
+
 /*
 
   GETTERING DESIGN MUST BE CHANGED BEFORE DEPLOYMENT.
@@ -211,6 +213,27 @@ class _DetailedRestaurantPage extends State<DetailedRestaurantPage> {
                   ),
                 ),
               ),
+
+            if (true)
+              // Kullanıcının yorumu varsa true yapın
+              _DetailedRestaurantUserReviewSection(
+                userReview: Review(
+                  id: "review1",
+                  userId: "user123",
+                  placeId: place.id,
+                  placeName: place.placeName,
+                  placeAddress: place.address,
+                  rating: 4,
+                  comment: "Harika bir deneyimdi!",
+                  createdAt: DateTime.now().millisecondsSinceEpoch,
+                  updatedAt: DateTime.now().millisecondsSinceEpoch,
+                ),
+                onEdit: () {},
+                onDelete: () {},
+              )
+            else
+              _DetailedRestaurantWriteReviewSection(),
+
             _DetailedRestaurantCommentsSection(
               restaurantReviews: restaurant["reviews"] as List<dynamic>?,
             ),
@@ -561,6 +584,272 @@ class _DetailedRestaurantCommentsSection extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+//inceleme yazma windet eklenecek
+
+class _DetailedRestaurantWriteReviewSection extends StatelessWidget {
+  const _DetailedRestaurantWriteReviewSection();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: const BorderRadius.all(Radius.circular(20)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            spreadRadius: 2,
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Yorum Yaz",
+            style: Theme.of(
+              context,
+            ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            "Puanınız",
+            style: Theme.of(
+              context,
+            ).textTheme.displayLarge?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          RatingBar.builder(
+            initialRating: 0,
+            minRating: 0,
+            direction: Axis.horizontal,
+            allowHalfRating: false,
+            itemCount: 5,
+            itemSize: 35,
+            itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
+            itemBuilder: (context, _) => const Icon(
+              Icons.star_border_purple500_rounded,
+              color: Color.fromARGB(255, 221, 133, 2),
+            ),
+            onRatingUpdate: (rating) {
+              // Rating değeri burada kullanılabilir
+              print("Seçilen puan: $rating");
+            },
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            maxLines: 4,
+            decoration: InputDecoration(
+              hintText: "Yorumunuzu buraya yazın...",
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          ElevatedButton(
+            onPressed: () {
+              // Yorum gönderme işlemi burada yapılacak
+            },
+            child: const Text("Gönder"),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DetailedRestaurantUserReviewSection extends StatelessWidget {
+  final Review? userReview;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
+
+  const _DetailedRestaurantUserReviewSection({
+    this.userReview,
+    this.onEdit,
+    this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // Eğer kullanıcının yorumu yoksa widget'ı gösterme
+    if (userReview == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      margin: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color.fromARGB(214, 233, 232, 232),
+        borderRadius: const BorderRadius.all(Radius.circular(20)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            spreadRadius: 2,
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Yorumunuz",
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Row(
+                children: [
+                  IconButton(
+                    onPressed: onEdit,
+                    icon: const Icon(
+                      CupertinoIcons.pencil,
+                      color: Color(0xFF4285F4),
+                    ),
+                    tooltip: "Düzenle",
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      _showDeleteConfirmation(context);
+                    },
+                    icon: const Icon(
+                      CupertinoIcons.trash,
+                      color: Colors.redAccent,
+                    ),
+                    tooltip: "Sil",
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          // Yıldızlar
+          Row(
+            children: [
+              Row(
+                children: List.generate(5, (index) {
+                  return Icon(
+                    index < userReview!.rating
+                        ? Icons.star_border_purple500_rounded
+                        : Icons.star_border,
+                    color: const Color.fromARGB(255, 221, 133, 2),
+                    size: 24,
+                  );
+                }),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                "${userReview!.rating.toStringAsFixed(1)} / 5.0",
+                style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[700],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          // Yorum metni
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF7F9FB),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.withOpacity(0.2)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  userReview!.comment ?? "Yorum bulunmuyor",
+                  style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                    fontWeight: FontWeight.normal,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  "Yayınlanma: ${_formatDate(DateTime.fromMillisecondsSinceEpoch(userReview!.createdAt))}",
+                  style: Theme.of(
+                    context,
+                  ).textTheme.displaySmall?.copyWith(color: Colors.grey[600]),
+                ),
+                if (userReview!.updatedAt != userReview!.createdAt)
+                  Text(
+                    "Düzenleme: ${_formatDate(DateTime.fromMillisecondsSinceEpoch(userReview!.updatedAt))}",
+                    style: Theme.of(
+                      context,
+                    ).textTheme.displaySmall?.copyWith(color: Colors.grey[600]),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    return "${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year}";
+  }
+
+  void _showDeleteConfirmation(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: const Text(
+            "Yorumu Sil",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          content: const Text(
+            "Bu yorumu silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+              },
+              child: Text(
+                "İptal",
+                style: TextStyle(
+                  color: Colors.grey[700],
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                if (onDelete != null) {
+                  onDelete!();
+                }
+              },
+              style: TextButton.styleFrom(foregroundColor: Colors.redAccent),
+              child: const Text(
+                "Sil",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
