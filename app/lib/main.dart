@@ -21,6 +21,7 @@ import 'package:provider/provider.dart';
 import 'package:app/global/universaltheme.dart';
 import 'package:app/pages/reviewpage.dart';
 import 'package:app/states/MapStateStore.dart';
+import 'package:app/states/PlaceStateStore.dart';
 
 final getIt = GetIt.instance;
 
@@ -37,7 +38,10 @@ Future main() async {
   final String apiKey = dotenv.env['MAPTILER_MAPS_API_KEY'] ?? '';
 
   
+  // States
   getIt.registerSingleton<MapStateStore>(MapStateStore());
+  getIt.registerSingleton<PlaceStateStore>(PlaceStateStore());
+  // Services
   getIt.registerSingleton<PlacesService>(PlacesService());
   getIt.registerSingleton<FavoritesService>(FavoritesService());
   getIt.registerSingleton<ReviewsService>(ReviewsService());

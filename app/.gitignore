@@ -13,6 +13,7 @@
 migrate_working_dir/
 .env
 lib/pages/firebase_options.dart
+.vscode
 
 # IntelliJ related
 *.iml

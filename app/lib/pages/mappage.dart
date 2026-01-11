@@ -11,7 +11,7 @@ import 'package:app/database/entity/place.dart';
 import 'package:app/pages/mapmarkers.dart';
 import 'detailedrestaurantpage.dart';
 import 'package:app/states/MapStateStore.dart';
-import 'package:flutter_xlider/flutter_xlider.dart';
+import 'package:app/states/PlaceStateStore.dart';
 
 class MapPage extends StatefulWidget {
   final String keyAPI;
@@ -24,9 +24,9 @@ class MapPage extends StatefulWidget {
 
 class _MapPageState extends State<MapPage> {
   late final MapController _mapController;
-  final TextEditingController _queryController = TextEditingController();
   final List<Marker> _userMarkers = [];
   late final MapStateStore _mapStateStore;
+  late final PlaceStateStore _placeStateStore;
   final LocationService _locationService = LocationService();
   StreamSubscription? _locationStream;
   LatLng? _currentUserLatLng;
@@ -54,6 +54,7 @@ bool _showRadiusSlider = false;
   void initState() {
     super.initState();
     _mapStateStore = GetIt.instance<MapStateStore>();
+    _placeStateStore = GetIt.instance<PlaceStateStore>();
     _mapController = MapController();
     nearbyPlaces = _mapStateStore.nearbyPlaces;
     selectedCategoryIndex = _mapStateStore.selectedCategoryIndex;
@@ -129,8 +130,8 @@ bool _showRadiusSlider = false;
                       255,
                       115,
                       0,
-                    ), // turuncu
-                    foregroundColor: Colors.white, // ikon ve yazı beyaz
+                    ),
+                    foregroundColor: Colors.white,
                     textStyle: Theme.of(
                       context,
                     ).textTheme.displaySmall?.copyWith(color: Colors.white),
@@ -151,6 +152,7 @@ bool _showRadiusSlider = false;
                     ).textTheme.displaySmall?.copyWith(color: Colors.white),
                   ),
                   onPressed: () async {
+                    _placeStateStore.setPlace(p);
                     Navigator.of(context, rootNavigator: true).pop();
                     await Future.delayed(const Duration(milliseconds: 100));
                     if (mounted) {
@@ -452,21 +454,6 @@ bool _showRadiusSlider = false;
                       ),
                     ),
                   ),
-                    /* child: TextField(
-                      controller: _queryController,
-                      decoration: InputDecoration(
-                        hintText:
-                            "Ne yemek istediğini gir ya da içmek istediğini",
-                        prefixIcon: const Icon(
-                          Icons.search_rounded,
-                          color: Color.fromARGB(255, 105, 105, 105),
-                        ),
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(
-                          vertical: 12,
-                        ),
-                      ),
-                    ), */
                   ),
                 ),
                 Positioned(
@@ -498,18 +485,7 @@ bool _showRadiusSlider = false;
                       ),
                       child: Column(
                         children: 
-                        [/* Padding(
-                          padding: const EdgeInsets.only(right: 10,bottom: 4),
-                          child: Align(
-                            alignment: AlignmentGeometry.centerRight,
-                            child: Column(
-                              children: [
-                                _buildVerticalRadiusSlider(),
-                                 _buildRadiusToggleButton(),
-                              ],
-                            ),
-                          ),
-                        ), */
+                        [
                           Row(
                             spacing: 12,
                             mainAxisSize: MainAxisSize.min,

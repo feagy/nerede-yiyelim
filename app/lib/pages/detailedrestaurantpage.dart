@@ -136,7 +136,7 @@ final restaurant = {
 };
 
 class DetailedRestaurantPage extends StatefulWidget {
-  final Place place;
+  final Place? place;
   const DetailedRestaurantPage({super.key, required this.place});
 
   @override
@@ -144,7 +144,7 @@ class DetailedRestaurantPage extends StatefulWidget {
 }
 
 class _DetailedRestaurantPage extends State<DetailedRestaurantPage> {
-  late Place place;
+  late Place? place;
 
   @override
   void initState() {
@@ -170,25 +170,25 @@ class _DetailedRestaurantPage extends State<DetailedRestaurantPage> {
     final generativeSummary = restaurant["generativeSummary"] as Map?;
     final overview = generativeSummary?["overview"] as Map?;
 
-    return Scaffold(
+    return place != null ? Scaffold(
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Column(
           children: [
             _DetailedRestaurantHeader(
-              restaurantName: place.placeName,
+              restaurantName: place?.placeName,
               restaurantPhotoUri: GetIt.I<PlacePhotoService>().getPhotoUrl(
-                place.photoName ?? "",
+                place?.photoName ?? "",
                 400,
               ),
-              restaurantRating: place.googleRating,
-              restaurantUserRatingCount: place.googleRatingCount,
+              restaurantRating: place?.googleRating,
+              restaurantUserRatingCount: place?.googleRatingCount,
               isOpen: regularHours?["openNow"] as bool?,
             ),
             _DetailedRestaurantInformationSection(
-              restaurantFormattedaddress: place.address,
+              restaurantFormattedaddress: place?.address,
               restaurantGenerativeSummary: overview?["text"] as String?,
-              restaurantInternationalPhoneNumber: place.phone,
+              restaurantInternationalPhoneNumber: place?.phone,
               restaurantNextCloseTime:
                   regularHours?["nextCloseTime"] as String?,
             ),
@@ -220,9 +220,9 @@ class _DetailedRestaurantPage extends State<DetailedRestaurantPage> {
                 userReview: Review(
                   id: "review1",
                   userId: "user123",
-                  placeId: place.id,
-                  placeName: place.placeName,
-                  placeAddress: place.address,
+                  placeId: place?.id ?? "",
+                  placeName: place?.placeName ?? "",
+                  placeAddress: place?.address ?? "",
                   rating: 4,
                   comment: "Harika bir deneyimdi!",
                   createdAt: DateTime.now().millisecondsSinceEpoch,
@@ -238,6 +238,12 @@ class _DetailedRestaurantPage extends State<DetailedRestaurantPage> {
               restaurantReviews: restaurant["reviews"] as List<dynamic>?,
             ),
           ],
+        ),
+      ),
+    ) : const Scaffold(
+      body: Center(
+        child: Center(
+          child: Text("Haritadan bir mekan seçiniz."),
         ),
       ),
     );

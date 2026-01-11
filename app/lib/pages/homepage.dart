@@ -1,11 +1,13 @@
 import 'dart:async';
-
+import 'package:get_it/get_it.dart';
+import 'package:app/database/entity/place.dart';
 import 'package:app/pages/detailedrestaurantpage.dart';
 import 'package:app/pages/mappage.dart';
 import 'package:app/pages/profilepage.dart';
 import 'package:app/pages/settingspage.dart';
 import 'package:app/services/authservice.dart';
 import 'package:app/pages/signuppage.dart';
+import 'package:app/states/PlaceStateStore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:app/pages/favoritespage.dart';
@@ -87,9 +89,10 @@ class _HomePageState extends State<HomePage> {
               );
               break;
             case 3:
-              /* _navigatorKey.currentState!.pushReplacement(
-                MaterialPageRoute(builder: (_) => DetailedRestaurantPage()),
-              ); */
+                _navigatorKey.currentState!.pushReplacement(
+                MaterialPageRoute(builder: (_) => DetailedRestaurantPage(
+                    place: GetIt.I<PlaceStateStore>().place)),
+              );
               break;
             case 4:
               _navigatorKey.currentState!.pushReplacement(
