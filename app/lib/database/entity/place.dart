@@ -23,7 +23,6 @@ class Place {
   final String? googleReviewsJson;
   final String? openingHoursJson;
 
-
   Place({
     required this.id,
     required this.distance,
