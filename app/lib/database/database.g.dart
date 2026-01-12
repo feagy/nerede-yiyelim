@@ -78,6 +78,8 @@ class _$AppDataBase extends AppDataBase {
 
   AccountDao? _accountDaoInstance;
 
+  PlaceDao? _placeDaoInstance;
+
   Future<sqflite.Database> open(
     String path,
     List<Migration> migrations, [
@@ -105,6 +107,8 @@ class _$AppDataBase extends AppDataBase {
             'CREATE TABLE IF NOT EXISTS `reviews` (`id` TEXT NOT NULL, `userId` TEXT NOT NULL, `placeId` TEXT NOT NULL, `placeName` TEXT, `placeAddress` TEXT, `rating` INTEGER NOT NULL, `comment` TEXT, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Account` (`id` TEXT NOT NULL, `email` TEXT NOT NULL, `userName` TEXT NOT NULL, `password` TEXT NOT NULL, `photo` TEXT, PRIMARY KEY (`id`))');
+        await database.execute(
+            'CREATE TABLE IF NOT EXISTS `Place` (`id` TEXT NOT NULL, `distance` REAL NOT NULL, `placeName` TEXT NOT NULL, `phone` TEXT, `address` TEXT, `lat` REAL NOT NULL, `lng` REAL NOT NULL, `googleRating` REAL, `googleRatingCount` INTEGER, `type` TEXT, `googleMapsUri` TEXT, `photoName` TEXT, `openingHoursJson` TEXT, PRIMARY KEY (`id`))');
 
         await callback?.onCreate?.call(database, version);
       },
@@ -125,6 +129,11 @@ class _$AppDataBase extends AppDataBase {
   @override
   AccountDao get accountDao {
     return _accountDaoInstance ??= _$AccountDao(database, changeListener);
+  }
+
+  @override
+  PlaceDao get placeDao {
+    return _placeDaoInstance ??= _$PlaceDao(database, changeListener);
   }
 }
 
@@ -254,6 +263,26 @@ class _$ReviewsDao extends ReviewsDao {
   }
 
   @override
+  Future<Review?> getUserReviewForPlace(
+    String placeId,
+    String userId,
+  ) async {
+    return _queryAdapter.query(
+        'SELECT * FROM reviews WHERE placeId = ?1 AND userId = ?2 LIMIT 1',
+        mapper: (Map<String, Object?> row) => Review(
+            id: row['id'] as String,
+            userId: row['userId'] as String,
+            placeId: row['placeId'] as String,
+            placeName: row['placeName'] as String?,
+            placeAddress: row['placeAddress'] as String?,
+            rating: row['rating'] as int,
+            comment: row['comment'] as String?,
+            createdAt: row['createdAt'] as int,
+            updatedAt: row['updatedAt'] as int),
+        arguments: [placeId, userId]);
+  }
+
+  @override
   Future<void> upsertReview(Review review) async {
     await _reviewInsertionAdapter.insert(review, OnConflictStrategy.replace);
   }
@@ -340,5 +369,69 @@ class _$AccountDao extends AccountDao {
   @override
   Future<int> removeAccount(Account account) {
     return _accountDeletionAdapter.deleteAndReturnChangedRows(account);
+  }
+}
+
+class _$PlaceDao extends PlaceDao {
+  _$PlaceDao(
+    this.database,
+    this.changeListener,
+  )   : _queryAdapter = QueryAdapter(database),
+        _placeInsertionAdapter = InsertionAdapter(
+            database,
+            'Place',
+            (Place item) => <String, Object?>{
+                  'id': item.id,
+                  'distance': item.distance,
+                  'placeName': item.placeName,
+                  'phone': item.phone,
+                  'address': item.address,
+                  'lat': item.lat,
+                  'lng': item.lng,
+                  'googleRating': item.googleRating,
+                  'googleRatingCount': item.googleRatingCount,
+                  'type': item.type,
+                  'googleMapsUri': item.googleMapsUri,
+                  'photoName': item.photoName,
+                  'openingHoursJson': item.openingHoursJson
+                });
+
+  final sqflite.DatabaseExecutor database;
+
+  final StreamController<String> changeListener;
+
+  final QueryAdapter _queryAdapter;
+
+  final InsertionAdapter<Place> _placeInsertionAdapter;
+
+  @override
+  Future<Place?> getPlaceById(String placeId) async {
+    return _queryAdapter.query('SELECT * FROM places WHERE id = ?1',
+        mapper: (Map<String, Object?> row) => Place(
+            id: row['id'] as String,
+            distance: row['distance'] as double,
+            placeName: row['placeName'] as String,
+            phone: row['phone'] as String?,
+            address: row['address'] as String?,
+            lat: row['lat'] as double,
+            lng: row['lng'] as double,
+            googleRating: row['googleRating'] as double?,
+            googleRatingCount: row['googleRatingCount'] as int?,
+            type: row['type'] as String?,
+            photoName: row['photoName'] as String?,
+            openingHoursJson: row['openingHoursJson'] as String?,
+            googleMapsUri: row['googleMapsUri'] as String?),
+        arguments: [placeId]);
+  }
+
+  @override
+  Future<void> deletePlaceById(String placeId) async {
+    await _queryAdapter.queryNoReturn('DELETE FROM places WHERE id = ?1',
+        arguments: [placeId]);
+  }
+
+  @override
+  Future<void> upsertPlace(Place place) async {
+    await _placeInsertionAdapter.insert(place, OnConflictStrategy.replace);
   }
 }

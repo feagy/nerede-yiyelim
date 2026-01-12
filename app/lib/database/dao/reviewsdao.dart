@@ -14,4 +14,7 @@ abstract class ReviewsDao {
 
   @Insert(onConflict: OnConflictStrategy.replace)
   Future<void> upsertReview(Review review);
+
+  @Query('SELECT * FROM reviews WHERE placeId = :placeId AND userId = :userId LIMIT 1')
+  Future<Review?> getUserReviewForPlace(String placeId, String userId);
 }
