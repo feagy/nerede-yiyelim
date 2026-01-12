@@ -95,6 +95,7 @@ async function getNearbyPlacesText(API_KEY, textQuery, lat, lng, radius, maxCoun
                            places.rating,
                            places.userRatingCount,
                            places.primaryTypeDisplayName,
+                           places.googleMapsUri,
                            places.photos`.replace(/\s+/g, ""),
     };
 
@@ -111,6 +112,7 @@ async function getNearbyPlacesText(API_KEY, textQuery, lat, lng, radius, maxCoun
         type: p.primaryTypeDisplayName?.text || "",
         lat: p.location?.latitude,
         lng: p.location?.longitude,
+        googleMapsUri: p.googleMapsUri || null,
         photoName: p.photos?.[0]?.name || null,
     }));
     return places || [];

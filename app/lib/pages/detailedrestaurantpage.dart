@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
@@ -7,133 +9,14 @@ import 'package:app/database/entity/place.dart';
 import 'package:app/services/placephotoservice.dart';
 import 'package:get_it/get_it.dart';
 import 'package:app/database/entity/review.dart';
+import 'package:app/services/aisummaryservice.dart';
+import 'package:app/services/reviewsservice.dart';
 
 /*
 
   GETTERING DESIGN MUST BE CHANGED BEFORE DEPLOYMENT.
 
 */
-
-final restaurant = {
-  "name": "Mikla Restaurant",
-  "id": "mikla-istanbul",
-  "displayName": {"text": "Mikla"},
-  "types": ["restaurant", "fine_dining", "point_of_interest", "establishment"],
-  "primaryType": "restaurant",
-  "primaryTypeDisplayName": {"text": "Fine Dining Restaurant"},
-  "nationalPhoneNumber": "0212 293 56 56",
-  "internationalPhoneNumber": "+90 212 293 56 56",
-  "formattedAddress":
-      "The Marmara Pera, Meşrutiyet Cd. No:15, 34430 Beyoğlu/İstanbul, Türkiye",
-  "shortFormattedAddress": "Meşrutiyet Cd. No:15, Beyoğlu",
-  "postalAddress": {
-    "regionCode": "TR",
-    "postalCode": "34430",
-    "administrativeArea": "İstanbul",
-    "locality": "Beyoğlu",
-    "addressLines": ["Meşrutiyet Cd. No:15", "The Marmara Pera Hotel"],
-  },
-  "location": {"latitude": 41.031203, "longitude": 28.9716919},
-  "rating": 4.7,
-  "userRatingCount": 980,
-  "googleMapsUri": "https://maps.google.com/?cid=1234567890123456789",
-  "websiteUri": "https://www.miklarestaurant.com",
-  "reviews": [
-    {
-      "author": "Selin Arslan",
-      "rating": 5,
-      "text": "Manzara muhteşem, yemekler yaratıcı ve çok lezzetli!",
-      "publishTime": "2025-10-12T20:15:00Z",
-    },
-    {
-      "author": "Emre Demir",
-      "rating": 4,
-      "text": "Servis çok iyi ama fiyatlar biraz yüksek.",
-      "publishTime": "2025-09-05T18:45:00Z",
-    },
-  ],
-  "regularOpeningHours": {
-    "periods": [
-      {
-        "open": {"day": 1, "hour": 18, "minute": 0},
-        "close": {"day": 2, "hour": 0, "minute": 0},
-      },
-      {
-        "open": {"day": 2, "hour": 18, "minute": 0},
-        "close": {"day": 3, "hour": 0, "minute": 0},
-      },
-      {
-        "open": {"day": 3, "hour": 18, "minute": 0},
-        "close": {"day": 4, "hour": 0, "minute": 0},
-      },
-      {
-        "open": {"day": 4, "hour": 18, "minute": 0},
-        "close": {"day": 5, "hour": 0, "minute": 0},
-      },
-      {
-        "open": {"day": 5, "hour": 18, "minute": 0},
-        "close": {"day": 6, "hour": 1, "minute": 0},
-      },
-      {
-        "open": {"day": 6, "hour": 18, "minute": 0},
-        "close": {"day": 0, "hour": 1, "minute": 0},
-      },
-    ],
-    "weekdayDescriptions": [
-      "Pazartesi: 18:00 - 00:00",
-      "Salı: 18:00 - 00:00",
-      "Çarşamba: 18:00 - 00:00",
-      "Perşembe: 18:00 - 00:00",
-      "Cuma: 18:00 - 01:00",
-      "Cumartesi: 18:00 - 01:00",
-      "Pazar: Kapalı",
-    ],
-    "openNow": false,
-    "nextOpenTime": "2025-11-03T18:00:00+03:00",
-    "nextCloseTime": "2025-11-04T00:00:00+03:00",
-  },
-  "timeZone": {"id": "Europe/Istanbul"},
-  "photos": [
-    {
-      "name": "photos/mikla1",
-      "widthPx": 1280,
-      "heightPx": 960,
-      "authorAttributions": ["@MiklaRestaurant"],
-      "photoUri": "https://www.miklarestaurant.com/images/gallery/mikla1.jpg",
-    },
-  ],
-  "businessStatus": "OPERATIONAL",
-  "priceLevel": "PRICE_LEVEL_EXPENSIVE",
-  "editorialSummary": {
-    "text":
-        "Modern Türk mutfağını dünya standartlarında sunan, Boğaz manzaralı fine dining restoran.",
-  },
-  "generativeSummary": {
-    "overview": {
-      "text":
-          "Mikla Restaurant, İstanbul'un en seçkin fine dining mekanlarından biridir. Modern Türk mutfağını yaratıcı dokunuşlarla sunarken, Boğaz manzarasıyla misafirlerine unutulmaz bir deneyim yaşatır.",
-      "languageCode": "tr",
-    },
-    "description": {
-      "text":
-          "The Marmara Pera Oteli'nin terasında yer alan Mikla, şef Mehmet Gürs'ün vizyonuyla geleneksel Anadolu tatlarını modern gastronomiyle birleştirir. Ziyaretçiler servis kalitesi, etkileyici şehir manzarası ve şarap menüsünü özellikle övmektedir. Hem yerli hem yabancı gurmeler tarafından İstanbul'un en iyi restoranlarından biri olarak gösterilmektedir.",
-      "languageCode": "tr",
-    },
-  },
-  "paymentOptions": {"acceptsCreditCards": true, "acceptsCashOnly": false},
-  "parkingOptions": {"valetParking": true, "streetParking": false},
-  "servesDinner": true,
-  "servesWine": true,
-  "servesDessert": true,
-  "outdoorSeating": true,
-  "goodForGroups": true,
-  "reservable": true,
-  "accessibilityOptions": {
-    "wheelchairAccessibleEntrance": true,
-    "wheelchairAccessibleRestroom": true,
-  },
-  "pureServiceAreaBusiness": false,
-};
 
 class DetailedRestaurantPage extends StatefulWidget {
   final Place? place;
@@ -145,6 +28,7 @@ class DetailedRestaurantPage extends StatefulWidget {
 
 class _DetailedRestaurantPage extends State<DetailedRestaurantPage> {
   late Place? place;
+  late ReviewsResponse reviews;
 
   @override
   void initState() {
@@ -152,24 +36,19 @@ class _DetailedRestaurantPage extends State<DetailedRestaurantPage> {
     place = widget.place;
   }
 
-  String? get restaurantMapUri => restaurant["googleMapsUri"] as String?;
-  Future<void> _openGoogleMaps() async {
-    if (restaurantMapUri != null) {
-      final Uri url = Uri.parse(restaurantMapUri!);
+  Future<void> _openGoogleMaps(String? placeMapUri) async {
+    if (placeMapUri != null) {
+      final Uri url = Uri.parse(placeMapUri);
       if (await canLaunchUrl(url)) {
         await launchUrl(url, mode: LaunchMode.externalApplication);
       } else {
-        print('Could not launch $restaurantMapUri');
+        print('Could not launch $placeMapUri');
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final regularHours = restaurant["regularOpeningHours"] as Map?;
-    final generativeSummary = restaurant["generativeSummary"] as Map?;
-    final overview = generativeSummary?["overview"] as Map?;
-
     return place != null ? Scaffold(
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
@@ -183,21 +62,21 @@ class _DetailedRestaurantPage extends State<DetailedRestaurantPage> {
               ),
               restaurantRating: place?.googleRating,
               restaurantUserRatingCount: place?.googleRatingCount,
-              isOpen: regularHours?["openNow"] as bool?,
+              isOpen: jsonDecode(place?.openingHoursJson ?? "{}")["openNow"] as bool?,
             ),
             _DetailedRestaurantInformationSection(
               restaurantFormattedaddress: place?.address,
-              restaurantGenerativeSummary: overview?["text"] as String?,
+              restaurantGenerativeSummary: "Butonla istenecek",
               restaurantInternationalPhoneNumber: place?.phone,
               restaurantNextCloseTime:
-                  regularHours?["nextCloseTime"] as String?,
+                  jsonDecode(place?.openingHoursJson ?? "{}")["nextCloseTime"] as String?,
             ),
-            if (restaurantMapUri != null)
+            if (place?.googleMapsUri != null)
               Container(
                 alignment: Alignment.center,
                 margin: const EdgeInsets.only(bottom: 20),
                 child: ElevatedButton.icon(
-                  onPressed: _openGoogleMaps,
+                  onPressed: () => _openGoogleMaps(place?.googleMapsUri),
                   icon: const Icon(Icons.map, size: 20),
                   label: const Text("Open in Google Maps"),
                   style: ElevatedButton.styleFrom(
@@ -235,7 +114,7 @@ class _DetailedRestaurantPage extends State<DetailedRestaurantPage> {
               _DetailedRestaurantWriteReviewSection(),
 
             _DetailedRestaurantCommentsSection(
-              restaurantReviews: restaurant["reviews"] as List<dynamic>?,
+              restaurantReviews: [], // ReviewsService den gelecek
             ),
           ],
         ),

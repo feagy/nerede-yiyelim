@@ -7,15 +7,18 @@ import 'entity/review.dart';
 import 'dao/reviewsdao.dart';
 import 'dart:async'; 
 import 'package:sqflite/sqflite.dart' as sqflite;
+import 'entity/place.dart';
+import 'dao/placedao.dart';
 
 
 // part 'database.g.dart'; // Yapılacak
 
 // DENEME İÇİN YAPILDI
 part 'database.g.dart';
-@Database(version: 1, entities: [Favorite, Review, Account])
+@Database(version: 1, entities: [Favorite, Review, Account, Place])
 abstract class AppDataBase extends FloorDatabase {
   FavoritesDao get favoritesDao;
   ReviewsDao get reviewsDao;
   AccountDao get accountDao;
+  PlaceDao get placeDao;
 }

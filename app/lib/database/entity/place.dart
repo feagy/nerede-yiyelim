@@ -19,8 +19,8 @@ class Place {
 
   final String? type;
 
+  final String? googleMapsUri;
   final String? photoName;
-  final String? googleReviewsJson;
   final String? openingHoursJson;
 
   Place({
@@ -35,8 +35,8 @@ class Place {
     this.googleRatingCount,
     this.type,
     this.photoName,
-    this.googleReviewsJson,
     this.openingHoursJson,
+    this.googleMapsUri,
   });
 
   factory Place.fromJson(Map<String, dynamic> json) {
@@ -53,6 +53,7 @@ class Place {
       type: json['type'] as String?,
       photoName: json['photoName'] as String?,
       openingHoursJson: jsonEncode(json['openingHours']),
+      googleMapsUri: json['googleMapsUri'] as String?,
     );
   }
 }
