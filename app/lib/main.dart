@@ -37,7 +37,6 @@ Future main() async {
 
   final String apiKey = dotenv.env['MAPTILER_MAPS_API_KEY'] ?? '';
 
-  
   // States
   getIt.registerSingleton<MapStateStore>(MapStateStore());
   getIt.registerSingleton<PlaceStateStore>(PlaceStateStore());
