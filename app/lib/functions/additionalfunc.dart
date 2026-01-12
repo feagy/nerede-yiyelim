@@ -35,11 +35,16 @@ Future<void> _pickAndSavePhoto(AccountDto dao, Account account) async {
 Future<bool> signInAndSaveAccount({
   required String email,
   required String password,
+  String? username,
 }) async {
   try {
-    final db = await LocalServices.getDatabase();
     await AuthService().signIn(email: email, password: password);
 
+    if (username != null && username.isNotEmpty) {
+      await AuthService().createUsername(username: username);
+    }
+
+    final db = await LocalServices.getDatabase();
     final doc = await FirebaseFirestore.instance
         .collection('users')
         .doc(AuthService().currentUser!.uid)
@@ -56,6 +61,7 @@ Future<bool> signInAndSaveAccount({
       );
       return true;
     }
+
     return false;
   } catch (e) {
     return false;
