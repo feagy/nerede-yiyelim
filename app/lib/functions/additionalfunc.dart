@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:app/database/services/localdbservice.dart';
 import 'package:app/services/authservice.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:app/database/entity/account.dart';
@@ -65,5 +66,23 @@ Future<bool> signInAndSaveAccount({
     return false;
   } catch (e) {
     return false;
+  }
+}
+
+Future<void> changeFastSignInPassword({required String password}) async {
+  final db = await LocalServices.getDatabase();
+  final doc = await FirebaseFirestore.instance
+      .collection('users')
+      .doc(AuthService().currentUser!.uid)
+      .get();
+  if (doc.exists) {
+    await db.accountDao.updateAccount(
+      Account(
+        id: AuthService().currentUser!.uid,
+        email: AuthService().currentUser!.email ?? " ",
+        userName: AuthService().currentUser!.displayName ?? " ",
+        password: password,
+      ),
+    );
   }
 }
