@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:app/global/universaltheme.dart';
 import 'package:app/services/placesservice.dart';
 import 'package:app/services/reviewsservice.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +10,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:app/functions/locationfunc.dart';
 import 'package:app/database/entity/place.dart';
 import 'package:app/pages/mapmarkers.dart';
+import 'package:provider/provider.dart';
 import 'detailedrestaurantpage.dart';
 import 'package:app/states/MapStateStore.dart';
 import 'package:app/states/PlaceStateStore.dart';
@@ -21,7 +23,6 @@ class MapPage extends StatefulWidget {
   State<MapPage> createState() => _MapPageState();
 }
 
-
 class _MapPageState extends State<MapPage> {
   late final MapController _mapController;
   final List<Marker> _userMarkers = [];
@@ -33,11 +34,11 @@ class _MapPageState extends State<MapPage> {
 
   List<Place> nearbyPlaces = [];
 
-//Radyüs slider
-int _radius = 1000; // metre
-bool _showRadiusSlider = false;  
+  //Radyüs slider
+  int _radius = 1000; // metre
+  bool _showRadiusSlider = false;
 
-//Sliver box için veri
+  //Sliver box için veri
   final List<String> categories = [
     "Pizza",
     "Burger",
@@ -46,7 +47,7 @@ bool _showRadiusSlider = false;
     "Kahve",
     "Sushi",
     "Döner",
-    ];
+  ];
   int selectedCategoryIndex = 0;
   String get selectedCategory => categories[selectedCategoryIndex];
 
@@ -61,7 +62,7 @@ bool _showRadiusSlider = false;
     _initUserLocation();
   }
 
-  Future<void> _openPlaceSheet(Place p) async {
+  Future<void> _openPlaceSheet(Place p, BottomTabState bottomTabState) async {
     final sheetWidget = Container(
       margin: const EdgeInsets.all(12),
       padding: const EdgeInsets.all(12),
@@ -125,12 +126,7 @@ bool _showRadiusSlider = false;
               Expanded(
                 child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(
-                      255,
-                      255,
-                      115,
-                      0,
-                    ),
+                    backgroundColor: const Color.fromARGB(255, 255, 115, 0),
                     foregroundColor: Colors.white,
                     textStyle: Theme.of(
                       context,
@@ -156,9 +152,11 @@ bool _showRadiusSlider = false;
                     Navigator.of(context, rootNavigator: true).pop();
                     await Future.delayed(const Duration(milliseconds: 100));
                     if (mounted) {
-                      Navigator.of(context).push(
+                      bottomTabState.setTab(3);
+                      bottomTabState.navigatorKey.currentState?.push(
                         MaterialPageRoute(
-                          builder: (context) => DetailedRestaurantPage(place: p),
+                          builder: (context) =>
+                              DetailedRestaurantPage(place: p),
                         ),
                       );
                     }
@@ -203,19 +201,16 @@ bool _showRadiusSlider = false;
     }
   }
 
-    // BEN KOYDUM GÜN 10.01.2026
+  // BEN KOYDUM GÜN 10.01.2026
   Future<Marker> _buildUserMarker() async {
     return Marker(
       point: _currentUserLatLng!,
       width: 50,
       height: 50,
-      child: const Icon(
-        Icons.my_location,
-        color: Colors.blueAccent,
-        size: 40,
-      ),
+      child: const Icon(Icons.my_location, color: Colors.blueAccent, size: 40),
     );
   }
+
   //
   Widget _buildVerticalRadiusSlider() {
     if (!_showRadiusSlider) return const SizedBox();
@@ -234,10 +229,7 @@ bool _showRadiusSlider = false;
             color: Colors.transparent,
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
-              BoxShadow(
-                blurRadius: 10,
-                color: Colors.black.withOpacity(0.2),
-              )
+              BoxShadow(blurRadius: 10, color: Colors.black.withOpacity(0.2)),
             ],
           ),
           child: RotatedBox(
@@ -261,8 +253,6 @@ bool _showRadiusSlider = false;
       ),
     );
   }
-
-
 
   Widget _buildRadiusToggleButton() {
     return Positioned(
@@ -306,6 +296,7 @@ bool _showRadiusSlider = false;
 
   @override
   Widget build(BuildContext context) {
+    final bottomTabState = Provider.of<BottomTabState>(context);
     return Scaffold(
       body: Column(
         children: [
@@ -337,7 +328,7 @@ bool _showRadiusSlider = false;
                         CircleMarker(
                           point:
                               _currentUserLatLng ??
-                              const LatLng(41.0082, 28.9784),
+                              const LatLng(40.9917, 28.8517),
                           color: Colors.amber.withOpacity(0.1),
                           borderStrokeWidth: 2,
                           borderColor: Colors.amberAccent,
@@ -348,16 +339,17 @@ bool _showRadiusSlider = false;
                     ),
                     if (_currentUserLatLng != null)
                       FutureBuilder(
-                        future: _buildUserMarker(), 
+                        future: _buildUserMarker(),
                         builder: (context, snapshot) {
-                            if (snapshot.connectionState == ConnectionState.waiting) {
-                              return const Center(child: CircularProgressIndicator());
-                            }
-                            return MarkerLayer(
-                              markers: [snapshot.data!],
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Center(
+                              child: CircularProgressIndicator(),
                             );
                           }
-                        ),
+                          return MarkerLayer(markers: [snapshot.data!]);
+                        },
+                      ),
                     if (_userMarkers.isNotEmpty)
                       MarkerLayer(markers: _userMarkers),
                     MarkerLayer(
@@ -365,7 +357,7 @@ bool _showRadiusSlider = false;
                         nearbyPlaces,
                         (place) => LatLng(place.lat, place.lng),
                         (place) {
-                          _openPlaceSheet(place);
+                          _openPlaceSheet(place, bottomTabState);
                         },
                         context,
                       ),
@@ -386,7 +378,7 @@ bool _showRadiusSlider = false;
                             color: const Color.fromARGB(255, 255, 115, 0),
                             shadows: [
                               Shadow(
-                                color:  Colors.black,
+                                color: Colors.black,
                                 blurRadius: 12,
                                 offset: Offset(0, 4),
                               ),
@@ -413,61 +405,72 @@ bool _showRadiusSlider = false;
                       ],
                     ),
                     child: SizedBox(
-                    height: 48,
-                    child: Material(
-                      type: MaterialType.transparency,
-                      child: ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                        itemCount: categories.length,
-                        separatorBuilder: (_, __) => const SizedBox(width: 8),
-                        itemBuilder: (context, index) {
-                          final isSelected = selectedCategoryIndex == index;
-                      
-                          return ChoiceChip(
-                            label: Text(
-                              categories[index],
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: isSelected ? Colors.white : const Color.fromARGB(255, 255, 115, 0),
-                                fontWeight: FontWeight.w600,
+                      height: 48,
+                      child: Material(
+                        type: MaterialType.transparency,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 6,
+                          ),
+                          itemCount: categories.length,
+                          separatorBuilder: (_, __) => const SizedBox(width: 8),
+                          itemBuilder: (context, index) {
+                            final isSelected = selectedCategoryIndex == index;
+
+                            return ChoiceChip(
+                              label: Text(
+                                categories[index],
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: isSelected
+                                      ? Colors.white
+                                      : const Color.fromARGB(255, 255, 115, 0),
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
-                            ),
-                            selected: isSelected,
-                            selectedColor: const Color.fromARGB(255, 255, 115, 0),
-                            backgroundColor: Colors.transparent,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              side: BorderSide(
-                                color: const Color.fromARGB(255, 255, 115, 0),
-                                width: 1,
+                              selected: isSelected,
+                              selectedColor: const Color.fromARGB(
+                                255,
+                                255,
+                                115,
+                                0,
                               ),
-                            ),
-                            onSelected: (selected) async {
-                              setState(() {
-                                selectedCategoryIndex = index;
-                              });
-                              _mapStateStore.setSelectedCategoryIndex(index);
+                              backgroundColor: Colors.transparent,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                side: BorderSide(
+                                  color: const Color.fromARGB(255, 255, 115, 0),
+                                  width: 1,
+                                ),
+                              ),
+                              onSelected: (selected) async {
+                                setState(() {
+                                  selectedCategoryIndex = index;
+                                });
+                                _mapStateStore.setSelectedCategoryIndex(index);
+                              },
+                            );
                           },
-                          );
-                        },
+                        ),
                       ),
                     ),
-                  ),
                   ),
                 ),
                 Positioned(
                   right: 0,
                   bottom: MediaQuery.of(context).size.height * 0.15,
                   child: Padding(
-                          padding: const EdgeInsets.only(right: 10,bottom: 4),
-                          child: Column(
-                            children: [
-                              _buildVerticalRadiusSlider(),
-                               _buildRadiusToggleButton(),
-                            ],
-                          ),
-                        ),),
+                    padding: const EdgeInsets.only(right: 10, bottom: 4),
+                    child: Column(
+                      children: [
+                        _buildVerticalRadiusSlider(),
+                        _buildRadiusToggleButton(),
+                      ],
+                    ),
+                  ),
+                ),
                 Positioned(
                   bottom: MediaQuery.of(context).size.height * 0.04,
                   left: 0,
@@ -484,15 +487,16 @@ bool _showRadiusSlider = false;
                         ],
                       ),
                       child: Column(
-                        children: 
-                        [
+                        children: [
                           Row(
                             spacing: 12,
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Expanded(
                                 child: Padding(
-                                  padding: const EdgeInsetsGeometry.directional(start: 10),
+                                  padding: const EdgeInsetsGeometry.directional(
+                                    start: 10,
+                                  ),
                                   child: ElevatedButton.icon(
                                     onPressed: () {
                                       _startTrackingUser();
@@ -500,7 +504,9 @@ bool _showRadiusSlider = false;
                                     icon: const Icon(Icons.gps_fixed),
                                     label: Text(
                                       'Beni Bul',
-                                      style: Theme.of(context).textTheme.displayMedium
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .displayMedium
                                           ?.copyWith(
                                             color: Colors.white,
                                             fontWeight: FontWeight.bold,
@@ -528,13 +534,17 @@ bool _showRadiusSlider = false;
                               ),
                               Expanded(
                                 child: Padding(
-                                  padding: const EdgeInsetsGeometry.directional(end: 10),
+                                  padding: const EdgeInsetsGeometry.directional(
+                                    end: 10,
+                                  ),
                                   child: ElevatedButton.icon(
                                     onPressed: () async {
                                       final results = await _fetchPlaces(
                                         textQuery: selectedCategory,
-                                        lat: 40.9917, //_currentUserLatLng?.latitude ??,
-                                        lng: 28.8517, //_currentUserLatLng?.longitude ??,
+                                        lat:
+                                            40.9917, //_currentUserLatLng?.latitude ??,
+                                        lng:
+                                            28.8517, //_currentUserLatLng?.longitude ??,
                                         radius: _radius,
                                       );
                                       setState(() {
@@ -545,7 +555,9 @@ bool _showRadiusSlider = false;
                                     icon: const Icon(Icons.gps_fixed),
                                     label: Text(
                                       'Mekan Bul',
-                                      style: Theme.of(context).textTheme.displayMedium
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .displayMedium
                                           ?.copyWith(
                                             color: Colors.white,
                                             fontWeight: FontWeight.bold,

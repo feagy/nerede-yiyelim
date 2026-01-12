@@ -1,6 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/material.dart';
+
+class BottomTabState extends ChangeNotifier {
+  int _selectedTab = 0;
+  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+  int get selectedTab => _selectedTab;
+
+  void setTab(int index) {
+    _selectedTab = index;
+    notifyListeners();
+  }
+}
 
 class ThemeProvider extends ChangeNotifier {
   double _fontsize = 12.0;

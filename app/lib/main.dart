@@ -26,6 +26,7 @@ import 'package:app/states/PlaceStateStore.dart';
 final getIt = GetIt.instance;
 
 Future main() async {
+  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -48,8 +49,11 @@ Future main() async {
   getIt.registerSingleton<AISummaryService>(AISummaryService());
 
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => ThemeProvider(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => BottomTabState()),
+      ],
       child: MyApp(keyAPI: apiKey, database: db),
     ),
   );
@@ -58,6 +62,7 @@ Future main() async {
 class MyApp extends StatelessWidget {
   final String keyAPI;
   final AppDataBase database;
+
   const MyApp({super.key, required this.keyAPI, required this.database});
 
   @override

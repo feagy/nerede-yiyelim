@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:app/global/universaltheme.dart';
 import 'package:get_it/get_it.dart';
 import 'package:app/database/entity/place.dart';
 import 'package:app/pages/detailedrestaurantpage.dart';
@@ -11,6 +12,7 @@ import 'package:app/states/PlaceStateStore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:app/pages/favoritespage.dart';
+import 'package:provider/provider.dart';
 
 /* // BURADA OLAN SAYFALAR SAHTE SADECE AKIŞI DENEMEK İÇİN
 class FavoritesPage extends StatelessWidget {
@@ -39,16 +41,14 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  int _selectedBottomTab = 0;
   String _selectedFilter = 'Filtrele';
-
-  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
 
   @override
   Widget build(BuildContext context) {
+    final bottomTabState = Provider.of<BottomTabState>(context);
     return Scaffold(
       body: Navigator(
-        key: _navigatorKey,
+        key: bottomTabState.navigatorKey,
         onGenerateRoute: (settings) {
           return MaterialPageRoute(
             builder: (_) => MapPage(keyAPI: widget.keyAPI),
@@ -56,15 +56,15 @@ class _HomePageState extends State<HomePage> {
         },
       ),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedBottomTab,
+        currentIndex: bottomTabState.selectedTab,
         onTap: (index) async {
           setState(() {
-            _selectedBottomTab = index;
+            bottomTabState.setTab(index);
           });
 
           switch (index) {
             case 0:
-              _navigatorKey.currentState!.pushReplacement(
+              bottomTabState.navigatorKey.currentState!.pushReplacement(
                 MaterialPageRoute(
                   builder: (_) => MapPage(keyAPI: widget.keyAPI),
                 ),
@@ -74,7 +74,7 @@ class _HomePageState extends State<HomePage> {
               final isLoggedIn =
                   await AuthService().currentUser?.isAnonymous == false;
               if (isLoggedIn) {
-                _navigatorKey.currentState!.pushReplacement(
+                bottomTabState.navigatorKey.currentState!.pushReplacement(
                   MaterialPageRoute(builder: (_) => ProfilePage()),
                 );
               } else {
@@ -84,18 +84,21 @@ class _HomePageState extends State<HomePage> {
               }
               break;
             case 2:
-              _navigatorKey.currentState!.pushReplacement(
+              bottomTabState.navigatorKey.currentState!.pushReplacement(
                 MaterialPageRoute(builder: (_) => const FavoritesPage()),
               );
               break;
             case 3:
-                _navigatorKey.currentState!.pushReplacement(
-                MaterialPageRoute(builder: (_) => DetailedRestaurantPage(
-                    place: GetIt.I<PlaceStateStore>().place)),
+              bottomTabState.navigatorKey.currentState!.pushReplacement(
+                MaterialPageRoute(
+                  builder: (_) => DetailedRestaurantPage(
+                    place: GetIt.I<PlaceStateStore>().place,
+                  ),
+                ),
               );
               break;
             case 4:
-              _navigatorKey.currentState!.pushReplacement(
+              bottomTabState.navigatorKey.currentState!.pushReplacement(
                 MaterialPageRoute(builder: (_) => const FontSettingsPage()),
               );
               break;
