@@ -1,4 +1,5 @@
 import 'dart:convert';
+/* import 'dart:nativewrappers/_internal/vm/lib/ffi_native_type_patch.dart'; */
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +12,9 @@ import 'package:get_it/get_it.dart';
 import 'package:app/database/entity/review.dart';
 import 'package:app/services/aisummaryservice.dart';
 import 'package:app/services/reviewsservice.dart';
+import 'package:app/database/services/localdbservice.dart';
+import 'package:app/database/database.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 /*
 
@@ -28,13 +32,112 @@ class DetailedRestaurantPage extends StatefulWidget {
 
 class _DetailedRestaurantPage extends State<DetailedRestaurantPage> {
   late Place? place;
-  late ReviewsResponse reviews;
+  final List<dynamic> _reviews = [];    
+  String? _cursor;                     
+  bool _hasMore = true;               
+  bool _loadingMore = false;             
+  bool _firstLoading = false;            
+  static const int _limit = 10;
+  Review?_myReview;
+  bool isFavorite=false;
+  /* final db = getDatabase(); */
+  late AppDataBase _db;
 
   @override
   void initState() {
     super.initState();
     place = widget.place;
+    _init(); 
   }
+
+    Future<void> _init() async {
+    await loadDatabase();   
+    await getMyReview();      
+    if (!mounted) return;
+
+    if (place?.id != null) {
+      await _loadFirstPage();
+    }
+
+    if (!mounted) return;
+    setState(() {});           
+  }
+
+    Future<void> getMyReview() async {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId == null || place?.id == null) return;
+
+    final r = await _db.reviewsDao.getUserReviewForPlace(
+      place!.id,
+      userId,
+    );
+
+    if (!mounted) return;
+    setState(() => _myReview = r);
+  }
+
+    Future<void> loadDatabase() async {
+      _db = await LocalServices.getDatabase();
+    }
+
+    Future<void> _loadFirstPage() async {
+    if (place?.id == null) return;
+
+    try {
+      if (!mounted) return;
+      setState(() {
+        _firstLoading = true;
+        _reviews.clear();
+        _cursor = null;
+        _hasMore = true;
+      });
+
+      final resp = await GetIt.I<ReviewsService>().readReviews(
+        placeId: place!.id!,
+        limit: _limit,
+        cursor: null,
+      );
+
+      if (!mounted) return;
+      setState(() {
+        _reviews.addAll(resp.items);
+        _cursor = resp.nextCursor;
+        _hasMore = resp.hasMore;
+      });
+    } catch (e) {
+      debugPrint("First page error: $e");
+    } finally {
+      if (mounted) setState(() => _firstLoading = false);
+    }
+  }
+
+  Future<void> _loadMore() async {
+    if (_loadingMore || !_hasMore) return;
+    if (place?.id == null) return;
+
+    try {
+      setState(() => _loadingMore = true);
+
+      final resp = await GetIt.I<ReviewsService>().readReviews(
+        placeId: place!.id!,
+        limit: _limit,
+        cursor: _cursor, // <-- devam cursor’u
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        _reviews.addAll(resp.items); // <-- listeye ekle
+        _cursor = resp.nextCursor;
+        _hasMore = resp.hasMore;
+      });
+    } catch (e) {
+      debugPrint("Load more error: $e");
+    } finally {
+      if (mounted) setState(() => _loadingMore = false);
+    }
+  }
+
 
   Future<void> _openGoogleMaps(String? placeMapUri) async {
     if (placeMapUri != null) {
@@ -63,6 +166,7 @@ class _DetailedRestaurantPage extends State<DetailedRestaurantPage> {
               restaurantRating: place?.googleRating,
               restaurantUserRatingCount: place?.googleRatingCount,
               isOpen: jsonDecode(place?.openingHoursJson ?? "{}")["openNow"] as bool?,
+              isFavorite: false,
             ),
             _DetailedRestaurantInformationSection(
               restaurantFormattedaddress: place?.address,
@@ -93,20 +197,10 @@ class _DetailedRestaurantPage extends State<DetailedRestaurantPage> {
                 ),
               ),
 
-            if (true)
-              // Kullanıcının yorumu varsa true yapın
+            if (_myReview != null)
+             
               _DetailedRestaurantUserReviewSection(
-                userReview: Review(
-                  id: "review1",
-                  userId: "user123",
-                  placeId: place?.id ?? "",
-                  placeName: place?.placeName ?? "",
-                  placeAddress: place?.address ?? "",
-                  rating: 4,
-                  comment: "Harika bir deneyimdi!",
-                  createdAt: DateTime.now().millisecondsSinceEpoch,
-                  updatedAt: DateTime.now().millisecondsSinceEpoch,
-                ),
+                userReview: _myReview, /* await _db.reviewsDao.getUserReviewForPlace(place?.id as String, FirebaseAuth.instance.currentUser?.uid as String), */
                 onEdit: () {},
                 onDelete: () {},
               )
@@ -114,8 +208,32 @@ class _DetailedRestaurantPage extends State<DetailedRestaurantPage> {
               _DetailedRestaurantWriteReviewSection(),
 
             _DetailedRestaurantCommentsSection(
-              restaurantReviews: [], // ReviewsService den gelecek
+              restaurantReviews: _reviews, 
             ),
+            if (_firstLoading)
+              const Padding(
+                padding: EdgeInsets.all(16),
+                child: CircularProgressIndicator(),
+              )
+            else if (_hasMore)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 24),
+                child: ElevatedButton(
+                  onPressed: _loadingMore ? null : _loadMore,
+                  child: _loadingMore
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text("Daha fazla göster"),
+                ),
+              )
+            else
+              const Padding(
+                padding: EdgeInsets.only(bottom: 24),
+                child: Text("Tüm yorumlar gösterildi."),
+              ),
           ],
         ),
       ),
@@ -137,6 +255,7 @@ class _DetailedRestaurantHeader extends StatelessWidget {
   final double? restaurantRating;
   final int? restaurantUserRatingCount;
   final bool? isOpen;
+  final bool isFavorite;
 
   const _DetailedRestaurantHeader({
     this.restaurantPhotoUri,
@@ -144,6 +263,7 @@ class _DetailedRestaurantHeader extends StatelessWidget {
     this.restaurantRating,
     this.restaurantUserRatingCount,
     this.isOpen,
+    required this.isFavorite,
   });
 
   @override
@@ -229,6 +349,26 @@ class _DetailedRestaurantHeader extends StatelessWidget {
                     color: const Color.fromARGB(255, 224, 224, 224),
                   ),
                 ),
+                const Spacer(),
+                  AnimatedScale(
+                  scale: isFavorite ? 1.2 : 1.0,
+                  duration: const Duration(milliseconds: 200),
+                  child: CircleAvatar(
+                    radius: 24,
+                    backgroundColor: Colors.white,
+                    child: IconButton(
+                      icon: Icon(
+                        isFavorite ? Icons.favorite : Icons.favorite_border,
+                        color: isFavorite ? Colors.red : Colors.grey,
+                      ),
+                      onPressed: () {
+                        /* setState(() {
+                          isFavorite = !isFavorite;
+                        }); */
+                      },
+                    ),
+                  ),
+                                  ), 
               ],
             ),
           ],
