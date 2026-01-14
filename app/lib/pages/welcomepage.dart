@@ -1,4 +1,5 @@
 import 'package:app/database/services/localdbservice.dart';
+import 'package:app/pages/detailedrestaurantpage.dart';
 import 'package:app/pages/signuppage.dart';
 import 'package:app/services/authservice.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -51,11 +52,9 @@ class _WelcomePage extends State<WelcomePage> {
                   } else {
                     showModalBottomSheet(
                       context: context,
-                      backgroundColor: Colors.white.withOpacity(0.9),
+                      backgroundColor: Colors.white,
                       shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.vertical(
-                          top: Radius.circular(20),
-                        ),
+                        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
                       ),
                       builder: (context) {
                         return StatefulBuilder(
@@ -63,174 +62,144 @@ class _WelcomePage extends State<WelcomePage> {
                             return SafeArea(
                               child: ConstrainedBox(
                                 constraints: BoxConstraints(
-                                  maxHeight:
-                                      MediaQuery.of(context).size.height *
-                                      0.7, // %70
+                                  maxHeight: MediaQuery.of(context).size.height * 0.7,
                                 ),
                                 child: Column(
-                                  mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    /// LİSTE
-                                    Flexible(
+                                    const SizedBox(height: 10),
+                                    Container(
+                                      width: 36,
+                                      height: 4,
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey.shade400,
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 12),
+
+                                    Expanded(
                                       child: ListView.builder(
-                                        padding: const EdgeInsets.all(16),
-                                        shrinkWrap: true,
+                                        padding: const EdgeInsets.symmetric(horizontal: 16),
                                         itemCount: accounts.length,
                                         itemBuilder: (context, index) {
                                           final account = accounts[index];
+
                                           return Container(
-                                            margin: const EdgeInsets.symmetric(
-                                              vertical: 8,
-                                            ),
+                                            margin: const EdgeInsets.only(bottom: 12),
                                             decoration: BoxDecoration(
-                                              color: Colors.white,
-                                              borderRadius:
-                                                  BorderRadius.circular(12),
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: Colors.grey
-                                                      .withOpacity(0.3),
+                                                  color: Colors.black.withOpacity(0.12),
                                                   blurRadius: 6,
                                                   offset: const Offset(0, 3),
                                                 ),
                                               ],
+                                              color: Colors.white,
+                                              borderRadius: BorderRadius.circular(12),
+                                              border: Border.all(
+                                                color: Colors.grey.shade300,
+                                              ),
                                             ),
-                                            child: IntrinsicHeight(
-                                              child: Row(
-                                                children: [
-                                                  Expanded(
-                                                    child: InkWell(
-                                                      onTap: () {
-                                                        Navigator.pop(
-                                                          context,
-                                                          account,
-                                                        );
-                                                      },
-                                                      borderRadius:
-                                                          const BorderRadius.only(
-                                                            topLeft:
-                                                                Radius.circular(
-                                                                  12,
-                                                                ),
-                                                            bottomLeft:
-                                                                Radius.circular(
-                                                                  12,
+                                            child: Row(
+                                              children: [
+                                                Expanded(
+                                                  child: InkWell(
+                                                    borderRadius: const BorderRadius.only(
+                                                      topLeft: Radius.circular(12),
+                                                      bottomLeft: Radius.circular(12),
+                                                    ),
+                                                    onTap: () {
+                                                      Navigator.pop(context, account);
+                                                    },
+                                                    child: Padding(
+                                                      padding: const EdgeInsets.symmetric(
+                                                        horizontal: 16,
+                                                        vertical: 14,
+                                                      ),
+                                                      child: Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment.start,
+                                                        children: [
+                                                          Text(
+                                                            account.email,
+                                                            style: Theme.of(context)
+                                                                .textTheme
+                                                                .displayMedium
+                                                                ?.copyWith(
+                                                                  fontWeight: FontWeight.w600,
                                                                 ),
                                                           ),
-                                                      child: Padding(
-                                                        padding:
-                                                            const EdgeInsets.all(
-                                                              16,
-                                                            ),
-                                                        child: Column(
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .start,
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .center,
-                                                          children: [
-                                                            Text(
-                                                              account.email,
-                                                              style: const TextStyle(
-                                                                fontSize: 16,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w500,
-                                                              ),
-                                                            ),
-                                                            const SizedBox(
-                                                              height: 4,
-                                                            ),
-                                                            Text(
-                                                              account.userName,
-                                                              style:
-                                                                  const TextStyle(
-                                                                    fontSize:
-                                                                        14,
-                                                                    color: Colors
-                                                                        .grey,
-                                                                  ),
-                                                            ),
-                                                          ],
-                                                        ),
+                                                          const SizedBox(height: 2),
+                                                          Text(
+                                                            account.userName,
+                                                            style: Theme.of(context)
+                                                                .textTheme
+                                                                .displaySmall
+                                                                ?.copyWith(
+                                                                  color: Colors.grey.shade600,
+                                                                ),
+                                                          ),
+                                                        ],
                                                       ),
                                                     ),
                                                   ),
-                                                  InkWell(
-                                                    onTap: () async {
-                                                      final db =
-                                                          await LocalServices.getDatabase();
-                                                      await db.accountDao
-                                                          .removeAccount(
-                                                            account,
-                                                          );
+                                                ),
+                                                InkWell(
+                                                  onTap: () async {
+                                                    final db =
+                                                        await LocalServices.getDatabase();
+                                                    await db.accountDao
+                                                        .removeAccount(account);
 
-                                                      final currentUser =
-                                                          AuthService()
-                                                              .currentUser;
+                                                    final currentUser =
+                                                        AuthService().currentUser;
 
-                                                      if (currentUser != null &&
-                                                          currentUser.uid ==
-                                                              account.id) {
-                                                        await AuthService()
-                                                            .signOut();
-                                                      }
-                                                      setState(() {
-                                                        accounts.removeAt(
-                                                          index,
-                                                        );
-                                                      });
+                                                    if (currentUser != null &&
+                                                        currentUser.uid == account.id) {
+                                                      await AuthService().signOut();
+                                                    }
 
-                                                      if (accounts.isEmpty) {
-                                                        Navigator.pop(context);
-                                                        Navigator.pushReplacementNamed(
-                                                          context,
-                                                          "/signup",
-                                                        );
-                                                      }
-                                                    },
-                                                    child: Container(
-                                                      width: 60,
-                                                      decoration: const BoxDecoration(
-                                                        color: Colors.red,
-                                                        borderRadius:
-                                                            BorderRadius.only(
-                                                              topRight:
-                                                                  Radius.circular(
-                                                                    12,
-                                                                  ),
-                                                              bottomRight:
-                                                                  Radius.circular(
-                                                                    12,
-                                                                  ),
-                                                            ),
-                                                      ),
-                                                      alignment:
-                                                          Alignment.center,
-                                                      child: const Icon(
-                                                        Icons.delete,
-                                                        color: Colors.white,
+                                                    setState(() {
+                                                      accounts.removeAt(index);
+                                                    });
+
+                                                    if (accounts.isEmpty) {
+                                                      Navigator.pop(context);
+                                                      Navigator.pushReplacementNamed(
+                                                        context,
+                                                        "/signup",
+                                                      );
+                                                    }
+                                                  },
+                                                  child: Container(
+                                                    width: 56,
+                                                    height: 64,
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.redAccent,
+                                                      borderRadius: const BorderRadius.only(
+                                                        topRight: Radius.circular(12),
+                                                        bottomRight: Radius.circular(12),
                                                       ),
                                                     ),
+                                                    child: const Icon(
+                                                      Icons.delete_outline,
+                                                      color: Colors.white,
+                                                    ),
                                                   ),
-                                                ],
-                                              ),
+                                                ),
+                                              ],
                                             ),
                                           );
                                         },
                                       ),
                                     ),
+
                                     Padding(
-                                      padding: const EdgeInsets.fromLTRB(
-                                        16,
-                                        8,
-                                        16,
-                                        16,
-                                      ),
+                                      padding:
+                                          const EdgeInsets.fromLTRB(16, 8, 16, 16),
                                       child: SizedBox(
                                         width: double.infinity,
-                                        height: 56,
+                                        height: 52,
                                         child: ElevatedButton(
                                           onPressed: () {
                                             Navigator.pop(context);
@@ -238,16 +207,20 @@ class _WelcomePage extends State<WelcomePage> {
                                           style: ElevatedButton.styleFrom(
                                             backgroundColor: Colors.orange,
                                             shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(16),
+                                              borderRadius: BorderRadius.circular(14),
                                             ),
+                                            shadowColor:Color.fromARGB(255, 221, 133, 2),
+                                            elevation: 8,
                                           ),
                                           child: Text(
-                                            "Hızlı giriş olmadan Devam et",
+                                            "Hızlı giriş olmadan devam et",
                                             style: Theme.of(context)
                                                 .textTheme
-                                                .displayLarge
-                                                ?.copyWith(color: Colors.white),
+                                                .displayMedium
+                                                ?.copyWith(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
                                           ),
                                         ),
                                       ),
@@ -259,7 +232,8 @@ class _WelcomePage extends State<WelcomePage> {
                           },
                         );
                       },
-                    ).then((selectedAccount) async {
+                    )
+                    .then((selectedAccount) async {
                       if (selectedAccount != null) {
                         try {
                           await AuthService().signIn(

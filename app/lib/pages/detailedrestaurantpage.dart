@@ -24,6 +24,26 @@ import 'package:cloud_firestore/cloud_firestore.dart';
   GETTERING DESIGN MUST BE CHANGED BEFORE DEPLOYMENT.
 
 */
+const Color primaryOrange = Color.fromARGB(255, 221, 133, 2);
+
+BoxDecoration orangeCardDecoration({Color? backgroundColor}) {
+  return BoxDecoration(
+    color: backgroundColor ?? Colors.white,
+    borderRadius: BorderRadius.circular(20),
+    border: Border.all(
+      color: primaryOrange,
+      width: 2,
+    ),
+    boxShadow: [
+      BoxShadow(
+        color: primaryOrange.withOpacity(0.15),
+        spreadRadius: 1,
+        blurRadius: 8,
+        offset: const Offset(0, 2),
+      ),
+    ],
+  );
+}
 
 class DetailedRestaurantPage extends StatefulWidget {
   final Place? place;
@@ -387,19 +407,6 @@ class _DetailedRestaurantPage extends State<DetailedRestaurantPage> {
     }
   }
 
- /*  Future<void> _loadUserData() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      final doc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user!.uid)
-          .get();
-      if (doc.exists) {
-        userName = doc['nickname'] ?? "";
-      }
-    }
-  } */
-
   Future<void> _loadMore() async {
     if (_loadingMore || !_hasMore) return;
     if (place?.id == null) return;
@@ -512,32 +519,12 @@ class _DetailedRestaurantPage extends State<DetailedRestaurantPage> {
                 _submitReview,
               ),
 
-            _DetailedRestaurantCommentsSection(
-              restaurantReviews: _reviews,  
-            ),
-            if (_firstLoading)
-              const Padding(
-                padding: EdgeInsets.all(16),
-                child: CircularProgressIndicator(),
-              )
-            else if (_hasMore)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 24),
-                child: ElevatedButton(
-                  onPressed: _loadingMore ? null : _loadMore,
-                  child: _loadingMore
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text("Daha fazla göster"),
-                ),
-              )
-            else
-              const Padding(
-                padding: EdgeInsets.only(bottom: 24),
-                child: Text("Tüm yorumlar gösterildi."),
+              _DetailedRestaurantCommentsSection(
+                restaurantReviews: _reviews,
+                isFirstLoading: _firstLoading,
+                hasMore: _hasMore,
+                isLoadingMore: _loadingMore,
+                onLoadMore: _loadMore,
               ),
           ],
         ),
@@ -578,7 +565,8 @@ class _DetailedRestaurantHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 250,
+      width: MediaQuery.of(context).size.width,
+      height: MediaQuery.of(context).size.height * 0.4,
       decoration: BoxDecoration(
         image: restaurantPhotoUri != null
             ? DecorationImage(
@@ -700,18 +688,9 @@ class _DetailedRestaurantInformationSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            spreadRadius: 2,
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-        color: Colors.white,
-        borderRadius: const BorderRadius.all(Radius.circular(20)),
-      ),
+      height: MediaQuery.of(context).size.height * 0.4,
+      width: MediaQuery.of(context).size.width,
+      decoration: orangeCardDecoration(),
       margin: const EdgeInsets.all(10),
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -803,52 +782,107 @@ class _DetailedRestaurantInformationSection extends StatelessWidget {
 
 class _DetailedRestaurantCommentsSection extends StatelessWidget {
   final List<dynamic>? restaurantReviews;
-  
-  const _DetailedRestaurantCommentsSection({this.restaurantReviews});
+  final bool isFirstLoading;
+  final bool hasMore;
+  final bool isLoadingMore;
+  final VoidCallback onLoadMore;
+
+  const _DetailedRestaurantCommentsSection({
+    this.restaurantReviews,
+    required this.isFirstLoading,
+    required this.hasMore,
+    required this.isLoadingMore,
+    required this.onLoadMore,
+  });
 
   @override
   Widget build(BuildContext context) {
     final reviews = restaurantReviews ?? [];
 
     return Container(
+      width: MediaQuery.of(context).size.width,
       margin: const EdgeInsets.all(10),
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: const BorderRadius.all(Radius.circular(20)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            spreadRadius: 2,
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
+      decoration: orangeCardDecoration(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             "Kullanıcı Yorumları",
-            style: Theme.of(
-              context,
-            ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+            style: Theme.of(context)
+                .textTheme
+                .headlineSmall
+                ?.copyWith(fontWeight: FontWeight.bold),
           ),
+
           const SizedBox(height: 12),
-          if (reviews.isEmpty)
-            Text(
-              "Henüz bir değerlendirme bulunmamaktadır.",
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.normal,
-                color: Colors.grey[700],
+
+          if (isFirstLoading)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.all(16),
+                child: CircularProgressIndicator(
+                  color: primaryOrange,
+                ),
               ),
             )
-          else
+
+          else if (reviews.isEmpty)
+            Text(
+              "Henüz bir değerlendirme bulunmamaktadır.",
+              style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                    color: Colors.grey[700],
+                  ),
+            )
+
+          else ...[
             ...reviews.map((r) => _buildReviewCard(r, context)),
+
+            const SizedBox(height: 12),
+
+            if (hasMore)
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: isLoadingMore ? null : onLoadMore,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryOrange,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: isLoadingMore
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text("Daha fazla göster"),
+                ),
+              )
+            else
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(
+                    "Tüm yorumlar gösterildi.",
+                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                          color: Colors.grey[600],
+                        ),
+                  ),
+                ),
+              ),
+          ],
         ],
       ),
     );
   }
+}
 
   Future<String> getUserName(String userId) async {
     final doc = await FirebaseFirestore.instance
@@ -862,7 +896,6 @@ class _DetailedRestaurantCommentsSection extends StatelessWidget {
   }
 
   Widget _buildReviewCard(Review review, BuildContext context) {
-    // güvenli veri alma
     
     final double rating = review.rating.toDouble();
     final String text = review.comment ?? "";
@@ -875,17 +908,19 @@ class _DetailedRestaurantCommentsSection extends StatelessWidget {
             ? snapshot.data as String
             : "Yükleniyor...";
         return Container(
+          width: MediaQuery.of(context).size.width,
+          height: MediaQuery.of(context).size.height * .52,
           margin: const EdgeInsets.only(bottom: 16),
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: const Color(0xFFF7F9FB),
             borderRadius: BorderRadius.circular(15),
-            border: Border.all(color: Colors.grey.withOpacity(0.2)),
+            border: Border.all(color: primaryOrange.withOpacity(0.6)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Kullanıcı ve tarih
+
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -907,7 +942,6 @@ class _DetailedRestaurantCommentsSection extends StatelessWidget {
               ),
               const SizedBox(height: 6),
         
-              // Yıldızlar
               Row(
                 children: List.generate(5, (index) {
                   return Icon(
@@ -921,8 +955,7 @@ class _DetailedRestaurantCommentsSection extends StatelessWidget {
               ),
         
               const SizedBox(height: 8),
-        
-              // Yorum
+
               Text(
                 text,
                 style: Theme.of(context).textTheme.displayMedium?.copyWith(
@@ -936,9 +969,6 @@ class _DetailedRestaurantCommentsSection extends StatelessWidget {
       }
     );
   }
-}
-
-//inceleme yazma windet eklenecek
 
 class _DetailedRestaurantWriteReviewSection extends StatelessWidget {
   final TextEditingController commentCtrl;
@@ -958,70 +988,122 @@ class _DetailedRestaurantWriteReviewSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      width: MediaQuery.of(context).size.width,
+      height: MediaQuery.of(context).size.height * 0.52,
       margin: const EdgeInsets.all(10),
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: const BorderRadius.all(Radius.circular(20)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            spreadRadius: 2,
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
+      decoration: orangeCardDecoration(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            "Yorum Yaz",
-            style: Theme.of(
-              context,
-            ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+
+          Row(
+            children: [
+              const Icon(
+                Icons.rate_review,
+                color: primaryOrange,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                "Yorum Yaz",
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+            ],
           ),
-          const SizedBox(height: 12),
-          Text(
-            "Puanınız",
-            style: Theme.of(
-              context,
-            ).textTheme.displayLarge?.copyWith(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          RatingBar.builder(
-            initialRating: 0,
-            minRating: 0,
-            direction: Axis.horizontal,
-            allowHalfRating: false,
-            itemCount: 5,
-            itemSize: 35,
-            itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
-            itemBuilder: (context, _) => const Icon(
-              Icons.star_border_purple500_rounded,
-              color: Color.fromARGB(255, 221, 133, 2),
-            ),
-            onRatingUpdate: onRatingChanged
-          ),
+
           const SizedBox(height: 16),
-          TextField(
-            controller: commentCtrl,
-            maxLines: 4,
-            decoration: InputDecoration(
-              hintText: "Yorumunuzu buraya yazın...",
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF7F9FB),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: primaryOrange.withOpacity(0.4),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Puanınız",
+                  style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: MediaQuery.of(context).size.width,
+                  child: RatingBar.builder(
+                    initialRating: selectedRating.toDouble(),
+                    minRating: 0,
+                    direction: Axis.horizontal,
+                    allowHalfRating: false,
+                    itemCount: 5,
+                    itemSize: 34,
+                    itemPadding:
+                        const EdgeInsets.symmetric(horizontal: 4.0),
+                    itemBuilder: (context, _) => const Icon(
+                      Icons.star_border_purple500_rounded,
+                      color: primaryOrange,
+                    ),
+                    onRatingUpdate: onRatingChanged,
+                  ),
+                )
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFFF7F9FB),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: primaryOrange.withOpacity(0.3),
+              ),
+            ),
+            child: TextField(
+              controller: commentCtrl,
+              maxLines: 4,
+              decoration: InputDecoration(
+                hintText: "Yorumunuzu buraya yazın...",
+                contentPadding: const EdgeInsets.all(14),
+                border: InputBorder.none,
               ),
             ),
           ),
-          const SizedBox(height: 12),
-          ElevatedButton(
-            onPressed:  
-              isSending ? null : onSubmit,
-              child: isSending ? SizedBox(
-                width: 18,
-                height: 18,
-                child: const CircularProgressIndicator(strokeWidth: 2.0)) : const Text("Gönder"),
+
+          const SizedBox(height: 16),
+
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: isSending ? null : onSubmit,
+              icon: isSending
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Icon(Icons.send),
+              label: Text(isSending ? "Gönderiliyor..." : "Gönder"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: primaryOrange,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 2,
+              ),
+            ),
           ),
         ],
       ),
@@ -1041,266 +1123,114 @@ class _DetailedRestaurantUserReviewSection extends StatelessWidget {
     this.userReview,
     this.onEdit,
     this.onDelete,
-    required this.isSending
+    required this.isSending,
   });
 
-  void _showEditDialog(BuildContext context, Review review) {
-    commentCtrl.text = review.comment ?? "";
-
-    int tempRating = review.rating.toInt();
-
-    showDialog(
-      context: context, 
-      barrierDismissible: false,
-      builder: (dialogContext) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-            title: const Text(
-              "Yorumu Düzenle",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  RatingBar.builder(
-                    initialRating: tempRating.toDouble(),
-                    minRating: 1,
-                    direction: Axis.horizontal,
-                    allowHalfRating: false,
-                    itemCount: 5,
-                    itemSize: 28,
-                    itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
-                    itemBuilder: (context, _) => const Icon(
-                      Icons.star_border_purple500_rounded,
-                      color: Color.fromARGB(255, 221, 133, 2),
-                    ),
-                    onRatingUpdate: (rating) {
-                      setDialogState(() {
-                        tempRating = rating.toInt();
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  const Text("Yorumunuz"),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: commentCtrl,
-                    maxLines: 4,
-                    decoration: InputDecoration(
-                      hintText: "Yorumunuzu buraya yazın...",
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(dialogContext).pop();
-                },
-                child: Text(
-                  "İptal",
-                  style: TextStyle(
-                    color: Colors.grey[700],
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              TextButton(
-                onPressed: isSending ? null : () {
-                  final newComment = commentCtrl.text.trim();
-                  if(tempRating == 0 || newComment.isEmpty){
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Lütfen geçerli bir puan ve yorum giriniz.")),
-                    );
-                    return;
-                  }
-                  Navigator.of(dialogContext).pop();
-                  onEdit?.call(tempRating, newComment);
-                },
-                style: TextButton.styleFrom(foregroundColor: const Color.fromARGB(255, 221, 133, 2)),
-                child: const Text(
-                  "Güncelle",
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  void _showDeleteConfirmation(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          title: const Text(
-            "Yorumu Sil",
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          content: const Text(
-            "Bu yorumu silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-              },
-              child: Text(
-                "İptal",
-                style: TextStyle(
-                  color: Colors.grey[700],
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            TextButton(
-              onPressed: isSending ? null : () {
-                Navigator.of(dialogContext).pop();
-                onDelete?.call();
-              },
-              style: TextButton.styleFrom(foregroundColor: Colors.redAccent),
-              child: const Text(
-                "Sil",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-  
   @override
   Widget build(BuildContext context) {
-    // Eğer kullanıcının yorumu yoksa widget'ı gösterme
     if (userReview == null) {
       return const SizedBox.shrink();
     }
 
     return Container(
-      margin: const EdgeInsets.all(10),
+      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color.fromARGB(214, 233, 232, 232),
-        borderRadius: const BorderRadius.all(Radius.circular(20)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            spreadRadius: 2,
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
+      decoration: orangeCardDecoration(
+        backgroundColor: Colors.white,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text(
-                "Yorumunuz",
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
+              Expanded(
+                child: Text(
+                  "Yorumunuz",
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
               ),
-              Row(
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      _showEditDialog(context, userReview!);
-                    },
-                    icon: const Icon(
-                      CupertinoIcons.pencil,
-                      color: Color(0xFF4285F4),
-                    ),
-                    tooltip: "Düzenle",
-                  ),
-                  IconButton(
-                    onPressed: () {
-                      _showDeleteConfirmation(context);
-                    },
-                    icon: const Icon(
-                      CupertinoIcons.trash,
-                      color: Colors.redAccent,
-                    ),
-                    tooltip: "Sil",
-                  ),
-                ],
+              IconButton(
+                onPressed: () => _showEditDialog(context, userReview!),
+                icon: const Icon(CupertinoIcons.pencil),
+                color: const Color(0xFF4285F4),
+                tooltip: "Düzenle",
+              ),
+              IconButton(
+                onPressed: () => _showDeleteConfirmation(context),
+                icon: const Icon(CupertinoIcons.trash),
+                color: Colors.redAccent,
+                tooltip: "Sil",
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          // Yıldızlar
+
+          const SizedBox(height: 8),
+
           Row(
             children: [
-              Row(
-                children: List.generate(5, (index) {
-                  return Icon(
-                    index < userReview!.rating
-                        ? Icons.star_border_purple500_rounded
-                        : Icons.star_border,
-                    color: const Color.fromARGB(255, 221, 133, 2),
-                    size: 24,
-                  );
-                }),
-              ),
+              ...List.generate(5, (index) {
+                return Icon(
+                  index < userReview!.rating
+                      ? Icons.star_border_purple500_rounded
+                      : Icons.star_border,
+                  color: const Color.fromARGB(255, 221, 133, 2),
+                  size: 22,
+                );
+              }),
               const SizedBox(width: 8),
               Text(
                 "${userReview!.rating.toStringAsFixed(1)} / 5.0",
                 style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey[700],
-                ),
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey[700],
+                    ),
               ),
             ],
           ),
+
           const SizedBox(height: 12),
-          // Yorum metni
+
           Container(
-            padding: const EdgeInsets.all(12),
+            width: double.infinity,
+            padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: const Color(0xFFF7F9FB),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.withOpacity(0.2)),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: const Color.fromARGB(255, 221, 133, 2).withOpacity(0.2),
+              ),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  userReview!.comment ?? "Yorum bulunmuyor",
+                  userReview!.comment?.isNotEmpty == true
+                      ? userReview!.comment!
+                      : "Yorum bulunmuyor.",
                   style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                    fontWeight: FontWeight.normal,
-                    color: Colors.black87,
-                  ),
+                        color: Colors.black87,
+                      ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
+                Divider(color: Colors.grey.withOpacity(0.2)),
+                const SizedBox(height: 6),
                 Text(
                   "Yayınlanma: ${_formatDate(DateTime.fromMillisecondsSinceEpoch(userReview!.createdAt))}",
-                  style: Theme.of(
-                    context,
-                  ).textTheme.displaySmall?.copyWith(color: Colors.grey[600]),
+                  style: Theme.of(context)
+                      .textTheme
+                      .displaySmall
+                      ?.copyWith(color: Colors.grey[600]),
                 ),
                 if (userReview!.updatedAt != userReview!.createdAt)
                   Text(
                     "Düzenleme: ${_formatDate(DateTime.fromMillisecondsSinceEpoch(userReview!.updatedAt))}",
-                    style: Theme.of(
-                      context,
-                    ).textTheme.displaySmall?.copyWith(color: Colors.grey[600]),
+                    style: Theme.of(context)
+                        .textTheme
+                        .displaySmall
+                        ?.copyWith(color: Colors.grey[600]),
                   ),
               ],
             ),
@@ -1310,10 +1240,255 @@ class _DetailedRestaurantUserReviewSection extends StatelessWidget {
     );
   }
 
-  
-  
-}
+  void _showEditDialog(BuildContext context, Review review) {
+    commentCtrl.text = review.comment ?? "";
+    int tempRating = review.rating.toInt();
 
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) => AlertDialog(
+            backgroundColor: Colors.white, 
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(22),
+              side: const BorderSide( 
+                color: primaryOrange,
+                width: 2,
+              ),
+            ),
+            title: const Center(
+              child: Text(
+                "Yorumu Düzenle",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  /// Rating Card
+                  Container(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: primaryOrange,
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Center(
+                      child: RatingBar.builder(
+                        initialRating: tempRating.toDouble(),
+                        minRating: 1,
+                        itemCount: 5,
+                        itemSize: 30,
+                        allowHalfRating: false,
+                        itemPadding:
+                            const EdgeInsets.symmetric(horizontal: 4),
+                        itemBuilder: (_, __) => const Icon(
+                          Icons.star_border_purple500_rounded,
+                          color: Color.fromARGB(255, 221, 133, 2),
+                        ),
+                        onRatingUpdate: (rating) {
+                          setDialogState(() {
+                            tempRating = rating.toInt();
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  /// Comment Field
+                  Text(
+                    "Yorumunuz",
+                    style: Theme.of(context)
+                        .textTheme
+                        .displaySmall
+                        ?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: commentCtrl,
+                    maxLines: 4,
+                    decoration: InputDecoration(
+                      hintText: "Yorumunuzu buraya yazın...",
+                      filled: true,
+                      fillColor: Colors.white,
+                      contentPadding: const EdgeInsets.all(14),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide:
+                            const BorderSide(color: primaryOrange),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide:
+                            const BorderSide(color: primaryOrange),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide:
+                            const BorderSide(color: primaryOrange, width: 2),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actionsPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            actions: [
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () =>
+                          Navigator.of(dialogContext).pop(),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: primaryOrange,
+                        side: const BorderSide(color: primaryOrange),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      child: const Text("İptal"),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: isSending
+                          ? null
+                          : () {
+                              final newComment =
+                                  commentCtrl.text.trim();
+                              if (tempRating == 0 ||
+                                  newComment.isEmpty) {
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                        "Lütfen geçerli bir puan ve yorum giriniz."),
+                                  ),
+                                );
+                                return;
+                              }
+                              Navigator.of(dialogContext).pop();
+                              onEdit?.call(tempRating, newComment);
+                            },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryOrange,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        padding:
+                            const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      child: const Text(
+                        "Güncelle",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+
+
+  void _showDeleteConfirmation(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: Colors.white, 
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(22),
+          side: const BorderSide(
+            color: primaryOrange, 
+            width: 2,
+          ),
+        ),
+        title: Column(
+          children: const [
+            Icon(
+              CupertinoIcons.trash,
+              color: Colors.redAccent,
+              size: 36,
+            ),
+            SizedBox(height: 8),
+            Text(
+              "Yorumu Sil",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        content: const Text(
+          "Bu yorumu silmek istediğinizden emin misiniz?\nBu işlem geri alınamaz.",
+          textAlign: TextAlign.center,
+        ),
+        actionsPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        actions: [
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () =>
+                      Navigator.of(dialogContext).pop(),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: primaryOrange,
+                    side: const BorderSide(color: primaryOrange),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  child: const Text("İptal"),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: isSending
+                      ? null
+                      : () {
+                          Navigator.of(dialogContext).pop();
+                          onDelete?.call();
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.redAccent,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    padding:
+                        const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  child: const Text(
+                    "Sil",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+}
 String _formatDate(DateTime date) {
     return "${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year}";
   }

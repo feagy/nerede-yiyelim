@@ -14,15 +14,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:app/pages/favoritespage.dart';
 import 'package:provider/provider.dart';
 
-/* // BURADA OLAN SAYFALAR SAHTE SADECE AKIŞI DENEMEK İÇİN
-class FavoritesPage extends StatelessWidget {
-  const FavoritesPage({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(body: Center(child: Text("Favorites Page")));
-  }
-} */
-
 // BURADA OLAN SAYFALAR SAHTE SADECE AKIŞI DENEMEK İÇİN
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});

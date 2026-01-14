@@ -65,7 +65,7 @@ Future<bool> signInAndSaveAccount({
         ),
       );
 
-     /*  final uid = AuthService().currentUser!.uid;
+      final uid = AuthService().currentUser!.uid;
       final prefs = await SharedPreferences.getInstance();
       final isSynched = prefs.getBool('initial_sync_$uid') ?? false;
 
@@ -88,9 +88,9 @@ Future<bool> signInAndSaveAccount({
         }
 
         await prefs.setBool('initial_sync_$uid', true);
-      } */
       return true;
     }
+  }
 
     return false;
   } catch (e) {

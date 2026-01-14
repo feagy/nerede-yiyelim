@@ -151,12 +151,13 @@ class _ProfilePageState extends State<ProfilePage> {
                 height: 50,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
+                    shadowColor:Color.fromARGB(255, 221, 133, 2),
                     backgroundColor: primaryColor,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    elevation: 0,
+                    elevation: 8,
                   ),
                   onPressed: _updateProfile,
                   child: Text(
@@ -175,12 +176,13 @@ class _ProfilePageState extends State<ProfilePage> {
                 height: 50,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
+                    shadowColor:Color.fromARGB(255, 221, 133, 2),
                     backgroundColor: primaryColor,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12)
                     ),
-                    elevation: 0,
+                    elevation:8,
                   ),
                   // review sayfasına gönderme
                   onPressed: () {
@@ -210,10 +212,11 @@ class _ProfilePageState extends State<ProfilePage> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red,
                     foregroundColor: Colors.white,
+                    shadowColor: Colors.red,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    elevation: 0,
+                    elevation: 8,
                   ),
                   onPressed: () async {
                     try {
@@ -250,6 +253,8 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
               ),
+
+              const SizedBox(height: 20),
             ],
           ),
         ),

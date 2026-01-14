@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:app/database/entity/review.dart';
 import 'package:app/pages/detailedrestaurantpage.dart';
 import 'package:app/database/database.dart';
@@ -28,8 +30,7 @@ class _ReviewPageState extends State<ReviewPage> {
   void initState() {
     super.initState();
     _init();
-    }
-
+  }
 
   Future<void> _init() async {
     final db = await LocalServices.getDatabase();
@@ -64,7 +65,14 @@ class _ReviewPageState extends State<ReviewPage> {
     } catch (e) {
       if (mounted){
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Yorumlar yüklenemedi: $e")),
+          SnackBar(
+            content: Text("Yorumlar yüklenemedi: $e"),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
         );
       }
     } finally {
@@ -97,12 +105,26 @@ class _ReviewPageState extends State<ReviewPage> {
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Yorum silindi ✅")),
+        SnackBar(
+          content: const Text("Yorum silindi ✅"),
+          backgroundColor: const Color.fromARGB(255, 221, 133, 2),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
       );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Silinemedi: $e")),
+        SnackBar(
+          content: Text("Silinemedi: $e"),
+          backgroundColor: Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
       );
     } finally {
       if (mounted){
@@ -151,12 +173,26 @@ class _ReviewPageState extends State<ReviewPage> {
         }
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Yorum güncellendi ✅")),
+        SnackBar(
+          content: const Text("Yorum güncellendi ✅"),
+          backgroundColor: const Color.fromARGB(255, 221, 133, 2),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
       );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Güncellenemedi: $e")),
+        SnackBar(
+          content: Text("Güncellenemedi: $e"),
+          backgroundColor: Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
       );
     } finally {
       if (mounted){
@@ -167,24 +203,79 @@ class _ReviewPageState extends State<ReviewPage> {
     }
   }
 
-  
-
-  // Delete confirmation
-  
   Future<void> _confirmDelete(Review review) async {
     final result = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Emin misin?'),
-        content: const Text('Bu yorumu silmek istediğine emin misin?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('İptal'),
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: Colors.white, // 🤍
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(22),
+          side: const BorderSide(
+            color: primaryOrange, // 🟠
+            width: 2,
           ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Sil'),
+        ),
+        title: Column(
+          children: const [
+            Icon(
+              CupertinoIcons.trash,
+              color: Colors.redAccent,
+              size: 38,
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Emin misin?',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        content: const Text(
+          'Bu yorumu silmek istediğine emin misin?\nBu işlem geri alınamaz.',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: Colors.black54),
+        ),
+        actionsPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        actions: [
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(dialogContext, false),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: primaryOrange,
+                    side: const BorderSide(color: primaryOrange),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  child: const Text(
+                    'İptal',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(dialogContext, true),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.redAccent,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    padding:
+                        const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  child: const Text(
+                    'Sil',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -195,9 +286,7 @@ class _ReviewPageState extends State<ReviewPage> {
     }
   }
 
-  
-  // Edit review dialog
-  
+
   Future<void> _editReview(Review review) async {
     int selectedRating = review.rating;
     final commentController =
@@ -205,139 +294,469 @@ class _ReviewPageState extends State<ReviewPage> {
 
     final result = await showDialog<bool>(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Yorumu Güncelle'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              DropdownButtonFormField<int>(
-                value: selectedRating,
-                decoration: const InputDecoration(labelText: 'Puan'),
-                items: List.generate(
-                  5,
-                  (index) => DropdownMenuItem(
-                    value: index + 1,
-                    child: Text('${index + 1} ⭐'),
-                  ),
-                ),
-                onChanged: (value) {
-                  if (value != null) selectedRating = value;
-                },
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) => AlertDialog(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(22),
+              side: const BorderSide(
+                color: primaryOrange,
+                width: 2,
               ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: commentController,
-                maxLines: 3,
-                decoration: const InputDecoration(labelText: 'Yorum'),
+            ),
+            title: const Center(
+              child: Text(
+                'Yorumu Güncelle',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Puanınız",
+                        style: Theme.of(context)
+                            .textTheme
+                            .displaySmall
+                            ?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: primaryOrange,
+                            width: 1,
+                          ),
+                        ),
+                        child: Center(
+                          child: RatingBar.builder(
+                            initialRating: selectedRating.toDouble(),
+                            minRating: 1,
+                            allowHalfRating: false,
+                            itemCount: 5,
+                            itemSize: 32,
+                            itemPadding: const EdgeInsets.symmetric(horizontal: 4),
+                            itemBuilder: (_, __) => const Icon(
+                              Icons.star_border_purple500_rounded,
+                              color: Color.fromARGB(255, 221, 133, 2),
+                            ),
+                            onRatingUpdate: (rating) {
+                              setDialogState(() {
+                                selectedRating = rating.toInt();
+                              });
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    "Yorumunuz",
+                    style: Theme.of(context)
+                        .textTheme
+                        .displaySmall
+                        ?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: commentController,
+                    maxLines: 4,
+                    decoration: InputDecoration(
+                      hintText: "Yorumunuzu buraya yazın...",
+                      filled: true,
+                      fillColor: Colors.white,
+                      contentPadding: const EdgeInsets.all(14),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide:
+                            const BorderSide(color: primaryOrange),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide:
+                            const BorderSide(color: primaryOrange),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(
+                          color: primaryOrange,
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actionsPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            actions: [
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () =>
+                          Navigator.pop(dialogContext, false),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: primaryOrange,
+                        side: const BorderSide(color: primaryOrange),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      child: const Text(
+                        'İptal',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () =>
+                          Navigator.pop(dialogContext, true),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryOrange,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        padding:
+                            const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      child: const Text(
+                        'Kaydet',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('İptal'),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Kaydet'),
-            ),
-          ],
         );
       },
     );
 
     if (result == true) {
       final newComment = commentController.text.trim();
-        if (newComment.isEmpty) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Yorum boş olamaz.")),
-          );
-          return;
-        }
+      if (newComment.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text("Yorum boş olamaz."),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        );
+        return;
+      }
       await _updateReview(review, selectedRating, newComment);
     }
+
     commentController.dispose();
   }
 
-  
-  // UI
-  
+
+  String _formatDate(DateTime date) {
+    return "${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year}";
+  }
+
   @override
   Widget build(BuildContext context) {
     final bottomTab = Provider.of<BottomTabState>(context);
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Yorumlarım'),
-        
+        surfaceTintColor: Colors.white,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: Text(
+          'Yorumlarım',
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+        ),
       ),
       body: Column(
         children: [
-          if (_isLoading)
-            const LinearProgressIndicator(),
+          if (_isLoading) const LinearProgressIndicator(),
           Expanded(
             child: RefreshIndicator(
               onRefresh: _loadReviews,
-              child:  ListView.builder(
-              itemCount: _reviews.length,
-              itemBuilder: (context, index) {
-                final review = _reviews[index];
-            
-                return Card(
-                  margin: const EdgeInsets.all(8),
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      child: Text(review.rating.toString()),
-                    ),
-                    title: Text(
-                      review.placeName ?? 'Mekan',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Text(review.comment ?? ''),
-                    onTap: () async {
-                      if (_db == null) return;
-                      final place = await _db!.placeDao.getPlaceById(review.placeId);
-                        if (!mounted) return;
-                        if (place == null) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Mekan bilgisi bulunamadı")),
-                          );
-                          return;
-                        }
-                        if (mounted) {
-                          bottomTab.setTab(3);
-                          bottomTab.navigatorKey.currentState!.pushReplacement(
-                            MaterialPageRoute(
-                              builder: (_) => DetailedRestaurantPage(
-                                place: place,
+              color: const Color.fromARGB(255, 221, 133, 2),
+              child: _reviews.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            CupertinoIcons.chat_bubble_text,
+                            size: MediaQuery.of(context).size.height * 0.12,
+                            color: Colors.grey[400],
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Henüz yorum yok',
+                            style: Theme.of(context)
+                                .textTheme
+                                .displayLarge
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.grey[600],
+                                ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.all(10),
+                      itemCount: _reviews.length,
+                      itemBuilder: (context, index) {
+                        final review = _reviews[index];
+
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: const Color.fromARGB(255, 221, 133, 2),
+                              width: 2,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color.fromARGB(255, 221, 133, 2)
+                                    .withOpacity(0.15),
+                                spreadRadius: 1,
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(20),
+                              onTap: () async {
+                                if (_db == null) return;
+                                final place = await _db!.placeDao
+                                    .getPlaceById(review.placeId);
+                                if (!mounted) return;
+                                if (place == null) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: const Text(
+                                          "Mekan bilgisi bulunamadı"),
+                                      backgroundColor: Colors.redAccent,
+                                      behavior: SnackBarBehavior.floating,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                  );
+                                  return;
+                                }
+                                if (mounted) {
+                                  bottomTab.setTab(3);
+                                  bottomTab.navigatorKey.currentState!
+                                      .pushReplacement(
+                                    MaterialPageRoute(
+                                      builder: (_) => DetailedRestaurantPage(
+                                        place: place,
+                                      ),
+                                    ),
+                                  );
+                                }
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // Başlık ve Butonlar
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                review.placeName ?? 'Mekan',
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .displayLarge
+                                                    ?.copyWith(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: Colors.black87,
+                                                    ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                review.placeAddress ?? '',
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .displaySmall
+                                                    ?.copyWith(
+                                                      color: Colors.grey[600],
+                                                    ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFFF7F9FB),
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                              ),
+                                              child: IconButton(
+                                                icon: const Icon(
+                                                  CupertinoIcons.pencil,
+                                                  color: Color(0xFF4285F4),
+                                                  size: 20,
+                                                ),
+                                                onPressed: () =>
+                                                    _editReview(review),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFFF7F9FB),
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                              ),
+                                              child: IconButton(
+                                                icon: const Icon(
+                                                  CupertinoIcons.trash,
+                                                  color: Colors.redAccent,
+                                                  size: 20,
+                                                ),
+                                                onPressed: () =>
+                                                    _confirmDelete(review),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 12),
+                                    // Yıldızlar
+                                    Row(
+                                      children: [
+                                        Row(
+                                          children: List.generate(5, (index) {
+                                            return Icon(
+                                              index < review.rating
+                                                  ? Icons
+                                                      .star_border_purple500_rounded
+                                                  : Icons.star_border,
+                                              color: const Color.fromARGB(
+                                                  255, 221, 133, 2),
+                                              size: 20,
+                                            );
+                                          }),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          "${review.rating} / 5.0",
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .displayMedium
+                                              ?.copyWith(
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.grey[700],
+                                              ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 12),
+                                    // Yorum
+                                    Container(
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFF7F9FB),
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                          color: Colors.grey.withOpacity(0.2),
+                                        ),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            review.comment ?? "Yorum bulunmuyor",
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .displayMedium
+                                                ?.copyWith(
+                                                  fontWeight: FontWeight.normal,
+                                                  color: Colors.black87,
+                                                ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            "Yayınlanma: ${_formatDate(DateTime.fromMillisecondsSinceEpoch(review.createdAt))}",
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .displaySmall
+                                                ?.copyWith(
+                                                  color: Colors.grey[600],
+                                                ),
+                                          ),
+                                          if (review.updatedAt !=
+                                              review.createdAt)
+                                            Text(
+                                              "Düzenleme: ${_formatDate(DateTime.fromMillisecondsSinceEpoch(review.updatedAt))}",
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .displaySmall
+                                                  ?.copyWith(
+                                                    color: Colors.grey[600],
+                                                  ),
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                          );
-                        }
-                    },
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit),
-                          onPressed: () => _editReview(review),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete),
-                          onPressed: () => _confirmDelete(review),
-                        ),
-                      ],
+                          ),
+                        );
+                      },
                     ),
-                  ),
-                );
-              },
             ),
-                ),
           ),
         ],
       ),
     );
-
-    
   }
 }

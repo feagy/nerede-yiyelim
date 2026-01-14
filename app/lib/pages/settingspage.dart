@@ -5,7 +5,26 @@ import 'package:provider/provider.dart';
 class FontSettingsPage extends StatelessWidget {
   const FontSettingsPage({super.key});
 
-  static const primaryColor = Color(0xFFFF7300);
+  static const primaryColor = Color.fromARGB(255, 221, 133, 2);
+
+  BoxDecoration orangeDecoration() {
+    return BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(20),
+      border: Border.all(
+        color: primaryColor,
+        width: 2,
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: primaryColor.withOpacity(0.15),
+          spreadRadius: 1,
+          blurRadius: 8,
+          offset: const Offset(0, 2),
+        ),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,42 +48,31 @@ class FontSettingsPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Font Tipi Seçimi - Dropdown
             Container(
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    spreadRadius: 2,
-                    blurRadius: 10,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
+              decoration: orangeDecoration(),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     'Font Tipi',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: Theme.of(context)
+                        .textTheme
+                        .headlineSmall
+                        ?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 16),
 
                   Container(
                     decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey[300]!),
+                      border: Border.all(color: primaryColor),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<String>(
                         value: themeProvider.fontFamily,
                         isExpanded: true,
-                        icon: Icon(
+                        icon: const Icon(
                           Icons.keyboard_arrow_down,
                           color: primaryColor,
                         ),
@@ -74,45 +82,38 @@ class FontSettingsPage extends StatelessWidget {
                         ),
                         borderRadius: BorderRadius.circular(12),
                         dropdownColor: Colors.white,
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.black87,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        items: ThemeProvider.availableFonts.map((
-                          String fontName,
-                        ) {
+                        items: ThemeProvider.availableFonts.map((font) {
                           return DropdownMenuItem<String>(
-                            value: fontName,
+                            value: font,
                             child: Row(
                               children: [
                                 Icon(
                                   Icons.font_download,
                                   size: 20,
-                                  color: themeProvider.fontFamily == fontName
+                                  color: themeProvider.fontFamily == font
                                       ? primaryColor
-                                      : Colors.grey[600],
+                                      : Colors.grey,
                                 ),
                                 const SizedBox(width: 12),
                                 Text(
-                                  fontName,
+                                  font,
                                   style: TextStyle(
-                                    color: themeProvider.fontFamily == fontName
+                                    color: themeProvider.fontFamily == font
                                         ? primaryColor
-                                        : Colors.black87,
+                                        : Colors.black,
                                     fontWeight:
-                                        themeProvider.fontFamily == fontName
-                                        ? FontWeight.w600
-                                        : FontWeight.normal,
+                                        themeProvider.fontFamily == font
+                                            ? FontWeight.bold
+                                            : FontWeight.normal,
                                   ),
                                 ),
                               ],
                             ),
                           );
                         }).toList(),
-                        onChanged: (String? newValue) {
-                          if (newValue != null) {
-                            themeProvider.updateFontFamily(newValue);
+                        onChanged: (value) {
+                          if (value != null) {
+                            themeProvider.updateFontFamily(value);
                           }
                         },
                       ),
@@ -120,20 +121,14 @@ class FontSettingsPage extends StatelessWidget {
                   ),
 
                   const SizedBox(height: 12),
-
                   Row(
-                    children: [
-                      Icon(
-                        Icons.info_outline,
-                        size: 16,
-                        color: Colors.grey[600],
-                      ),
-                      const SizedBox(width: 8),
+                    children: const [
+                      Icon(Icons.info_outline, size: 16, color: Colors.grey),
+                      SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           'Seçtiğiniz font tüm uygulamada kullanılacak',
-                          style: Theme.of(context).textTheme.displaySmall
-                              ?.copyWith(color: Colors.grey[600], fontSize: 12),
+                          style: TextStyle(fontSize: 12, color: Colors.grey),
                         ),
                       ),
                     ],
@@ -144,39 +139,27 @@ class FontSettingsPage extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            // Font Boyutu Ayarlama
             Container(
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    spreadRadius: 2,
-                    blurRadius: 10,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
+              decoration: orangeDecoration(),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     'Font Boyutu',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: Theme.of(context)
+                        .textTheme
+                        .headlineSmall
+                        ?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 16),
 
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
+                      const Text(
                         'Mevcut Boyut:',
-                        style: Theme.of(context).textTheme.displayMedium
-                            ?.copyWith(color: Colors.grey[700]),
+                        style: TextStyle(color: Colors.grey),
                       ),
                       Container(
                         padding: const EdgeInsets.symmetric(
@@ -184,49 +167,33 @@ class FontSettingsPage extends StatelessWidget {
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color: primaryColor.withOpacity(0.1),
+                          color: primaryColor.withOpacity(0.15),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          '${themeProvider.fontSize.toInt()}',
-                          style: Theme.of(context).textTheme.displayMedium
-                              ?.copyWith(
-                                color: primaryColor,
-                                fontWeight: FontWeight.bold,
-                              ),
+                          themeProvider.fontSize.toInt().toString(),
+                          style: const TextStyle(
+                            color: primaryColor,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ],
                   ),
+
                   const SizedBox(height: 8),
 
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.text_fields,
-                        size: 16,
-                        color: Colors.grey[600],
-                      ),
-                      Expanded(
-                        child: Slider(
-                          value: themeProvider.fontSize,
-                          min: 10,
-                          max: 13,
-                          divisions: 3,
-                          activeColor: primaryColor,
-                          inactiveColor: primaryColor.withOpacity(0.2),
-                          label: themeProvider.fontSize.toInt().toString(),
-                          onChanged: (value) {
-                            themeProvider.updateFontSize(value);
-                          },
-                        ),
-                      ),
-                      Icon(
-                        Icons.text_fields,
-                        size: 24,
-                        color: Colors.grey[600],
-                      ),
-                    ],
+                  Slider(
+                    value: themeProvider.fontSize,
+                    min: 10,
+                    max: 13,
+                    divisions: 3,
+                    activeColor: primaryColor,
+                    inactiveColor: primaryColor.withOpacity(0.3),
+                    label: themeProvider.fontSize.toInt().toString(),
+                    onChanged: (value) {
+                      themeProvider.updateFontSize(value);
+                    },
                   ),
                 ],
               ),
@@ -234,32 +201,22 @@ class FontSettingsPage extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            // Önizleme Kutusu
             Container(
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    spreadRadius: 2,
-                    blurRadius: 10,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
+              decoration: orangeDecoration(),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
-                    children: [
-                      Icon(Icons.visibility, color: primaryColor, size: 20),
-                      const SizedBox(width: 8),
+                    children: const [
+                      Icon(Icons.visibility, color: primaryColor),
+                      SizedBox(width: 8),
                       Text(
                         'Önizleme',
-                        style: Theme.of(context).textTheme.headlineSmall
-                            ?.copyWith(fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
                       ),
                     ],
                   ),
@@ -268,49 +225,28 @@ class FontSettingsPage extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.grey[50],
+                      color: Colors.grey.shade50,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey[200]!),
+                      border: Border.all(color: primaryColor),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Büyük Başlık',
-                          style: Theme.of(context).textTheme.headlineLarge,
-                        ),
+                        Text('Büyük Başlık',
+                            style:
+                                Theme.of(context).textTheme.headlineLarge),
                         const SizedBox(height: 8),
-                        Text(
-                          'Orta Başlık',
-                          style: Theme.of(context).textTheme.headlineMedium,
-                        ),
+                        Text('Orta Başlık',
+                            style:
+                                Theme.of(context).textTheme.headlineMedium),
                         const SizedBox(height: 8),
+                        Text('Küçük Başlık',
+                            style:
+                                Theme.of(context).textTheme.headlineSmall),
+                        const Divider(),
                         Text(
-                          'Küçük Başlık',
-                          style: Theme.of(context).textTheme.headlineSmall,
-                        ),
-                        const SizedBox(height: 12),
-                        Divider(color: Colors.grey[300]),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Normal metin Büyük',
-                          style: Theme.of(context).textTheme.displayLarge,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Normal metin Orta',
-                          style: Theme.of(context).textTheme.displayMedium,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Normal metin Küçük',
+                          'Normal metin örneği. Font ve boyut anlık güncellenir.',
                           style: Theme.of(context).textTheme.displaySmall,
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'Bu önizleme metni seçili font tipini ve boyutunu gösterir. Ayarlarınızı değiştirdikçe bu metin otomatik olarak güncellenir.',
-                          style: Theme.of(context).textTheme.displaySmall
-                              ?.copyWith(color: Colors.grey[600]),
                         ),
                       ],
                     ),
