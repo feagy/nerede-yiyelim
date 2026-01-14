@@ -14,12 +14,10 @@ class FontSettingsPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        shadowColor: Colors.transparent,
+        surfaceTintColor: Colors.white,
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.black, size: 20),
-          onPressed: () => Navigator.pop(context),
-        ),
         title: Text(
           "Font Ayarları",
           style: Theme.of(context).textTheme.headlineMedium,

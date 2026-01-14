@@ -63,8 +63,10 @@ class _ProfilePageState extends State<ProfilePage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        shadowColor: Colors.transparent,
         elevation: 0,
+        surfaceTintColor: Colors.white,
+        backgroundColor: Colors.white,
         title: Text(
           "Profilim",
           style: GoogleFonts.lato(
