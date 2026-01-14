@@ -305,6 +305,7 @@ class _ReviewPageState extends State<ReviewPage> {
                           return;
                         }
                         if (mounted) {
+                          bottomTab.setTab(3);
                           bottomTab.navigatorKey.currentState!.pushReplacement(
                             MaterialPageRoute(
                               builder: (_) => DetailedRestaurantPage(
