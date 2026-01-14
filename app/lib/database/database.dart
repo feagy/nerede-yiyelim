@@ -15,7 +15,7 @@ import 'dao/placedao.dart';
 
 // DENEME İÇİN YAPILDI
 part 'database.g.dart';
-@Database(version: 1, entities: [Favorite, Review, Account, Place])
+@Database(version: 2, entities: [Favorite, Review, Account, Place])
 abstract class AppDataBase extends FloorDatabase {
   FavoritesDao get favoritesDao;
   ReviewsDao get reviewsDao;

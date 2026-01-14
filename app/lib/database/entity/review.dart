@@ -58,4 +58,28 @@ class Review {
 
     );
   }
+
+    Review copyWith({
+      String? id,
+      String? userId,
+      String? placeId,
+      String? placeName,
+      String? placeAddress,
+      int? rating,
+      String? comment,
+      int? createdAt,
+      int? updatedAt,
+    }) {
+      return Review(
+        id: id ?? this.id,
+        userId: userId ?? this.userId,
+        placeId: placeId ?? this.placeId,
+        placeName: placeName ?? this.placeName,
+        placeAddress: placeAddress ?? this.placeAddress,
+        rating: rating ?? this.rating,
+        comment: comment ?? this.comment,
+        createdAt: createdAt ?? this.createdAt,
+        updatedAt: updatedAt ?? this.updatedAt,
+      );
+    }
 }

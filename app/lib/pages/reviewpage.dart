@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:app/database/entity/review.dart';
-//import 'restaurant_main_page.dart';
 import 'package:app/pages/detailedrestaurantpage.dart';
+import 'package:app/database/database.dart';
+import 'package:app/database/services/localdbservice.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:get_it/get_it.dart';
+import 'package:app/services/reviewsservice.dart';
+import 'package:provider/provider.dart';
+import 'package:app/global/universaltheme.dart';
 
 class ReviewPage extends StatefulWidget {
   const ReviewPage({super.key});
@@ -13,55 +19,156 @@ class ReviewPage extends StatefulWidget {
 class _ReviewPageState extends State<ReviewPage> {
   List<Review> _reviews = [];
 
+  AppDataBase? _db;
+  String? _userId;
+  bool _isLoading = false;
+  bool _isSending = false;
+  
   @override
   void initState() {
     super.initState();
-    _loadDummyReviews();
-  }
+    _init();
+    }
 
-  
-  // Dummy data
- 
-  void _loadDummyReviews() {
-    _reviews = [
-      Review(
-        id: '1',
-        userId: 'u1',
-        placeId: 'p1',
-        placeName: 'Kahve Durağı',
-        placeAddress: 'Kadıköy / İstanbul',
-        rating: 5,
-        comment: 'Harika bir yer!',
-        createdAt: DateTime.now().millisecondsSinceEpoch,
-        updatedAt: DateTime.now().millisecondsSinceEpoch,
-      ),
-      Review(
-        id: '2',
-        userId: 'u1',
-        placeId: 'p2',
-        placeName: 'Pizza House',
-        placeAddress: 'Beşiktaş / İstanbul',
-        rating: 4,
-        comment: 'Lezzetli ama biraz pahalı.',
-        createdAt: DateTime.now().millisecondsSinceEpoch,
-        updatedAt: DateTime.now().millisecondsSinceEpoch,
-      ),
-    ];
-  }
 
- 
-  // Refresh (güncelle)
-  
-  Future<void> _refreshReviews() async {
-    await Future.delayed(const Duration(seconds: 1));
+  Future<void> _init() async {
+    final db = await LocalServices.getDatabase();
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+
+    if (!mounted) return;
+
     setState(() {
-      _loadDummyReviews();
+      _db = db;
+      _userId = userId ?? "";
     });
+
+    await _loadReviews();
+  }
+
+  Future<void> _loadReviews() async {
+    if (_isLoading) return;
+    if (_db == null || _userId == null || _userId!.isEmpty) return;
+    if (!mounted) return;
+    setState(() {
+      _isLoading = true;
+    });
+    try{
+      final reviews = _userId!.isNotEmpty
+          ? await _db!.reviewsDao.getReviewsByUser(_userId!)
+          : <Review>[];
+
+      if (!mounted) return;
+      setState(() {
+        _reviews = reviews;
+      });
+    } catch (e) {
+      if (mounted){
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Yorumlar yüklenemedi: $e")),
+        );
+      }
+    } finally {
+      if (mounted){
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _deleteReview(Review review) async {
+    if (_isSending) return;
+    if (_db == null || _userId == null || _userId!.isEmpty) return;
+
+    if (!mounted) return;
+    setState(() {
+      _isSending = true;
+    });
+
+    try {
+      await _db!.reviewsDao.deleteReview(review.id);
+      await GetIt.I<ReviewsService>().deleteReview(
+        reviewId: review.id,
+      );
+
+      if (!mounted) return;
+      setState(() {
+        _reviews.removeWhere((r) => r.id == review.id);
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Yorum silindi ✅")),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Silinemedi: $e")),
+      );
+    } finally {
+      if (mounted){
+        setState(() {
+          _isSending = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _updateReview(Review review, int newRating, String newComment) async {
+    if (_isSending) return;
+    if (_db == null || _userId == null || _userId!.isEmpty) return;
+
+    if (!mounted) return;
+    setState(() {
+      _isSending = true;
+    });
+    
+    final updatedReview = Review(
+      id: review.id,
+      userId: _userId!,
+      placeId: review.placeId,
+      placeName: review.placeName,
+      placeAddress: review.placeAddress,
+      rating: newRating,
+      comment: newComment,
+      createdAt: review.createdAt,
+      updatedAt: DateTime.now().millisecondsSinceEpoch,
+    );
+
+    try{
+      await _db!.reviewsDao.upsertReview(updatedReview);
+      await GetIt.I<ReviewsService>().updateReview(
+        placeId: review.placeId,
+        userId: _userId!,
+        rating: newRating,
+        comment: newComment,
+      );
+
+      if (!mounted) return;
+      setState(() {
+        final index = _reviews.indexWhere((r) => r.id == review.id);
+        if (index != -1) {
+          _reviews[index] = updatedReview;
+        }
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Yorum güncellendi ✅")),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Güncellenemedi: $e")),
+      );
+    } finally {
+      if (mounted){
+        setState(() {
+          _isSending = false;
+        });
+      }
+    }
   }
 
   
 
-  
   // Delete confirmation
   
   Future<void> _confirmDelete(Review review) async {
@@ -84,9 +191,7 @@ class _ReviewPageState extends State<ReviewPage> {
     );
 
     if (result == true) {
-      setState(() {
-        _reviews.removeWhere((r) => r.id == review.id);
-      });
+      await _deleteReview(review);
     }
   }
 
@@ -143,23 +248,16 @@ class _ReviewPageState extends State<ReviewPage> {
     );
 
     if (result == true) {
-      setState(() {
-        final index = _reviews.indexWhere((r) => r.id == review.id);
-        if (index != -1) {
-          _reviews[index] = Review(
-            id: review.id,
-            userId: review.userId,
-            placeId: review.placeId,
-            placeName: review.placeName,
-            placeAddress: review.placeAddress,
-            rating: selectedRating,
-            comment: commentController.text,
-            createdAt: review.createdAt,
-            updatedAt: DateTime.now().millisecondsSinceEpoch,
+      final newComment = commentController.text.trim();
+        if (newComment.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Yorum boş olamaz.")),
           );
+          return;
         }
-      });
+      await _updateReview(review, selectedRating, newComment);
     }
+    commentController.dispose();
   }
 
   
@@ -167,64 +265,76 @@ class _ReviewPageState extends State<ReviewPage> {
   
   @override
   Widget build(BuildContext context) {
+    final bottomTab = Provider.of<BottomTabState>(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Yorumlarım'),
-        /* actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _refreshReviews,
-          ),
-        ], */
+        
       ),
-      body: RefreshIndicator(
-        onRefresh: _refreshReviews,
-        child:  ListView.builder(
-        itemCount: _reviews.length,
-        itemBuilder: (context, index) {
-          final review = _reviews[index];
-
-          return Card(
-            margin: const EdgeInsets.all(8),
-            child: ListTile(
-              leading: CircleAvatar(
-                child: Text(review.rating.toString()),
-              ),
-              title: Text(
-                review.placeName ?? 'Mekan',
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              subtitle: Text(review.comment ?? ''),
-              onTap: () {
-                /* Navigator.push(
-                   context,
-                  MaterialPageRoute(
-                    builder: (_) => DetailedRestaurantPage(
-                      placeId: review.placeId,
-                      placeName: review.placeName,
-                      placeAddress: review.placeAddress,
+      body: Column(
+        children: [
+          if (_isLoading)
+            const LinearProgressIndicator(),
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: _loadReviews,
+              child:  ListView.builder(
+              itemCount: _reviews.length,
+              itemBuilder: (context, index) {
+                final review = _reviews[index];
+            
+                return Card(
+                  margin: const EdgeInsets.all(8),
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      child: Text(review.rating.toString()),
                     ),
-                  ), 
-                ); */
+                    title: Text(
+                      review.placeName ?? 'Mekan',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: Text(review.comment ?? ''),
+                    onTap: () async {
+                      if (_db == null) return;
+                      final place = await _db!.placeDao.getPlaceById(review.placeId);
+                        if (!mounted) return;
+                        if (place == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("Mekan bilgisi bulunamadı")),
+                          );
+                          return;
+                        }
+                        if (mounted) {
+                          bottomTab.navigatorKey.currentState!.pushReplacement(
+                            MaterialPageRoute(
+                              builder: (_) => DetailedRestaurantPage(
+                                place: place,
+                              ),
+                            ),
+                          );
+                        }
+                    },
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.edit),
+                          onPressed: () => _editReview(review),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete),
+                          onPressed: () => _confirmDelete(review),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
               },
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.edit),
-                    onPressed: () => _editReview(review),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.delete),
-                    onPressed: () => _confirmDelete(review),
-                  ),
-                ],
-              ),
             ),
-          );
-        },
+                ),
+          ),
+        ],
       ),
-    ),
     );
 
     

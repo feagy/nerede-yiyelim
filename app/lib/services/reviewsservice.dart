@@ -59,30 +59,24 @@ class ReviewsService {
     return _instance ??= ReviewsService._(baseUrl);
   }
 
-  Future<void> addReview({
-    required String placeId,
-    required String userId,
-    required int rating,
-    required String comment,
-    required String placeName,
-    required String placeAddress,
-  }) async {
+  Future<void> addReview(Review review) 
+    async {
     final uri = Uri.parse('$baseUrl/addReview');
 
     final response = await http.post(
       uri,
       headers: {'Content-Type': 'application/json'},
       body: json.encode({
-        'placeId': placeId,
-        'userId': userId,
-        'rating': rating,
-        'comment': comment,
-        'placeName': placeName,
-        'placeAddress': placeAddress,
+        'placeId': review.placeId,
+        'userId': review.userId,
+        'rating': review.rating,
+        'comment': review.comment,
+        'placeName': review.placeName,
+        'placeAddress': review.placeAddress,
       }),
     );
 
-    if (response.statusCode != 200) {
+   if (response.statusCode < 200 || response.statusCode >= 300) {
       throw Exception('HTTP ${response.statusCode}: ${response.body}');
     }
   }

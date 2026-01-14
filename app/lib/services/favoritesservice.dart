@@ -26,7 +26,7 @@ class FavoritesService {
     required String userId,
     required String placeName,
     required String placeAddress,
-    required int rating,
+    required double rating,
     required String photoUrl,
   }) async {
     final uri = Uri.parse('$baseUrl/addFavorite');

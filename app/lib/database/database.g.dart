@@ -86,7 +86,7 @@ class _$AppDataBase extends AppDataBase {
     Callback? callback,
   ]) async {
     final databaseOptions = sqflite.OpenDatabaseOptions(
-      version: 1,
+      version: 2,
       onConfigure: (database) async {
         await database.execute('PRAGMA foreign_keys = ON');
         await callback?.onConfigure?.call(database);
@@ -108,7 +108,7 @@ class _$AppDataBase extends AppDataBase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Account` (`id` TEXT NOT NULL, `email` TEXT NOT NULL, `userName` TEXT NOT NULL, `password` TEXT NOT NULL, `photo` TEXT, PRIMARY KEY (`id`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Place` (`id` TEXT NOT NULL, `distance` REAL NOT NULL, `placeName` TEXT NOT NULL, `phone` TEXT, `address` TEXT, `lat` REAL NOT NULL, `lng` REAL NOT NULL, `googleRating` REAL, `googleRatingCount` INTEGER, `type` TEXT, `googleMapsUri` TEXT, `photoName` TEXT, `openingHoursJson` TEXT, PRIMARY KEY (`id`))');
+            'CREATE TABLE IF NOT EXISTS `places` (`id` TEXT NOT NULL, `distance` REAL NOT NULL, `placeName` TEXT NOT NULL, `phone` TEXT, `address` TEXT, `lat` REAL NOT NULL, `lng` REAL NOT NULL, `googleRating` REAL, `googleRatingCount` INTEGER, `type` TEXT, `googleMapsUri` TEXT, `photoName` TEXT, `openingHoursJson` TEXT, PRIMARY KEY (`id`))');
 
         await callback?.onCreate?.call(database, version);
       },
@@ -164,13 +164,8 @@ class _$FavoritesDao extends FavoritesDao {
   final InsertionAdapter<Favorite> _favoriteInsertionAdapter;
 
   @override
-  Future<List<Favorite>> getAllFavorites(
-    String userId,
-    int limit,
-    int offset,
-  ) async {
-    return _queryAdapter.queryList(
-        'SELECT * FROM favorites WHERE userId = ?1 LIMIT ?2 OFFSET ?3',
+  Future<List<Favorite>> getAllFavorites(String userId) async {
+    return _queryAdapter.queryList('SELECT * FROM favorites WHERE userId = ?1',
         mapper: (Map<String, Object?> row) => Favorite(
             id: row['id'] as String,
             placeId: row['placeId'] as String,
@@ -179,7 +174,7 @@ class _$FavoritesDao extends FavoritesDao {
             placeAddress: row['placeAddress'] as String,
             rating: row['rating'] as double?,
             photoUrl: row['photoUrl'] as String?),
-        arguments: [userId, limit, offset]);
+        arguments: [userId]);
   }
 
   @override
@@ -201,7 +196,8 @@ class _$FavoritesDao extends FavoritesDao {
 
   @override
   Future<void> insertFavorite(Favorite favorite) async {
-    await _favoriteInsertionAdapter.insert(favorite, OnConflictStrategy.abort);
+    await _favoriteInsertionAdapter.insert(
+        favorite, OnConflictStrategy.replace);
   }
 }
 
@@ -280,6 +276,23 @@ class _$ReviewsDao extends ReviewsDao {
             createdAt: row['createdAt'] as int,
             updatedAt: row['updatedAt'] as int),
         arguments: [placeId, userId]);
+  }
+
+  @override
+  Future<List<Review>> getReviewsByUser(String userId) async {
+    return _queryAdapter.queryList(
+        'SELECT * FROM reviews WHERE userId = ?1 ORDER BY updatedAt DESC',
+        mapper: (Map<String, Object?> row) => Review(
+            id: row['id'] as String,
+            userId: row['userId'] as String,
+            placeId: row['placeId'] as String,
+            placeName: row['placeName'] as String?,
+            placeAddress: row['placeAddress'] as String?,
+            rating: row['rating'] as int,
+            comment: row['comment'] as String?,
+            createdAt: row['createdAt'] as int,
+            updatedAt: row['updatedAt'] as int),
+        arguments: [userId]);
   }
 
   @override
@@ -379,7 +392,7 @@ class _$PlaceDao extends PlaceDao {
   )   : _queryAdapter = QueryAdapter(database),
         _placeInsertionAdapter = InsertionAdapter(
             database,
-            'Place',
+            'places',
             (Place item) => <String, Object?>{
                   'id': item.id,
                   'distance': item.distance,

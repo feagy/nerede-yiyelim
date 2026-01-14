@@ -6,6 +6,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:app/database/entity/account.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:get_it/get_it.dart';
+import 'package:app/services/reviewsservice.dart';
+import 'package:app/services/favoritesservice.dart';
 
 /*
 Future<void> _pickAndSavePhoto(AccountDto dao, Account account) async {
@@ -60,6 +64,31 @@ Future<bool> signInAndSaveAccount({
           password: password,
         ),
       );
+
+     /*  final uid = AuthService().currentUser!.uid;
+      final prefs = await SharedPreferences.getInstance();
+      final isSynched = prefs.getBool('initial_sync_$uid') ?? false;
+
+      if (!isSynched) {
+        String? cursor;
+        do {
+          final page = await GetIt.I<ReviewsService>()
+              .readReviewsByUser(userId: uid, cursor: cursor);
+
+          for (final review in page.items) {
+            await db.reviewsDao.upsertReview(review);
+          }
+
+          cursor = page.hasMore ? page.nextCursor : null;
+        } while (cursor != null);
+
+        final favorites = await GetIt.I<FavoritesService>().readFavorites(uid);
+        for (final fav in favorites) {
+          await db.favoritesDao.insertFavorite(fav);
+        }
+
+        await prefs.setBool('initial_sync_$uid', true);
+      } */
       return true;
     }
 

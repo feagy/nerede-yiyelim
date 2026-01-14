@@ -40,6 +40,7 @@ class _ProfilePageState extends State<ProfilePage> {
           .doc(user!.uid)
           .get();
       if (doc.exists) {
+        if (!mounted) return;
         setState(() {
           _nicknameController.text = doc['nickname'] ?? "";
         });

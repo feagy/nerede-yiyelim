@@ -17,4 +17,7 @@ abstract class ReviewsDao {
 
   @Query('SELECT * FROM reviews WHERE placeId = :placeId AND userId = :userId LIMIT 1')
   Future<Review?> getUserReviewForPlace(String placeId, String userId);
+
+  @Query('SELECT * FROM reviews WHERE userId = :userId ORDER BY updatedAt DESC')
+  Future<List<Review>> getReviewsByUser(String userId);
 }

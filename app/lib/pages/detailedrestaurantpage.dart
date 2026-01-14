@@ -1,6 +1,5 @@
 import 'dart:convert';
-/* import 'dart:nativewrappers/_internal/vm/lib/ffi_native_type_patch.dart'; */
-
+import 'package:floor/floor.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
@@ -15,6 +14,10 @@ import 'package:app/services/reviewsservice.dart';
 import 'package:app/database/services/localdbservice.dart';
 import 'package:app/database/database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+
+import 'package:app/services/favoritesservice.dart';
+import 'package:app/database/entity/favorite.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 /*
 
@@ -40,8 +43,17 @@ class _DetailedRestaurantPage extends State<DetailedRestaurantPage> {
   static const int _limit = 10;
   Review?_myReview;
   bool isFavorite=false;
-  /* final db = getDatabase(); */
   late AppDataBase _db;
+  String userName = "";
+  // İnceleme için gerekli veriler
+  final _commentCtrlSubmit = TextEditingController();
+  final _commentCtrlUpdate = TextEditingController();
+  int _selectedRating = 0; // 1..5
+  bool _isSending = false;
+
+  // Favori için gerekli veriler
+  bool _isFavorite = false;
+  bool _isFavoriteBusy = true;
 
   @override
   void initState() {
@@ -50,32 +62,294 @@ class _DetailedRestaurantPage extends State<DetailedRestaurantPage> {
     _init(); 
   }
 
+  @override
+    void dispose() {
+      _commentCtrlSubmit.dispose();
+      _commentCtrlUpdate.dispose();
+      super.dispose();
+    }
+
     Future<void> _init() async {
-    await loadDatabase();   
-    await getMyReview();      
+    await loadDatabase();
+    await getMyReview(); 
+    await getFavoriteInfo();
+    /* await _loadUserData(); */
     if (!mounted) return;
 
     if (place?.id != null) {
       await _loadFirstPage();
-    }
-
-    if (!mounted) return;
-    setState(() {});           
+    }        
   }
-
-    Future<void> getMyReview() async {
+    Future<void> _submitReview() async {
     final userId = FirebaseAuth.instance.currentUser?.uid;
-    if (userId == null || place?.id == null) return;
+      if (userId == null || place?.id == null || _isSending) return;
 
-    final r = await _db.reviewsDao.getUserReviewForPlace(
-      place!.id,
-      userId,
+      final rating = _selectedRating;
+      final comment = _commentCtrlSubmit.text.trim();
+
+      if (rating == 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Lütfen puan verin.")),
+        );
+        return;
+      }
+      if (comment.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Yorum boş olamaz.")),
+        );
+        return;
+      }
+
+    setState(() {
+      _isSending = true;
+    });
+
+    final newReview = Review(
+      id: '${place!.id}_$userId',
+      placeId: place!.id,
+      placeName: place!.placeName,
+      placeAddress: place!.address,
+      userId: userId,
+      rating: rating,
+      comment: comment,
+      createdAt: DateTime.now().millisecondsSinceEpoch,
+      updatedAt: DateTime.now().millisecondsSinceEpoch,
     );
 
-    if (!mounted) return;
-    setState(() => _myReview = r);
-  }
+    try {
+      await _db.reviewsDao.upsertReview(newReview);
+      await _db.placeDao.upsertPlace(place!);
+      await GetIt.I<ReviewsService>().addReview(newReview);
 
+      if (!mounted) return;
+      setState(() {
+        _myReview = newReview;
+        _commentCtrlSubmit.clear();
+        _selectedRating = 0;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Yorum gönderildi ✅")),
+      );
+    }catch(e){
+      debugPrint("submit review error: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Gönderilemedi: $e")),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSending = false;
+        });
+      }
+    }
+  }
+    Future<void> _updateReview(int rating, String comment) async {
+      if (_isSending) return;
+
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+      final placeId = place?.id;
+      if (userId == null || placeId == null || _myReview == null) return;
+
+      setState(() {
+        _isSending = true;
+      });
+
+      final now = DateTime.now().millisecondsSinceEpoch;
+      final updated = _myReview!.copyWith(
+        rating: rating,
+        comment: comment,
+        updatedAt: now,
+      );
+
+      try {
+        await _db.reviewsDao.upsertReview(updated);
+        await GetIt.I<ReviewsService>().updateReview(
+          placeId: placeId,
+          userId: userId,
+          rating: rating,
+          comment: comment,
+        );
+
+        if (!mounted) return;
+        setState(() {
+          _myReview = updated;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Yorum güncellendi ✅")),
+        );
+      } catch (e) {
+        debugPrint("update review error: $e");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Güncellenemedi: $e")),
+        );
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isSending = false;
+          });
+        }
+      }
+    }
+    Future<void> _deleteReview() async {
+        if (_isSending) return;
+
+        final userId = FirebaseAuth.instance.currentUser?.uid;
+        final placeId = place?.id;
+        if (userId == null || placeId == null || _myReview == null) return;
+
+        setState(() {
+          _isSending = true;
+        });
+
+        final reviewId = '${placeId}_$userId';
+
+        try {
+          await _db.reviewsDao.deleteReview(reviewId);
+          await GetIt.I<ReviewsService>().deleteReview(
+            reviewId: reviewId
+          );
+
+          if (!mounted) return;
+          setState(() {
+            _myReview = null;
+            _commentCtrlSubmit.clear();
+            _selectedRating = 0;
+          });
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Yorum silindi ✅")),
+          );
+        } catch (e) {
+          debugPrint("delete review error: $e");
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Silinemedi: $e")),
+          );
+        } finally {
+          if (mounted) {
+            setState(() {
+              _isSending = false;
+            });
+          }
+        }
+  }
+    Future<void> _toggleFavorite() async {
+      if (_isFavoriteBusy) return;
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+      final placeId = place?.id;
+      if (userId == null || placeId == null) return;
+
+      setState(() {
+        _isFavoriteBusy = true;
+      });
+
+      final newStatus = !_isFavorite;
+
+      setState(() {
+        _isFavorite = newStatus;
+      });
+
+      try {
+        if (newStatus) {
+          final photoUrl = GetIt.I<PlacePhotoService>().getPhotoUrl(
+            place?.photoName ?? "",
+            400,
+          );
+          await _db.favoritesDao.insertFavorite(
+            Favorite(
+              id: '${placeId}_$userId',
+              placeId: placeId,
+              userId: userId,
+              placeName: place?.placeName ?? "",
+              placeAddress: place?.address ?? "",
+              rating: place?.googleRating,
+              photoUrl: photoUrl,
+            ),
+          );
+          await _db.placeDao.upsertPlace(place!);
+          await GetIt.I<FavoritesService>().addFavorite(
+            placeId: placeId,
+            userId: userId,
+            placeName: place?.placeName ?? "",
+            placeAddress: place?.address ?? "",
+            rating: place?.googleRating ?? 0,
+            photoUrl: photoUrl,
+          );
+        } else {
+          final favoriteId = '${placeId}_$userId';
+          await _db.favoritesDao.deleteFavorite(favoriteId);
+          await GetIt.I<FavoritesService>().deleteFavorite(favoriteId);
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() {
+            _isFavorite = !newStatus;
+          });
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Favori güncellenemedi")),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isFavoriteBusy = false;
+          });
+        }
+      }
+  }
+    Future<void> getMyReview() async {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+      if (userId == null || place?.id == null) return;
+
+      final r = await _db.reviewsDao.getUserReviewForPlace(
+        place!.id,
+        userId,
+      );
+
+      if (!mounted) return;
+      setState(() => _myReview = r);
+  }
+    Future<void> getFavoriteInfo() async {
+      if (mounted) {
+        setState(() {
+          _isFavoriteBusy = true;
+        });
+      }
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+      final placeId = place?.id;
+      if (userId == null || placeId == null) {
+        if (mounted) {
+          setState(() {
+            _isFavorite = false;
+            _isFavoriteBusy = false;
+          });
+        } 
+        return;
+      }
+
+      try{
+        final isFavorite = await _db.favoritesDao.isFavorite(placeId!, userId) == 1;
+
+        if (!mounted) return;
+        setState(() {
+          _isFavorite = isFavorite;
+        });
+      } catch(e){
+        if (mounted){
+          ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("Favori bilgisi alınamadı")),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isFavoriteBusy = false;
+          });
+        }
+      }
+  }
     Future<void> loadDatabase() async {
       _db = await LocalServices.getDatabase();
     }
@@ -98,6 +372,8 @@ class _DetailedRestaurantPage extends State<DetailedRestaurantPage> {
         cursor: null,
       );
 
+        resp.items.removeWhere((r) => r.userId == FirebaseAuth.instance.currentUser?.uid);
+      
       if (!mounted) return;
       setState(() {
         _reviews.addAll(resp.items);
@@ -110,6 +386,19 @@ class _DetailedRestaurantPage extends State<DetailedRestaurantPage> {
       if (mounted) setState(() => _firstLoading = false);
     }
   }
+
+ /*  Future<void> _loadUserData() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user!.uid)
+          .get();
+      if (doc.exists) {
+        userName = doc['nickname'] ?? "";
+      }
+    }
+  } */
 
   Future<void> _loadMore() async {
     if (_loadingMore || !_hasMore) return;
@@ -124,6 +413,8 @@ class _DetailedRestaurantPage extends State<DetailedRestaurantPage> {
         cursor: _cursor, // <-- devam cursor’u
       );
 
+        resp.items.removeWhere((r) => r.userId == FirebaseAuth.instance.currentUser?.uid);
+      
       if (!mounted) return;
 
       setState(() {
@@ -166,7 +457,9 @@ class _DetailedRestaurantPage extends State<DetailedRestaurantPage> {
               restaurantRating: place?.googleRating,
               restaurantUserRatingCount: place?.googleRatingCount,
               isOpen: jsonDecode(place?.openingHoursJson ?? "{}")["openNow"] as bool?,
-              isFavorite: false,
+              isFavorite: _isFavorite,
+              onFavoriteToggle: _toggleFavorite,
+              isFavoriteBusy: _isFavoriteBusy,
             ),
             _DetailedRestaurantInformationSection(
               restaurantFormattedaddress: place?.address,
@@ -200,15 +493,27 @@ class _DetailedRestaurantPage extends State<DetailedRestaurantPage> {
             if (_myReview != null)
              
               _DetailedRestaurantUserReviewSection(
-                userReview: _myReview, /* await _db.reviewsDao.getUserReviewForPlace(place?.id as String, FirebaseAuth.instance.currentUser?.uid as String), */
-                onEdit: () {},
-                onDelete: () {},
+                commentCtrl: _commentCtrlUpdate,
+                userReview: _myReview, 
+                onEdit: _updateReview,
+                onDelete: _deleteReview,
+                isSending: _isSending,
               )
             else
-              _DetailedRestaurantWriteReviewSection(),
+              _DetailedRestaurantWriteReviewSection(
+                _commentCtrlSubmit,
+                _selectedRating,
+                _isSending,
+                (rating) {
+                  setState(() {
+                    _selectedRating = rating.toInt();
+                  });
+                },
+                _submitReview,
+              ),
 
             _DetailedRestaurantCommentsSection(
-              restaurantReviews: _reviews, 
+              restaurantReviews: _reviews,  
             ),
             if (_firstLoading)
               const Padding(
@@ -256,6 +561,8 @@ class _DetailedRestaurantHeader extends StatelessWidget {
   final int? restaurantUserRatingCount;
   final bool? isOpen;
   final bool isFavorite;
+  final VoidCallback onFavoriteToggle;
+  final bool isFavoriteBusy;
 
   const _DetailedRestaurantHeader({
     this.restaurantPhotoUri,
@@ -264,6 +571,8 @@ class _DetailedRestaurantHeader extends StatelessWidget {
     this.restaurantUserRatingCount,
     this.isOpen,
     required this.isFavorite,
+    required this.onFavoriteToggle,
+    required this.isFavoriteBusy,
   });
 
   @override
@@ -361,11 +670,8 @@ class _DetailedRestaurantHeader extends StatelessWidget {
                         isFavorite ? Icons.favorite : Icons.favorite_border,
                         color: isFavorite ? Colors.red : Colors.grey,
                       ),
-                      onPressed: () {
-                        /* setState(() {
-                          isFavorite = !isFavorite;
-                        }); */
-                      },
+                      onPressed: 
+                        isFavoriteBusy ? null : onFavoriteToggle,
                     ),
                   ),
                                   ), 
@@ -497,7 +803,7 @@ class _DetailedRestaurantInformationSection extends StatelessWidget {
 
 class _DetailedRestaurantCommentsSection extends StatelessWidget {
   final List<dynamic>? restaurantReviews;
-
+  
   const _DetailedRestaurantCommentsSection({this.restaurantReviews});
 
   @override
@@ -544,71 +850,90 @@ class _DetailedRestaurantCommentsSection extends StatelessWidget {
     );
   }
 
-  Widget _buildReviewCard(dynamic review, BuildContext context) {
-    // güvenli veri alma
-    final String author = review["author"] ?? "Anonymous";
-    final double rating = (review["rating"] ?? 0).toDouble();
-    final String text = review["text"] ?? "";
-    final String date = review["publishTime"];
+  Future<String> getUserName(String userId) async {
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .get();
+    if (doc.exists) {
+      return doc['nickname'] ?? "Anonim";
+    }
+    return "Anonim";
+  }
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF7F9FB),
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: Colors.grey.withOpacity(0.2)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Kullanıcı ve tarih
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  Widget _buildReviewCard(Review review, BuildContext context) {
+    // güvenli veri alma
+    
+    final double rating = review.rating.toDouble();
+    final String text = review.comment ?? "";
+    final String date = _formatDate(DateTime.fromMillisecondsSinceEpoch(review.updatedAt));
+
+    return FutureBuilder(
+      future: getUserName(review.userId),
+      builder: (context, snapshot) {
+        final author = snapshot.connectionState == ConnectionState.done && snapshot.hasData
+            ? snapshot.data as String
+            : "Yükleniyor...";
+        return Container(
+          margin: const EdgeInsets.only(bottom: 16),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF7F9FB),
+            borderRadius: BorderRadius.circular(15),
+            border: Border.all(color: Colors.grey.withOpacity(0.2)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                author,
-                style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
+              // Kullanıcı ve tarih
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    author,
+                    style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  Text(
+                    date,
+                    style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                      fontWeight: FontWeight.normal,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
               ),
+              const SizedBox(height: 6),
+        
+              // Yıldızlar
+              Row(
+                children: List.generate(5, (index) {
+                  return Icon(
+                    index < rating
+                        ? Icons.star_border_purple500_rounded
+                        : Icons.star_border,
+                    color: const Color.fromARGB(255, 221, 133, 2),
+                    size: 20,
+                  );
+                }),
+              ),
+        
+              const SizedBox(height: 8),
+        
+              // Yorum
               Text(
-                date,
+                text,
                 style: Theme.of(context).textTheme.displayMedium?.copyWith(
                   fontWeight: FontWeight.normal,
-                  color: Colors.grey[600],
+                  color: Colors.black87,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 6),
-
-          // Yıldızlar
-          Row(
-            children: List.generate(5, (index) {
-              return Icon(
-                index < rating
-                    ? Icons.star_border_purple500_rounded
-                    : Icons.star_border,
-                color: const Color.fromARGB(255, 221, 133, 2),
-                size: 20,
-              );
-            }),
-          ),
-
-          const SizedBox(height: 8),
-
-          // Yorum
-          Text(
-            text,
-            style: Theme.of(context).textTheme.displayMedium?.copyWith(
-              fontWeight: FontWeight.normal,
-              color: Colors.black87,
-            ),
-          ),
-        ],
-      ),
+        );
+      }
     );
   }
 }
@@ -616,7 +941,19 @@ class _DetailedRestaurantCommentsSection extends StatelessWidget {
 //inceleme yazma windet eklenecek
 
 class _DetailedRestaurantWriteReviewSection extends StatelessWidget {
-  const _DetailedRestaurantWriteReviewSection();
+  final TextEditingController commentCtrl;
+  final int selectedRating;
+  final bool isSending;
+  final ValueChanged<double> onRatingChanged;
+  final VoidCallback onSubmit;
+
+  const _DetailedRestaurantWriteReviewSection(
+    this.commentCtrl,
+    this.selectedRating,
+    this.isSending,
+    this.onRatingChanged,
+    this.onSubmit,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -664,13 +1001,11 @@ class _DetailedRestaurantWriteReviewSection extends StatelessWidget {
               Icons.star_border_purple500_rounded,
               color: Color.fromARGB(255, 221, 133, 2),
             ),
-            onRatingUpdate: (rating) {
-              // Rating değeri burada kullanılabilir
-              print("Seçilen puan: $rating");
-            },
+            onRatingUpdate: onRatingChanged
           ),
           const SizedBox(height: 16),
           TextField(
+            controller: commentCtrl,
             maxLines: 4,
             decoration: InputDecoration(
               hintText: "Yorumunuzu buraya yazın...",
@@ -681,10 +1016,12 @@ class _DetailedRestaurantWriteReviewSection extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           ElevatedButton(
-            onPressed: () {
-              // Yorum gönderme işlemi burada yapılacak
-            },
-            child: const Text("Gönder"),
+            onPressed:  
+              isSending ? null : onSubmit,
+              child: isSending ? SizedBox(
+                width: 18,
+                height: 18,
+                child: const CircularProgressIndicator(strokeWidth: 2.0)) : const Text("Gönder"),
           ),
         ],
       ),
@@ -693,16 +1030,160 @@ class _DetailedRestaurantWriteReviewSection extends StatelessWidget {
 }
 
 class _DetailedRestaurantUserReviewSection extends StatelessWidget {
+  final TextEditingController commentCtrl;
   final Review? userReview;
-  final VoidCallback? onEdit;
+  final void Function(int rating, String comment)? onEdit;
   final VoidCallback? onDelete;
+  final bool isSending;
 
   const _DetailedRestaurantUserReviewSection({
+    required this.commentCtrl,
     this.userReview,
     this.onEdit,
     this.onDelete,
+    required this.isSending
   });
 
+  void _showEditDialog(BuildContext context, Review review) {
+    commentCtrl.text = review.comment ?? "";
+
+    int tempRating = review.rating.toInt();
+
+    showDialog(
+      context: context, 
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            title: const Text(
+              "Yorumu Düzenle",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  RatingBar.builder(
+                    initialRating: tempRating.toDouble(),
+                    minRating: 1,
+                    direction: Axis.horizontal,
+                    allowHalfRating: false,
+                    itemCount: 5,
+                    itemSize: 28,
+                    itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
+                    itemBuilder: (context, _) => const Icon(
+                      Icons.star_border_purple500_rounded,
+                      color: Color.fromARGB(255, 221, 133, 2),
+                    ),
+                    onRatingUpdate: (rating) {
+                      setDialogState(() {
+                        tempRating = rating.toInt();
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  const Text("Yorumunuz"),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: commentCtrl,
+                    maxLines: 4,
+                    decoration: InputDecoration(
+                      hintText: "Yorumunuzu buraya yazın...",
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(dialogContext).pop();
+                },
+                child: Text(
+                  "İptal",
+                  style: TextStyle(
+                    color: Colors.grey[700],
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: isSending ? null : () {
+                  final newComment = commentCtrl.text.trim();
+                  if(tempRating == 0 || newComment.isEmpty){
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Lütfen geçerli bir puan ve yorum giriniz.")),
+                    );
+                    return;
+                  }
+                  Navigator.of(dialogContext).pop();
+                  onEdit?.call(tempRating, newComment);
+                },
+                style: TextButton.styleFrom(foregroundColor: const Color.fromARGB(255, 221, 133, 2)),
+                child: const Text(
+                  "Güncelle",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showDeleteConfirmation(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: const Text(
+            "Yorumu Sil",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          content: const Text(
+            "Bu yorumu silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+              },
+              child: Text(
+                "İptal",
+                style: TextStyle(
+                  color: Colors.grey[700],
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: isSending ? null : () {
+                Navigator.of(dialogContext).pop();
+                onDelete?.call();
+              },
+              style: TextButton.styleFrom(foregroundColor: Colors.redAccent),
+              child: const Text(
+                "Sil",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+  
   @override
   Widget build(BuildContext context) {
     // Eğer kullanıcının yorumu yoksa widget'ı gösterme
@@ -740,7 +1221,9 @@ class _DetailedRestaurantUserReviewSection extends StatelessWidget {
               Row(
                 children: [
                   IconButton(
-                    onPressed: onEdit,
+                    onPressed: () {
+                      _showEditDialog(context, userReview!);
+                    },
                     icon: const Icon(
                       CupertinoIcons.pencil,
                       color: Color(0xFF4285F4),
@@ -827,54 +1310,11 @@ class _DetailedRestaurantUserReviewSection extends StatelessWidget {
     );
   }
 
-  String _formatDate(DateTime date) {
+  
+  
+}
+
+String _formatDate(DateTime date) {
     return "${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year}";
   }
 
-  void _showDeleteConfirmation(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          title: const Text(
-            "Yorumu Sil",
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          content: const Text(
-            "Bu yorumu silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-              },
-              child: Text(
-                "İptal",
-                style: TextStyle(
-                  color: Colors.grey[700],
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-                if (onDelete != null) {
-                  onDelete!();
-                }
-              },
-              style: TextButton.styleFrom(foregroundColor: Colors.redAccent),
-              child: const Text(
-                "Sil",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-}

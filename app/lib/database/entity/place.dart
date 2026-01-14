@@ -1,7 +1,7 @@
 import 'package:floor/floor.dart';
 import 'dart:convert';
 
-@entity
+@Entity(tableName: 'places')
 class Place {
   @primaryKey
   final String id;
