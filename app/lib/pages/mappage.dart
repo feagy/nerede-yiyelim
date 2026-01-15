@@ -13,7 +13,6 @@ import 'package:app/pages/mapmarkers.dart';
 import 'package:provider/provider.dart';
 import 'detailedrestaurantpage.dart';
 import 'package:app/states/MapStateStore.dart';
-import 'package:app/states/PlaceStateStore.dart';
 
 class MapPage extends StatefulWidget {
   final String keyAPI;
@@ -27,7 +26,6 @@ class _MapPageState extends State<MapPage> {
   late final MapController _mapController;
   final List<Marker> _userMarkers = [];
   late final MapStateStore _mapStateStore;
-  late final PlaceStateStore _placeStateStore;
   final LocationService _locationService = LocationService();
   StreamSubscription? _locationStream;
   LatLng? _currentUserLatLng;
@@ -55,7 +53,6 @@ class _MapPageState extends State<MapPage> {
   void initState() {
     super.initState();
     _mapStateStore = GetIt.instance<MapStateStore>();
-    _placeStateStore = GetIt.instance<PlaceStateStore>();
     _mapController = MapController();
     nearbyPlaces = _mapStateStore.nearbyPlaces;
     selectedCategoryIndex = _mapStateStore.selectedCategoryIndex;
@@ -148,7 +145,6 @@ class _MapPageState extends State<MapPage> {
                     ).textTheme.displaySmall?.copyWith(color: Colors.white),
                   ),
                   onPressed: () async {
-                    _placeStateStore.setPlace(p);
                     Navigator.of(context, rootNavigator: true).pop();
                     await Future.delayed(const Duration(milliseconds: 100));
                     if (mounted) {

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:app/states/PlaceStateStore.dart';
 import 'package:floor/floor.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -14,7 +15,7 @@ import 'package:app/services/reviewsservice.dart';
 import 'package:app/database/services/localdbservice.dart';
 import 'package:app/database/database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
+import 'package:app/states/PlaceStateStore.dart';
 import 'package:app/services/favoritesservice.dart';
 import 'package:app/database/entity/favorite.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -65,6 +66,8 @@ class _DetailedRestaurantPage extends State<DetailedRestaurantPage> {
   bool isFavorite=false;
   late AppDataBase _db;
   String userName = "";
+  final PlaceStateStore _placeStateStore = GetIt.I<PlaceStateStore>();
+
   // İnceleme için gerekli veriler
   final _commentCtrlSubmit = TextEditingController();
   final _commentCtrlUpdate = TextEditingController();
@@ -75,10 +78,20 @@ class _DetailedRestaurantPage extends State<DetailedRestaurantPage> {
   bool _isFavorite = false;
   bool _isFavoriteBusy = true;
 
+  // LLM özeti
+  String? _aiSummary;
+  bool _summaryLoading = false;
+
   @override
   void initState() {
     super.initState();
     place = widget.place;
+    if (_placeStateStore.place!.id != place!.id){
+      _placeStateStore.setPlace(place!);
+      _placeStateStore.clearSummary();
+    }else{
+      _aiSummary = _placeStateStore.summary;
+    }
     _init(); 
   }
 
@@ -100,7 +113,37 @@ class _DetailedRestaurantPage extends State<DetailedRestaurantPage> {
       await _loadFirstPage();
     }        
   }
-    Future<void> _submitReview() async {
+
+  Future<void> _fetchSummary() async {
+    if (_summaryLoading) return;
+
+    final placeId = place?.id;
+    if (placeId == null) return;
+
+    setState(() => _summaryLoading = true);
+
+    try {
+      final summary = await GetIt.I<AISummaryService>().generateSummary(
+        _reviews.take(10).map((r) => r.comment as String).toList(),
+        "gemma3:4b",
+      );
+
+      if (!mounted) return;
+      setState(() {
+        _aiSummary = summary;
+      });
+      _placeStateStore.setSummary(summary);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Özet alınamadı: $e")),
+      );
+    } finally {
+      if (mounted) setState(() => _summaryLoading = false);
+    }
+  }
+
+  Future<void> _submitReview() async {
     final userId = FirebaseAuth.instance.currentUser?.uid;
       if (userId == null || place?.id == null || _isSending) return;
 
@@ -470,10 +513,12 @@ class _DetailedRestaurantPage extends State<DetailedRestaurantPage> {
             ),
             _DetailedRestaurantInformationSection(
               restaurantFormattedaddress: place?.address,
-              restaurantGenerativeSummary: "Butonla istenecek",
+              restaurantGenerativeSummary: _aiSummary,
               restaurantInternationalPhoneNumber: place?.phone,
               restaurantNextCloseTime:
                   jsonDecode(place?.openingHoursJson ?? "{}")["nextCloseTime"] as String?,
+              isSummaryLoading: _summaryLoading,
+              onFetchSummary: _fetchSummary,
             ),
             if (place?.googleMapsUri != null)
               Container(
@@ -677,12 +722,16 @@ class _DetailedRestaurantInformationSection extends StatelessWidget {
   final String? restaurantGenerativeSummary;
   final String? restaurantInternationalPhoneNumber;
   final String? restaurantNextCloseTime;
+  final bool isSummaryLoading;
+  final VoidCallback onFetchSummary;
 
   const _DetailedRestaurantInformationSection({
     this.restaurantFormattedaddress,
     this.restaurantGenerativeSummary,
     this.restaurantInternationalPhoneNumber,
     this.restaurantNextCloseTime,
+    required this.isSummaryLoading,
+    required this.onFetchSummary,
   });
 
   @override
@@ -698,20 +747,53 @@ class _DetailedRestaurantInformationSection extends StatelessWidget {
         children: [
           // I WILL DO IT WITH FLUTTER MAP. LEMME DO IT. - IHSAN
           // IF ANYONE WANT TO DO WATCH THIS https://www.youtube.com/watch?v=9L9Arynobzo&list=PLOEXB48nQMqMqhfwVsechVSYJBNrhZiNo
-          Text(
-            "AI-Generated Summary",
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: const Color.fromARGB(255, 0, 0, 0),
-            ),
+          Row(
+            children: [
+              Text(
+                "Yapay Zeka Özeti",
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: const Color.fromARGB(255, 0, 0, 0),
+                ),
+              ),
+              const Spacer(),
+              isSummaryLoading
+              ? const Center(
+                  child: CircularProgressIndicator(
+                    color: primaryOrange,
+                  ),
+                )
+              : 
+              restaurantGenerativeSummary == null ? 
+              ElevatedButton(
+                  onPressed: onFetchSummary,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryOrange,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text("Özeti Oluştur"),
+                )
+              : const SizedBox.shrink(),
+            ],  
           ),
           const SizedBox(height: 8),
-          Text(
-            restaurantGenerativeSummary ??
-                "There is not a generative summary for this restaurant",
-            style: Theme.of(context).textTheme.displayLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: const Color.fromARGB(255, 32, 32, 32),
+          Expanded(
+            child: SingleChildScrollView(
+              child: Text(
+                restaurantGenerativeSummary ??
+                    "Henüz bir özet oluşturulmadı.",
+                style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: const Color.fromARGB(255, 32, 32, 32),
+                ),
+              ),
             ),
           ),
           const SizedBox(height: 16),
@@ -956,11 +1038,15 @@ class _DetailedRestaurantCommentsSection extends StatelessWidget {
         
               const SizedBox(height: 8),
 
-              Text(
-                text,
-                style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                  fontWeight: FontWeight.normal,
-                  color: Colors.black87,
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Text(
+                    text,
+                    style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                      fontWeight: FontWeight.normal,
+                      color: Colors.black87,
+                    ),
+                  ),
                 ),
               ),
             ],
