@@ -55,6 +55,7 @@ dependencies:
   provider: ^6.1.1
   get_it: ^7.6.4
   shared_preferences: ^2.5.4
+  syncfusion_flutter_sliders: ^32.1.23
 
 dev_dependencies:
   flutter_test:

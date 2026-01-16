@@ -13,6 +13,9 @@ import 'package:app/pages/mapmarkers.dart';
 import 'package:provider/provider.dart';
 import 'detailedrestaurantpage.dart';
 import 'package:app/states/MapStateStore.dart';
+import 'package:syncfusion_flutter_sliders/sliders.dart';
+import 'package:syncfusion_flutter_core/theme.dart';
+
 
 class MapPage extends StatefulWidget {
   final String keyAPI;
@@ -228,16 +231,24 @@ class _MapPageState extends State<MapPage> {
               BoxShadow(blurRadius: 10, color: Colors.black.withOpacity(0.2)),
             ],
           ),
-          child: RotatedBox(
-            quarterTurns: -1,
-            child: Slider(
+          child: SfSliderTheme(
+            data: SfSliderThemeData(
+              tooltipBackgroundColor: const Color.fromARGB(255, 255, 115, 0),
+              tooltipTextStyle: Theme.of(context).textTheme.displaySmall?.copyWith(
+                color: Colors.white
+              )
+            ),
+            child: SfSlider.vertical(
               inactiveColor: Colors.white,
               activeColor: const Color.fromARGB(255, 255, 115, 0),
               min: 50,
               max: 5000,
-              divisions: 9,
+              interval: 9,
               value: _radius.toDouble(),
-              label: "${(_radius / 1000).toStringAsFixed(1)} km",
+              enableTooltip: true,
+              tooltipTextFormatterCallback: (value, text) {
+                return "${(value / 1000).toStringAsFixed(1)} km";
+              },
               onChanged: (value) {
                 setState(() {
                   _radius = value.toInt();
