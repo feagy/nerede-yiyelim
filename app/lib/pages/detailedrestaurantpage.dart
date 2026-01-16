@@ -86,7 +86,7 @@ class _DetailedRestaurantPage extends State<DetailedRestaurantPage> {
   void initState() {
     super.initState();
     place = widget.place;
-    if (_placeStateStore.place!.id != place!.id){
+    if (_placeStateStore.place?.id != place?.id){
       _placeStateStore.setPlace(place!);
       _placeStateStore.clearSummary();
     }else{

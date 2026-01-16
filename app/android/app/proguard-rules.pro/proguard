@@ -1,0 +1,21 @@
+############################################
+# REQUIRED FOR flutter_local_notifications
+############################################
+
+-keepattributes Signature
+-keepattributes *Annotation*
+-keepattributes InnerClasses,EnclosingMethod
+
+# Gson
+-keep class com.google.gson.** { *; }
+
+# Flutter Local Notifications
+-keep class com.dexterous.flutterlocalnotifications.** { *; }
+
+# Prevent stripping generic constructors
+-keepclassmembers class * {
+    <init>(...);
+}
+
+# Prevent R8 from optimizing TypeToken
+-keep class com.google.gson.reflect.TypeToken { *; }

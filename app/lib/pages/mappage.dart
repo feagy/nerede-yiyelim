@@ -303,6 +303,7 @@ class _MapPageState extends State<MapPage> {
   Widget build(BuildContext context) {
     final bottomTabState = Provider.of<BottomTabState>(context);
     return Scaffold(
+      backgroundColor: Colors.transparent,
       body: Column(
         children: [
           Expanded(
@@ -343,19 +344,19 @@ class _MapPageState extends State<MapPage> {
                       ],
                     ),
                     if (_currentUserLatLng != null)
-                      FutureBuilder(
-                        future: _buildUserMarker(),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return const Center(
-                              child: CircularProgressIndicator(
-                                color: Color.fromARGB(255, 255, 115, 0)
-                              ),
-                            );
-                          }
-                          return MarkerLayer(markers: [snapshot.data!]);
-                        },
+                      MarkerLayer(
+                        markers: [
+                          Marker(
+                            point: _currentUserLatLng!,
+                            width: 50,
+                            height: 50,
+                            child: Icon(
+                              Icons.emoji_people,
+                              color: const Color.fromARGB(255, 255, 115, 0),
+                              size: MediaQuery.of(context).size.height * 0.05,
+                            ),
+                          ),
+                        ],
                       ),
                     if (_userMarkers.isNotEmpty)
                       MarkerLayer(markers: _userMarkers),
@@ -550,9 +551,9 @@ class _MapPageState extends State<MapPage> {
                                       final results = await _fetchPlaces(
                                         textQuery: selectedCategory,
                                         lat:
-                                            40.9917, //_currentUserLatLng?.latitude ?? 40.9917,
+                                            _currentUserLatLng?.latitude ?? 40.9917,
                                         lng:
-                                            28.8517, //_currentUserLatLng?.longitude ?? 28.8517,
+                                            _currentUserLatLng?.longitude ?? 28.8517,
                                         radius: _radius,
                                       );
                                       setState(() {
