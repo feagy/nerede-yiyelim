@@ -67,7 +67,7 @@ class _MapPageState extends State<MapPage> {
       margin: const EdgeInsets.all(12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white, // arka plan beyaz
+        color: Colors.white,
         borderRadius: BorderRadius.circular(18),
         boxShadow: const [
           BoxShadow(blurRadius: 20, spreadRadius: 2, offset: Offset(0, 8)),
@@ -200,17 +200,15 @@ class _MapPageState extends State<MapPage> {
     }
   }
 
-  // BEN KOYDUM GÜN 10.01.2026
   Future<Marker> _buildUserMarker() async {
     return Marker(
       point: _currentUserLatLng!,
       width: 50,
       height: 50,
-      child: const Icon(Icons.my_location, color: Colors.blueAccent, size: 40),
+      child: Icon(Icons.emoji_people, color: Color.fromARGB(255, 255, 115, 0), size: MediaQuery.of(context).size.height * 0.05),
     );
   }
 
-  //
   Widget _buildVerticalRadiusSlider() {
     if (!_showRadiusSlider) return const SizedBox();
 
@@ -314,7 +312,7 @@ class _MapPageState extends State<MapPage> {
                 FlutterMap(
                   mapController: _mapController,
                   options: MapOptions(
-                    initialCenter: const LatLng(41.0082, 28.9784),
+                    initialCenter: _currentUserLatLng ?? LatLng(41.000, 41.000),
                     initialZoom: 11.0,
                     minZoom: 3.0,
                     maxZoom: 18.0,
@@ -336,9 +334,9 @@ class _MapPageState extends State<MapPage> {
                           point:
                               _currentUserLatLng ??
                               const LatLng(40.9917, 28.8517),
-                          color: Colors.amber.withOpacity(0.1),
+                          color: Color.fromARGB(255, 255, 255, 255).withOpacity(0.2),
                           borderStrokeWidth: 2,
-                          borderColor: Colors.amberAccent,
+                          borderColor: Color.fromARGB(255, 255, 255, 255).withOpacity(0.8),
                           useRadiusInMeter: true,
                           radius: _radius.toDouble(),
                         ),
