@@ -59,7 +59,40 @@ class _MapPageState extends State<MapPage> {
     _mapController = MapController();
     nearbyPlaces = _mapStateStore.nearbyPlaces;
     selectedCategoryIndex = _mapStateStore.selectedCategoryIndex;
-    _initUserLocation();
+    
+    // Konum alımını timeout ile yap
+    _initUserLocationWithTimeout();
+  }
+  
+  Future<void> _initUserLocationWithTimeout() async {
+    try {
+      // 5 saniye timeout
+      await _initUserLocation().timeout(
+        const Duration(seconds: 5),
+        onTimeout: () {
+          debugPrint('Konum timeout - Varsayılan konum kullanılıyor');
+          if (mounted) {
+            setState(() {
+              // İstanbul varsayılan konum
+              _currentUserLatLng = const LatLng(41.0082, 28.9784);
+            });
+          }
+        },
+      );
+      
+      // Konum başarıyla alındıysa takibi başlat
+      if (mounted && _currentUserLatLng != null) {
+        await Future.delayed(const Duration(milliseconds: 500));
+        _startTrackingUser();
+      }
+    } catch (e) {
+      debugPrint('Konum hatası: $e');
+      if (mounted) {
+        setState(() {
+          _currentUserLatLng = const LatLng(41.0082, 28.9784);
+        });
+      }
+    }
   }
 
   Future<void> _openPlaceSheet(Place p, BottomTabState bottomTabState) async {
@@ -196,7 +229,6 @@ class _MapPageState extends State<MapPage> {
       setState(() {
         _currentUserLatLng = LatLng(pos.latitude, pos.longitude);
       });
-      _mapController.move(_currentUserLatLng!, 15.0);
     }
   }
 
@@ -205,7 +237,11 @@ class _MapPageState extends State<MapPage> {
       point: _currentUserLatLng!,
       width: 50,
       height: 50,
-      child: Icon(Icons.emoji_people, color: Color.fromARGB(255, 255, 115, 0), size: MediaQuery.of(context).size.height * 0.05),
+      child: Icon(
+        Icons.emoji_people, 
+        color: const Color.fromARGB(255, 255, 115, 0), 
+        size: MediaQuery.of(context).size.height * 0.05
+      ),
     );
   }
 
@@ -221,7 +257,7 @@ class _MapPageState extends State<MapPage> {
         child: Container(
           height: 250,
           width: 50,
-          padding: const EdgeInsetsGeometry.directional(),
+          padding: const EdgeInsets.all(0), // EdgeInsetsGeometry.directional() yerine
           decoration: BoxDecoration(
             color: Colors.transparent,
             borderRadius: BorderRadius.circular(16),
@@ -260,26 +296,21 @@ class _MapPageState extends State<MapPage> {
   }
 
   Widget _buildRadiusToggleButton() {
-    return Positioned(
-      right: 16,
-      bottom: 30,
-      child: FloatingActionButton(
-        heroTag: "radius_button",
-        backgroundColor: const Color.fromARGB(255, 255, 115, 0),
-        child: Icon(
-          _showRadiusSlider ? Icons.close : Icons.radar,
-          color: Colors.white,
-        ),
-        onPressed: () {
-          setState(() {
-            _showRadiusSlider = !_showRadiusSlider;
-          });
-        },
+    return FloatingActionButton(
+      heroTag: "radius_button",
+      backgroundColor: const Color.fromARGB(255, 255, 115, 0),
+      child: Icon(
+        _showRadiusSlider ? Icons.close : Icons.radar,
+        color: Colors.white,
       ),
+      onPressed: () {
+        setState(() {
+          _showRadiusSlider = !_showRadiusSlider;
+        });
+      },
     );
   }
 
-  //
   Future<void> _startTrackingUser() async {
     _locationStream = await _locationService.startUpdateUserCurrentLocation(
       onLocationChanged: (pos) {
@@ -302,304 +333,312 @@ class _MapPageState extends State<MapPage> {
   @override
   Widget build(BuildContext context) {
     final bottomTabState = Provider.of<BottomTabState>(context);
+    
+    // Scaffold'a arka plan rengi eklendi
     return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Column(
+      backgroundColor: Colors.white, // veya Theme.of(context).scaffoldBackgroundColor
+      body: Stack(
         children: [
-          Expanded(
-            child: Stack(
-              fit: StackFit.expand,
+          // FlutterMap
+          Positioned.fill(
+            child: FlutterMap(
+              mapController: _mapController,
+              options: MapOptions(
+                onMapReady: () {
+                  if (_currentUserLatLng != null) {
+                    _mapController.move(_currentUserLatLng!, 15);
+                  }
+                },
+                initialCenter: _currentUserLatLng ?? const LatLng(41.000, 41.000),
+                initialZoom: 11.0,
+                minZoom: 3.0,
+                maxZoom: 18.0,
+                interactionOptions: const InteractionOptions(
+                  flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
+                ),
+              ),
               children: [
-                FlutterMap(
-                  mapController: _mapController,
-                  options: MapOptions(
-                    initialCenter: _currentUserLatLng ?? LatLng(41.000, 41.000),
-                    initialZoom: 11.0,
-                    minZoom: 3.0,
-                    maxZoom: 18.0,
-                    interactionOptions: const InteractionOptions(
-                      flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
-                    ),
-                  ),
-                  children: [
-                    TileLayer(
-                      urlTemplate:
-                          "https://api.maptiler.com/maps/hybrid/256/{z}/{x}/{y}.jpg?key=${widget.keyAPI}",
-                      userAgentPackageName: "com.example.app",
-                      tileProvider: NetworkTileProvider(),
-                      maxNativeZoom: 19,
-                    ),
-                    CircleLayer(
-                      circles: [
-                        CircleMarker(
-                          point:
-                              _currentUserLatLng ??
-                              const LatLng(40.9917, 28.8517),
-                          color: Color.fromARGB(255, 255, 255, 255).withOpacity(0.2),
-                          borderStrokeWidth: 2,
-                          borderColor: Color.fromARGB(255, 255, 255, 255).withOpacity(0.8),
-                          useRadiusInMeter: true,
-                          radius: _radius.toDouble(),
-                        ),
-                      ],
-                    ),
-                    if (_currentUserLatLng != null)
-                      MarkerLayer(
-                        markers: [
-                          Marker(
-                            point: _currentUserLatLng!,
-                            width: 50,
-                            height: 50,
-                            child: Icon(
-                              Icons.emoji_people,
-                              color: const Color.fromARGB(255, 255, 115, 0),
-                              size: MediaQuery.of(context).size.height * 0.05,
-                            ),
-                          ),
-                        ],
+                TileLayer(
+                  urlTemplate:
+                      "https://api.maptiler.com/maps/hybrid/256/{z}/{x}/{y}.jpg?key=${widget.keyAPI}",
+                  userAgentPackageName: "com.example.app",                        
+                  maxNativeZoom: 19,
+                  tileProvider: NetworkTileProvider(),
+                ),
+                CircleLayer(
+                  circles: [
+                    if(_currentUserLatLng != null)
+                      CircleMarker(
+                        point: _currentUserLatLng!,
+                        color: const Color.fromARGB(255, 255, 255, 255).withOpacity(0.2),
+                        borderStrokeWidth: 2,
+                        borderColor: const Color.fromARGB(255, 255, 255, 255).withOpacity(0.8),
+                        useRadiusInMeter: true,
+                        radius: _radius.toDouble(),
                       ),
-                    if (_userMarkers.isNotEmpty)
-                      MarkerLayer(markers: _userMarkers),
-                    MarkerLayer(
-                      markers: MapMarkers.getPlaceMarkers<Place>(
-                        nearbyPlaces,
-                        (place) => LatLng(place.lat, place.lng),
-                        (place) {
-                          _openPlaceSheet(place, bottomTabState);
-                        },
-                        context,
-                      ),
-                    ),
                   ],
                 ),
-
-                Positioned(
-                  top: MediaQuery.of(context).size.height * 0.04,
-                  left: MediaQuery.of(context).size.height * 0.01,
-                  right: MediaQuery.of(context).size.height * 0.01,
-                  child: Center(
-                    child: Text(
-                      "Nerede Yiyelim?",
-                      style: Theme.of(context).textTheme.headlineLarge
-                          ?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: const Color.fromARGB(255, 255, 115, 0),
-                            shadows: [
-                              Shadow(
-                                color: Colors.black,
-                                blurRadius: 12,
-                                offset: Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                    ),
-                  ),
-                ),
-
-                Positioned(
-                  top: MediaQuery.of(context).size.height * 0.12,
-                  left: MediaQuery.of(context).size.height * 0.04,
-                  right: MediaQuery.of(context).size.height * 0.04,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.transparent,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black,
-                          blurRadius: 50,
-                          offset: Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: SizedBox(
-                      height: 48,
-                      child: Material(
-                        type: MaterialType.transparency,
-                        child: ListView.separated(
-                          scrollDirection: Axis.horizontal,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 6,
-                          ),
-                          itemCount: categories.length,
-                          separatorBuilder: (_, __) => const SizedBox(width: 8),
-                          itemBuilder: (context, index) {
-                            final isSelected = selectedCategoryIndex == index;
-
-                            return ChoiceChip(
-                              label: Text(
-                                categories[index],
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: isSelected
-                                      ? Colors.white
-                                      : const Color.fromARGB(255, 255, 115, 0),
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              checkmarkColor: Colors.white,
-                              selected: isSelected,
-                              selectedColor: const Color.fromARGB(
-                                255,
-                                255,
-                                115,
-                                0,
-                              ),
-                              backgroundColor: Colors.transparent,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                side: BorderSide(
-                                  color: const Color.fromARGB(255, 255, 115, 0),
-                                  width: 1,
-                                ),
-                              ),
-                              onSelected: (selected) async {
-                                setState(() {
-                                  selectedCategoryIndex = index;
-                                });
-                                _mapStateStore.setSelectedCategoryIndex(index);
-                              },
-                            );
-                          },
+                if (_currentUserLatLng != null)
+                  MarkerLayer(
+                    markers: [
+                      Marker(
+                        point: _currentUserLatLng!,
+                        width: 50,
+                        height: 50,
+                        child: Icon(
+                          Icons.emoji_people,
+                          color: const Color.fromARGB(255, 255, 115, 0),
+                          size: MediaQuery.of(context).size.height * 0.05,
                         ),
                       ),
-                    ),
+                    ],
                   ),
-                ),
-                Positioned(
-                  right: 0,
-                  bottom: MediaQuery.of(context).size.height * 0.15,
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 10, bottom: 4),
-                    child: Column(
-                      children: [
-                        _buildVerticalRadiusSlider(),
-                        _buildRadiusToggleButton(),
-                      ],
-                    ),
-                  ),
-                ),
-                Positioned(
-                  bottom: MediaQuery.of(context).size.height * 0.04,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color.fromARGB(255, 0, 0, 0),
-                            blurRadius: 50,
-                            offset: Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        children: [
-                          Row(
-                            spacing: 12,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Expanded(
-                                child: Padding(
-                                  padding: const EdgeInsetsGeometry.directional(
-                                    start: 10,
-                                  ),
-                                  child: ElevatedButton.icon(
-                                    onPressed: () {
-                                      _startTrackingUser();
-                                    },
-                                    icon: const Icon(Icons.gps_fixed),
-                                    label: Text(
-                                      'Beni Bul',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .displayMedium
-                                          ?.copyWith(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                    ),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color.fromARGB(
-                                        255,
-                                        255,
-                                        115,
-                                        0,
-                                      ),
-                                      foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 32,
-                                        vertical: 12,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      elevation: 4,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              Expanded(
-                                child: Padding(
-                                  padding: const EdgeInsetsGeometry.directional(
-                                    end: 10,
-                                  ),
-                                  child: ElevatedButton.icon(
-                                    onPressed: () async {
-                                      final results = await _fetchPlaces(
-                                        textQuery: selectedCategory,
-                                        lat:
-                                            _currentUserLatLng?.latitude ?? 40.9917,
-                                        lng:
-                                            _currentUserLatLng?.longitude ?? 28.8517,
-                                        radius: _radius,
-                                      );
-                                      setState(() {
-                                        nearbyPlaces = results;
-                                      });
-                                      _mapStateStore.setPlaces(results);
-                                    },
-                                    icon: const Icon(Icons.gps_fixed),
-                                    label: Text(
-                                      'Mekan Bul',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .displayMedium
-                                          ?.copyWith(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                    ),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color.fromARGB(
-                                        255,
-                                        255,
-                                        115,
-                                        0,
-                                      ),
-                                      foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 32,
-                                        vertical: 12,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      elevation: 4,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
+                if (_userMarkers.isNotEmpty)
+                  MarkerLayer(markers: _userMarkers),
+                MarkerLayer(
+                  markers: MapMarkers.getPlaceMarkers<Place>(
+                    nearbyPlaces,
+                    (place) => LatLng(place.lat, place.lng),
+                    (place) {
+                      _openPlaceSheet(place, bottomTabState);
+                    },
+                    context,
                   ),
                 ),
               ],
+            ),
+          ),
+      
+          // Başlık
+          Positioned(
+            top: MediaQuery.of(context).size.height * 0.04,
+            left: MediaQuery.of(context).size.height * 0.01,
+            right: MediaQuery.of(context).size.height * 0.01,
+            child: Center(
+              child: Text(
+                "Nerede Yiyelim?",
+                style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: const Color.fromARGB(255, 255, 115, 0),
+                  shadows: const [
+                    Shadow(
+                      color: Colors.black,
+                      blurRadius: 12,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+      
+          // Kategori Seçimi
+          Positioned(
+            top: MediaQuery.of(context).size.height * 0.12,
+            left: MediaQuery.of(context).size.height * 0.04,
+            right: MediaQuery.of(context).size.height * 0.04,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.transparent,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Colors.black,
+                    blurRadius: 50,
+                    offset: Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: SizedBox(
+                height: 48,
+                child: Material(
+                  type: MaterialType.transparency,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 6,
+                    ),
+                    itemCount: categories.length,
+                    separatorBuilder: (_, __) => const SizedBox(width: 8),
+                    itemBuilder: (context, index) {
+                      final isSelected = selectedCategoryIndex == index;
+      
+                      return ChoiceChip(
+                        label: Text(
+                          categories[index],
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: isSelected
+                                ? Colors.white
+                                : const Color.fromARGB(255, 255, 115, 0),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        checkmarkColor: Colors.white,
+                        selected: isSelected,
+                        selectedColor: const Color.fromARGB(255, 255, 115, 0),
+                        backgroundColor: Colors.transparent,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          side: const BorderSide(
+                            color: Color.fromARGB(255, 255, 115, 0),
+                            width: 1,
+                          ),
+                        ),
+                        onSelected: (selected) async {
+                          setState(() {
+                            selectedCategoryIndex = index;
+                          });
+                          _mapStateStore.setSelectedCategoryIndex(index);
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ),
+          ),
+          
+          // Radyüs Slider ve Toggle Button
+          Positioned(
+            right: 16,
+            bottom: MediaQuery.of(context).size.height * 0.15, // Yukarı taşındı
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (_showRadiusSlider)
+                  Container(
+                    height: 250,
+                    width: 50,
+                    margin: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.transparent,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(blurRadius: 10, color: Colors.black.withOpacity(0.2)),
+                      ],
+                    ),
+                    child: SfSliderTheme(
+                      data: SfSliderThemeData(
+                        tooltipBackgroundColor: const Color.fromARGB(255, 255, 115, 0),
+                        tooltipTextStyle: Theme.of(context).textTheme.displaySmall?.copyWith(
+                          color: Colors.white
+                        )
+                      ),
+                      child: SfSlider.vertical(
+                        inactiveColor: Colors.white,
+                        activeColor: const Color.fromARGB(255, 255, 115, 0),
+                        min: 50,
+                        max: 5000,
+                        interval: 9,
+                        value: _radius.toDouble(),
+                        enableTooltip: true,
+                        tooltipTextFormatterCallback: (value, text) {
+                          return "${(value / 1000).toStringAsFixed(1)} km";
+                        },
+                        onChanged: (value) {
+                          setState(() {
+                            _radius = value.toInt();
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                _buildRadiusToggleButton(),
+              ],
+            ),
+          ),
+          
+          // Alt Butonlar
+          Positioned(
+            bottom: MediaQuery.of(context).size.height * 0.04,
+            left: 10,
+            right: 10,
+            child: Container(
+              decoration: BoxDecoration(
+                boxShadow: const [
+                  BoxShadow(
+                    color: Colors.black,
+                    blurRadius: 50,
+                    offset: Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        _startTrackingUser();
+                      },
+                      icon: const Icon(Icons.gps_fixed),
+                      label: Text(
+                        'Beni Bul',
+                        style: Theme.of(context)
+                            .textTheme
+                            .displayMedium
+                            ?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color.fromARGB(255, 255, 115, 0),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 32,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 4,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () async {
+                        final results = await _fetchPlaces(
+                          textQuery: selectedCategory,
+                          lat: _currentUserLatLng?.latitude ?? 40.9917,
+                          lng: _currentUserLatLng?.longitude ?? 28.8517,
+                          radius: _radius,
+                        );
+                        setState(() {
+                          nearbyPlaces = results;
+                        });
+                        _mapStateStore.setPlaces(results);
+                      },
+                      icon: const Icon(Icons.search),
+                      label: Text(
+                        'Mekan Bul',
+                        style: Theme.of(context)
+                            .textTheme
+                            .displayMedium
+                            ?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color.fromARGB(255, 255, 115, 0),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 32,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 4,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],

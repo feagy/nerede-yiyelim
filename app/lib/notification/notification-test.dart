@@ -32,8 +32,8 @@ class NotificationTest {
   static Future<void> showNotificationSingle() async {
     await _plugin.zonedSchedule(
       0,
-      "Hatırlatma",
-      "3 gün sonra tekrar gel!",
+      "HEYY!",
+      "Lütfen, geri gel! Seni özledik.",
       tz.TZDateTime.now(tz.local).add(const Duration(days: 3)),
       const NotificationDetails(
         android: AndroidNotificationDetails(
@@ -47,6 +47,8 @@ class NotificationTest {
       androidScheduleMode: AndroidScheduleMode.inexact,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
+      payload: 'reminder_3_days',
     );
   }
+
 }

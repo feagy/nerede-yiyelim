@@ -22,12 +22,15 @@ import 'package:app/global/universaltheme.dart';
 import 'package:app/pages/reviewpage.dart';
 import 'package:app/states/MapStateStore.dart';
 import 'package:app/states/PlaceStateStore.dart';
+import 'package:sqflite/sqflite.dart';
+
 
 final getIt = GetIt.instance;
 
 Future main() async {
-  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
   WidgetsFlutterBinding.ensureInitialized();
+  
+  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
   await dotenv.load(fileName: ".env");
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 

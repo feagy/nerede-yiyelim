@@ -191,15 +191,13 @@ class _ProfilePageState extends State<ProfilePage> {
                       MaterialPageRoute(builder: (context) => ReviewPage()),
                     );
                   },
-                  child: Flexible(
-                    child: Text(
+                  child: Text(
                       'Yorumlarıma Göz At',
                       style: Theme.of(
                         context,
                       ).textTheme.displayLarge?.copyWith(color: Colors.white),
                       overflow: TextOverflow.ellipsis,
                     ),
-                  ),
                 ),
               ),
 
