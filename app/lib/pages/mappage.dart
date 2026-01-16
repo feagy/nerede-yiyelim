@@ -435,6 +435,7 @@ class _MapPageState extends State<MapPage> {
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
+                              checkmarkColor: Colors.white,
                               selected: isSelected,
                               selectedColor: const Color.fromARGB(
                                 255,
@@ -547,9 +548,9 @@ class _MapPageState extends State<MapPage> {
                                       final results = await _fetchPlaces(
                                         textQuery: selectedCategory,
                                         lat:
-                                            40.9917, //_currentUserLatLng?.latitude ??,
+                                            40.9917, //_currentUserLatLng?.latitude ?? 40.9917,
                                         lng:
-                                            28.8517, //_currentUserLatLng?.longitude ??,
+                                            28.8517, //_currentUserLatLng?.longitude ?? 28.8517,
                                         radius: _radius,
                                       );
                                       setState(() {
