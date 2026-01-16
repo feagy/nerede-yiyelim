@@ -349,7 +349,9 @@ class _MapPageState extends State<MapPage> {
                           if (snapshot.connectionState ==
                               ConnectionState.waiting) {
                             return const Center(
-                              child: CircularProgressIndicator(),
+                              child: CircularProgressIndicator(
+                                color: Color.fromARGB(255, 255, 115, 0)
+                              ),
                             );
                           }
                           return MarkerLayer(markers: [snapshot.data!]);
