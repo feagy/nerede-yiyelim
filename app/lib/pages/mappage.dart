@@ -312,7 +312,7 @@ class _MapPageState extends State<MapPage> {
                 FlutterMap(
                   mapController: _mapController,
                   options: MapOptions(
-                    initialCenter: _currentUserLatLng ?? LatLng(41.000, 41.000),
+                    initialCenter: _currentUserLatLng ?? LatLng(40.9917, 28.8517),
                     initialZoom: 11.0,
                     minZoom: 3.0,
                     maxZoom: 18.0,
@@ -332,8 +332,7 @@ class _MapPageState extends State<MapPage> {
                       circles: [
                         CircleMarker(
                           point:
-                              _currentUserLatLng ??
-                              const LatLng(40.9917, 28.8517),
+                              _currentUserLatLng ?? LatLng(40.9917, 28.8517),
                           color: Color.fromARGB(255, 255, 255, 255).withOpacity(0.2),
                           borderStrokeWidth: 2,
                           borderColor: Color.fromARGB(255, 255, 255, 255).withOpacity(0.8),
@@ -550,9 +549,9 @@ class _MapPageState extends State<MapPage> {
                                       final results = await _fetchPlaces(
                                         textQuery: selectedCategory,
                                         lat:
-                                            40.9917, //_currentUserLatLng?.latitude ?? 40.9917,
+                                            _currentUserLatLng?.latitude ?? 40.9917,
                                         lng:
-                                            28.8517, //_currentUserLatLng?.longitude ?? 28.8517,
+                                            _currentUserLatLng?.longitude ?? 28.8517,
                                         radius: _radius,
                                       );
                                       setState(() {
