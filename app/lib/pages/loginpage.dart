@@ -4,6 +4,7 @@ import 'package:app/functions/additionalfunc.dart';
 import 'package:app/pages/forgetpasswordpage.dart';
 import 'package:app/pages/signuppage.dart';
 import 'package:app/services/authservice.dart';
+import 'package:app/notification/notification-test.dart'; // EKLE
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -178,15 +179,37 @@ class _LoginPageState extends State<LoginPage> {
                       elevation: 0,
                     ),
                     onPressed: () async {
-                        try{
-                          if(await signInAndSaveAccount(email: _emailController.text, password: _passwordController.text)){
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Hesabınızı hızlı girişe kayıt ettik. Bundan sonra doğrudan hızlı giriş ile girebilirsiniz.")));
+                        try {
+                          if (await signInAndSaveAccount(
+                            email: _emailController.text, 
+                            password: _passwordController.text
+                          )) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Hesabınızı hızlı girişe kayıt ettik. Bundan sonra doğrudan hızlı giriş ile girebilirsiniz.")
+                              )
+                            );
                           } else {
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Hızlı girişe hesabı saklarken hata ile karşılaştık!")));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Hızlı girişe hesabı saklarken hata ile karşılaştık!")
+                              )
+                            );
                           }
-                          Navigator.pushReplacementNamed(context, "/home");
+                          
+                          await NotificationTest.updateLastLogin().catchError((e) {
+                            debugPrint('Bildirim planlama hatası: $e');
+                          });
+                          
+                          if (mounted) {
+                            Navigator.pushReplacementNamed(context, "/home");
+                          }
                         } on FirebaseAuthException catch(e) {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("E-postanız ya da şifreniz hatalı! Lütfen, tekrar deneyiniz.")));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("E-postanız ya da şifreniz hatalı! Lütfen, tekrar deneyiniz.")
+                            )
+                          );
                         }
                     },
                     child: Text(
@@ -237,6 +260,9 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     TextButton(
                       onPressed: () {
+                        NotificationTest.updateLastLogin().catchError((e) {
+                          debugPrint('Bildirim planlama hatası: $e');
+                        });
                         Navigator.pushReplacementNamed(context, "/home");
                       },
                       style: TextButton.styleFrom(

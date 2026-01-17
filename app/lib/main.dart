@@ -36,8 +36,9 @@ Future main() async {
 
   final db = await LocalServices.getDatabase();
 
-  await NotificationTest.initNotification();
-  await NotificationTest.showNotificationSingle();
+ NotificationTest.initNotification().catchError((e) {
+    debugPrint('Bildirim hatası: $e');
+  });
 
   final String apiKey = dotenv.env['MAPTILER_MAPS_API_KEY'] ?? '';
 
