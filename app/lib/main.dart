@@ -79,14 +79,11 @@ void _initializeLocation(MapStateStore mapStateStore) async {
     if (pos != null) {
       final latLng = LatLng(pos.latitude, pos.longitude);
       mapStateStore.setUserLocation(latLng);
-      debugPrint('✅ Konum başarıyla alındı: ${pos.latitude}, ${pos.longitude}');
     } else {
       mapStateStore.setUserLocation(const LatLng(41.0082, 28.9784));
-      debugPrint('⚠️ Konum alınamadı, varsayılan konum kullanılıyor');
     }
   } catch (e) {
     mapStateStore.setUserLocation(const LatLng(41.0082, 28.9784));
-    debugPrint('❌ Konum alma hatası: $e');
   }
 }
 

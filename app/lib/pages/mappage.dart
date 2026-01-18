@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' show cos, sqrt, asin;
 import 'package:app/global/universaltheme.dart';
 import 'package:app/services/placesservice.dart';
 import 'package:app/services/reviewsservice.dart';
@@ -16,7 +17,6 @@ import 'package:app/states/MapStateStore.dart';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
 import 'package:syncfusion_flutter_core/theme.dart';
 
-
 class MapPage extends StatefulWidget {
   final String keyAPI;
   const MapPage({super.key, required this.keyAPI});
@@ -33,12 +33,13 @@ class _MapPageState extends State<MapPage> {
   
   List<Place> nearbyPlaces = [];
   bool _isInitializing = true;
+  bool _locationPermissionDenied = false;
 
-  //Radyüs slider
+  // Radyüs slider
   int _radius = 1000; // metre
   bool _showRadiusSlider = false;
 
-  //Sliver box için veri
+  // Sliver box için veri
   final List<String> categories = [
     "Pizza",
     "Burger",
@@ -56,43 +57,137 @@ class _MapPageState extends State<MapPage> {
     super.initState();
     _mapStateStore = GetIt.instance<MapStateStore>();
     _mapController = MapController();
-    nearbyPlaces = _mapStateStore.nearbyPlaces;
-    selectedCategoryIndex = _mapStateStore.selectedCategoryIndex;
+    
+    _initializeLocationWithPermission();
+  }
 
-    if (_mapStateStore.userLocation != null) {
-      _isInitializing = false;
-      _mapStateStore.startTracking(_locationService);
+  /// İki nokta arasındaki mesafeyi hesapla (Haversine formülü)
+  double _calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+    const double pi = 3.1415926535897932;
+    const p = pi / 180;
+    const c = cos;
+    final a = 0.5 - c((lat2 - lat1) * p) / 2 + 
+              c(lat1 * p) * c(lat2 * p) * 
+              (1 - c((lon2 - lon1) * p)) / 2;
+    return 12742000 * asin(sqrt(a));
+  }
+
+  List<Place> _filterPlacesByRadius(
+    List<Place> places, 
+    double userLat, 
+    double userLng, 
+    int radiusInMeters
+  ) {
+    return places.where((place) {
+      final distance = _calculateDistance(
+        userLat, 
+        userLng, 
+        place.lat, 
+        place.lng
+      );
+      return distance <= radiusInMeters;
+    }).toList();
+  }
+
+  Future<void> _initializeLocationWithPermission() async {
+    final serviceEnabled = await _locationService.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      if (mounted) {
+        _showLocationServiceDialog();
+        setState(() {
+          _isInitializing = false;
+          _locationPermissionDenied = true;
+          _mapStateStore.setUserLocation(const LatLng(41.0082, 28.9784));
+        });
+      }
+      return;
+    }
+
+    final success = await _mapStateStore.initializeLocation(_locationService);
+    
+    if (!success) {
+      if (mounted) {
+        setState(() {
+          _isInitializing = false;
+          _locationPermissionDenied = true;
+          _mapStateStore.setUserLocation(const LatLng(41.0082, 28.9784));
+        });
+        _showPermissionDialog();
+      }
+      return;
+    }
+
+    if (mounted) {
+      setState(() {
+        nearbyPlaces = _mapStateStore.nearbyPlaces;
+        selectedCategoryIndex = _mapStateStore.selectedCategoryIndex;
+        _isInitializing = false;
+        _locationPermissionDenied = false;
+      });
+
+      await _mapStateStore.startTracking(_locationService);
+
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        
         if (mounted && _mapStateStore.userLocation != null) {
           _mapController.move(_mapStateStore.userLocation!, 15);
         }
       });
-    } else {
-      _waitForLocation();
     }
   }
-  
-  Future<void> _waitForLocation() async {
-    int waitCount = 0;
-    while (_mapStateStore.userLocation == null && waitCount < 40 && mounted) {
-      await Future.delayed(const Duration(milliseconds: 250));
-      waitCount++;
-    }
-    
-    if (_mapStateStore.userLocation == null && mounted) {
-      _mapStateStore.setUserLocation(const LatLng(41.0082, 28.9784));
-    }
-    
-    if (mounted) {
-      setState(() {
-        _isInitializing = false;
-      });
-      _mapStateStore.startTracking(_locationService);
-      if (_mapStateStore.userLocation != null) {
-        _mapController.move(_mapStateStore.userLocation!, 15);
-      }
-    }
+
+  void _showPermissionDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text('Konum İzni Gerekli'),
+        content: const Text(
+          'Yakınındaki mekanları gösterebilmek için konum izni vermelisin. '
+          'Şimdilik varsayılan konum (İstanbul) gösteriliyor.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Daha Sonra'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _locationService.openSettings();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFF7300),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Ayarlara Git'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showLocationServiceDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text('Konum Servisi Kapalı'),
+        content: const Text(
+          'Yakınındaki mekanları görebilmek için konum servisini açmalısın. '
+          'Şimdilik varsayılan konum (İstanbul) gösteriliyor.',
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFF7300),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Tamam'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _openPlaceSheet(Place p, BottomTabState bottomTabState) async {
@@ -215,12 +310,15 @@ class _MapPageState extends State<MapPage> {
     required int radius,
   }) async {
     final placesService = GetIt.I<PlacesService>();
-    return placesService.fetchPlaces(
+    final allPlaces = await placesService.fetchPlaces(
       textQuery: textQuery,
       lat: lat,
       lng: lng,
       radius: radius,
     );
+    
+    final filteredPlaces = _filterPlacesByRadius(allPlaces, lat, lng, radius);    
+    return filteredPlaces;
   }
 
   Widget _buildRadiusToggleButton() {
@@ -274,7 +372,7 @@ class _MapPageState extends State<MapPage> {
               ),
               const SizedBox(height: 8),
               Text(
-                "Lütfen bekleyiniz",
+                "Lütfen izin verin",
                 style: Theme.of(context).textTheme.displaySmall?.copyWith(
                   color: Colors.grey[600],
                 ),
@@ -285,7 +383,8 @@ class _MapPageState extends State<MapPage> {
       );
     }
 
-    final displayLocation = _mapStateStore.userLocation ?? const LatLng(41.0082, 28.9784);
+    final displayLocation = _mapStateStore.userLocation ?? 
+                           const LatLng(41.0082, 28.9784);
     
     return Scaffold(
       backgroundColor: Colors.white,
@@ -301,7 +400,7 @@ class _MapPageState extends State<MapPage> {
                   }
                 },
                 initialCenter: displayLocation,
-                initialZoom: 11.0,
+                initialZoom: 15.0,
                 minZoom: 3.0,
                 maxZoom: 18.0,
                 interactionOptions: const InteractionOptions(
@@ -323,7 +422,7 @@ class _MapPageState extends State<MapPage> {
                         point: _mapStateStore.userLocation!,
                         color: const Color.fromARGB(255, 255, 255, 255).withOpacity(0.2),
                         borderStrokeWidth: 2,
-                        borderColor: const Color.fromARGB(255, 255, 255, 255).withOpacity(0.8),
+                        borderColor: const Color.fromARGB(255, 255, 115, 0).withOpacity(0.8),
                         useRadiusInMeter: true,
                         radius: _radius.toDouble(),
                       ),
@@ -383,6 +482,7 @@ class _MapPageState extends State<MapPage> {
             ),
           ),
       
+          // Kategoriler
           Positioned(
             top: MediaQuery.of(context).size.height * 0.12,
             left: MediaQuery.of(context).size.height * 0.04,
@@ -450,6 +550,7 @@ class _MapPageState extends State<MapPage> {
             ),
           ),
           
+          // Radyüs slider
           Positioned(
             right: 16,
             bottom: MediaQuery.of(context).size.height * 0.15,
@@ -499,6 +600,7 @@ class _MapPageState extends State<MapPage> {
             ),
           ),
           
+          // Alt butonlar
           Positioned(
             bottom: MediaQuery.of(context).size.height * 0.04,
             left: 10,
@@ -507,8 +609,8 @@ class _MapPageState extends State<MapPage> {
               decoration: const BoxDecoration(
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black,
-                    blurRadius: 50,
+                    color: Colors.black26,
+                    blurRadius: 20,
                     offset: Offset(0, 4),
                   ),
                 ],
@@ -517,10 +619,29 @@ class _MapPageState extends State<MapPage> {
                 children: [
                   Expanded(
                     child: ElevatedButton.icon(
-                      onPressed: () {
-                        _mapStateStore.startTracking(_locationService);
+                      onPressed: () async {
+                        if (_locationPermissionDenied) {
+                          _showPermissionDialog();
+                        } else {
+                          await _mapStateStore.refreshLocation(_locationService);
+                          
+                          if (_mapStateStore.userLocation != null) {
+                            _mapController.move(
+                              _mapStateStore.userLocation!, 
+                              15,
+                            );
+
+                            if (!_mapStateStore.isTracking) {
+                              await _mapStateStore.startTracking(_locationService);
+                            }
+                          }
+                        }
                       },
-                      icon: const Icon(Icons.gps_fixed),
+                      icon: Icon(
+                        _mapStateStore.isTracking 
+                          ? Icons.gps_fixed 
+                          : Icons.gps_not_fixed,
+                      ),
                       label: Text(
                         'Beni Bul',
                         style: Theme.of(context)
@@ -532,10 +653,12 @@ class _MapPageState extends State<MapPage> {
                             ),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color.fromARGB(255, 255, 115, 0),
+                        backgroundColor: _locationPermissionDenied
+                          ? Colors.grey
+                          : const Color.fromARGB(255, 255, 115, 0),
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 32,
+                          horizontal: 24,
                           vertical: 12,
                         ),
                         shape: RoundedRectangleBorder(
@@ -548,18 +671,21 @@ class _MapPageState extends State<MapPage> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton.icon(
-                      onPressed: _mapStateStore.userLocation == null ? null : () async {
-                        final results = await _fetchPlaces(
-                          textQuery: selectedCategory,
-                          lat: _mapStateStore.userLocation!.latitude,
-                          lng: _mapStateStore.userLocation!.longitude,
-                          radius: _radius,
-                        );
-                        setState(() {
-                          nearbyPlaces = results;
-                        });
-                        _mapStateStore.setPlaces(results);
-                      },
+                      onPressed: _mapStateStore.userLocation == null 
+                        ? null 
+                        : () async {
+                            final results = await _fetchPlaces(
+                              textQuery: selectedCategory,
+                              lat: _mapStateStore.userLocation!.latitude,
+                              lng: _mapStateStore.userLocation!.longitude,
+                              radius: _radius,
+                            );
+                            
+                            setState(() {
+                              nearbyPlaces = results;
+                            });
+                            _mapStateStore.setPlaces(results);
+                          },
                       icon: const Icon(Icons.search),
                       label: Text(
                         'Mekan Bul',
@@ -574,8 +700,9 @@ class _MapPageState extends State<MapPage> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color.fromARGB(255, 255, 115, 0),
                         foregroundColor: Colors.white,
+                        disabledBackgroundColor: Colors.grey[300],
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 32,
+                          horizontal: 24,
                           vertical: 12,
                         ),
                         shape: RoundedRectangleBorder(
