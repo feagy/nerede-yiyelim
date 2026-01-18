@@ -4,6 +4,7 @@ import 'package:app/pages/firebase_options.dart';
 import 'package:app/pages/homepage.dart';
 import 'package:app/pages/loginpage.dart';
 import 'package:app/notification/notification-test.dart';
+import 'package:app/pages/mappage.dart';
 import 'package:app/pages/signuppage.dart';
 import 'package:app/pages/welcomepage.dart';
 import 'package:app/services/aisummaryservice.dart';
@@ -23,6 +24,8 @@ import 'package:app/pages/reviewpage.dart';
 import 'package:app/states/MapStateStore.dart';
 import 'package:app/states/PlaceStateStore.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:app/functions/locationfunc.dart';
+import 'package:latlong2/latlong.dart';
 
 
 final getIt = GetIt.instance;
@@ -36,21 +39,23 @@ Future main() async {
 
   final db = await LocalServices.getDatabase();
 
- NotificationTest.initNotification().catchError((e) {
+  NotificationTest.initNotification().catchError((e) {
     debugPrint('Bildirim hatası: $e');
   });
 
   final String apiKey = dotenv.env['MAPTILER_MAPS_API_KEY'] ?? '';
 
-  // States
-  getIt.registerSingleton<MapStateStore>(MapStateStore());
+  final mapStateStore = MapStateStore();
+  getIt.registerSingleton<MapStateStore>(mapStateStore);
   getIt.registerSingleton<PlaceStateStore>(PlaceStateStore());
-  // Services
+  
   getIt.registerSingleton<PlacesService>(PlacesService());
   getIt.registerSingleton<FavoritesService>(FavoritesService());
   getIt.registerSingleton<ReviewsService>(ReviewsService());
   getIt.registerSingleton<PlacePhotoService>(PlacePhotoService());
   getIt.registerSingleton<AISummaryService>(AISummaryService());
+
+  _initializeLocation(mapStateStore);
 
   runApp(
     MultiProvider(
@@ -61,6 +66,28 @@ Future main() async {
       child: MyApp(keyAPI: apiKey, database: db),
     ),
   );
+}
+
+void _initializeLocation(MapStateStore mapStateStore) async {
+  final locationService = LocationService();
+  
+  try {
+    final pos = await locationService
+        .getUserCurrentLocation()
+        .timeout(const Duration(seconds: 10));
+
+    if (pos != null) {
+      final latLng = LatLng(pos.latitude, pos.longitude);
+      mapStateStore.setUserLocation(latLng);
+      debugPrint('✅ Konum başarıyla alındı: ${pos.latitude}, ${pos.longitude}');
+    } else {
+      mapStateStore.setUserLocation(const LatLng(41.0082, 28.9784));
+      debugPrint('⚠️ Konum alınamadı, varsayılan konum kullanılıyor');
+    }
+  } catch (e) {
+    mapStateStore.setUserLocation(const LatLng(41.0082, 28.9784));
+    debugPrint('❌ Konum alma hatası: $e');
+  }
 }
 
 class MyApp extends StatelessWidget {

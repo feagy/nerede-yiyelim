@@ -69,15 +69,25 @@ class _HomePageState extends State<HomePage> {
                   MaterialPageRoute(builder: (_) => ProfilePage()),
                 );
               } else {
-                Navigator.of(context, rootNavigator: true).pushReplacement(
+                bottomTabState.setTab(0);
+                bottomTabState.navigatorKey.currentState!.pushReplacement(
                   MaterialPageRoute(builder: (_) => const SignupPage()),
                 );
               }
               break;
             case 2:
-              bottomTabState.navigatorKey.currentState!.pushReplacement(
-                MaterialPageRoute(builder: (_) => const FavoritesPage()),
-              );
+              final isLoggedIn =
+                  await AuthService().currentUser?.isAnonymous == false;
+              if (isLoggedIn){
+                bottomTabState.navigatorKey.currentState!.pushReplacement(
+                  MaterialPageRoute(builder: (_) => const FavoritesPage()),
+                );
+              } else {
+                bottomTabState.setTab(0);
+                bottomTabState.navigatorKey.currentState!.pushReplacement(
+                  MaterialPageRoute(builder: (_) => const SignupPage()),
+                );
+              }
               break;
             case 3:
               bottomTabState.navigatorKey.currentState!.pushReplacement(

@@ -491,96 +491,130 @@ class _DetailedRestaurantPage extends State<DetailedRestaurantPage> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return place != null ? Scaffold(
+  Widget _NoPlaceSelectedView(BuildContext context) {
+    return Scaffold(
       backgroundColor: Colors.white,
-      body: SingleChildScrollView(
+      body: Center(
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _DetailedRestaurantHeader(
-              restaurantName: place?.placeName,
-              restaurantPhotoUri: GetIt.I<PlacePhotoService>().getPhotoUrl(
-                place?.photoName ?? "",
-                400,
-              ),
-              restaurantRating: place?.googleRating,
-              restaurantUserRatingCount: place?.googleRatingCount,
-              isOpen: jsonDecode(place?.openingHoursJson ?? "{}")["openNow"] as bool?,
-              isFavorite: _isFavorite,
-              onFavoriteToggle: _toggleFavorite,
-              isFavoriteBusy: _isFavoriteBusy,
+            Icon(
+              Icons.restaurant_outlined,
+              size: MediaQuery.of(context).size.height * 0.14,
+              color: Colors.grey[400],
             ),
-            _DetailedRestaurantInformationSection(
-              restaurantFormattedaddress: place?.address,
-              restaurantGenerativeSummary: _aiSummary,
-              restaurantInternationalPhoneNumber: place?.phone,
-              restaurantNextCloseTime:
-                  jsonDecode(place?.openingHoursJson ?? "{}")["nextCloseTime"] as String?,
-              isSummaryLoading: _summaryLoading,
-              onFetchSummary: _fetchSummary,
-            ),
-            if (place?.googleMapsUri != null)
-              Container(
-                alignment: Alignment.center,
-                margin: const EdgeInsets.only(bottom: 20),
-                child: ElevatedButton.icon(
-                  onPressed: () => _openGoogleMaps(place?.googleMapsUri),
-                  icon: const Icon(Icons.map, size: 20),
-                  label: const Text("Open in Google Maps"),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4285F4),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 12,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+            const SizedBox(height: 20),
+            Text(
+              'Henüz restoran seçmedin',
+              style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey[700],
                   ),
-                ),
-              ),
-
-            if (_myReview != null)
-             
-              _DetailedRestaurantUserReviewSection(
-                commentCtrl: _commentCtrlUpdate,
-                userReview: _myReview, 
-                onEdit: _updateReview,
-                onDelete: _deleteReview,
-                isSending: _isSending,
-              )
-            else
-              _DetailedRestaurantWriteReviewSection(
-                _commentCtrlSubmit,
-                _selectedRating,
-                _isSending,
-                (rating) {
-                  setState(() {
-                    _selectedRating = rating.toInt();
-                  });
-                },
-                _submitReview,
-              ),
-
-              _DetailedRestaurantCommentsSection(
-                restaurantReviews: _reviews,
-                isFirstLoading: _firstLoading,
-                hasMore: _hasMore,
-                isLoadingMore: _loadingMore,
-                onLoadMore: _loadMore,
-              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Haritadan bir mekan seçerek\nincelemeleri ve detayları görebilirsin.',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                    color: Colors.grey[500],
+                  ),
+            ),
           ],
         ),
       ),
-    ) : const Scaffold(
-      body: Center(
-        child: Center(
-          child: Text("Haritadan bir mekan seçiniz."),
-        ),
-      ),
     );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return place != null
+        ? Scaffold(
+            backgroundColor: Colors.white,
+            body: SingleChildScrollView(
+              child: Column(
+                children: [
+                  _DetailedRestaurantHeader(
+                    restaurantName: place?.placeName,
+                    restaurantPhotoUri:
+                        GetIt.I<PlacePhotoService>().getPhotoUrl(
+                      place?.photoName ?? "",
+                      400,
+                    ),
+                    restaurantRating: place?.googleRating,
+                    restaurantUserRatingCount: place?.googleRatingCount,
+                    isOpen: jsonDecode(place?.openingHoursJson ?? "{}")["openNow"]
+                        as bool?,
+                    isFavorite: _isFavorite,
+                    onFavoriteToggle: _toggleFavorite,
+                    isFavoriteBusy: _isFavoriteBusy,
+                  ),
+
+                  _DetailedRestaurantInformationSection(
+                    restaurantFormattedaddress: place?.address,
+                    restaurantGenerativeSummary: _aiSummary,
+                    restaurantInternationalPhoneNumber: place?.phone,
+                    restaurantNextCloseTime:
+                        jsonDecode(place?.openingHoursJson ?? "{}")["nextCloseTime"]
+                            as String?,
+                    isSummaryLoading: _summaryLoading,
+                    onFetchSummary: _fetchSummary,
+                  ),
+
+                  if (place?.googleMapsUri != null)
+                    Container(
+                      alignment: Alignment.center,
+                      margin: const EdgeInsets.only(bottom: 20),
+                      child: ElevatedButton.icon(
+                        onPressed: () => _openGoogleMaps(place?.googleMapsUri),
+                        icon: const Icon(Icons.map, size: 20),
+                        label: const Text("Open in Google Maps"),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF4285F4),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                  if (_myReview != null)
+                    _DetailedRestaurantUserReviewSection(
+                      commentCtrl: _commentCtrlUpdate,
+                      userReview: _myReview,
+                      onEdit: _updateReview,
+                      onDelete: _deleteReview,
+                      isSending: _isSending,
+                    )
+                  else
+                    _DetailedRestaurantWriteReviewSection(
+                      _commentCtrlSubmit,
+                      _selectedRating,
+                      _isSending,
+                      (rating) {
+                        setState(() {
+                          _selectedRating = rating.toInt();
+                        });
+                      },
+                      _submitReview,
+                    ),
+
+                  _DetailedRestaurantCommentsSection(
+                    restaurantReviews: _reviews,
+                    isFirstLoading: _firstLoading,
+                    hasMore: _hasMore,
+                    isLoadingMore: _loadingMore,
+                    onLoadMore: _loadMore,
+                  ),
+                ],
+              ),
+            ),
+          )
+        : _NoPlaceSelectedView(context);
   }
 }
 

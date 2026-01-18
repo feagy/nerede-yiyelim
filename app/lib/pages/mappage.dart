@@ -30,10 +30,9 @@ class _MapPageState extends State<MapPage> {
   final List<Marker> _userMarkers = [];
   late final MapStateStore _mapStateStore;
   final LocationService _locationService = LocationService();
-  StreamSubscription? _locationStream;
-  LatLng? _currentUserLatLng;
-
+  
   List<Place> nearbyPlaces = [];
+  bool _isInitializing = true;
 
   //Radyüs slider
   int _radius = 1000; // metre
@@ -59,38 +58,39 @@ class _MapPageState extends State<MapPage> {
     _mapController = MapController();
     nearbyPlaces = _mapStateStore.nearbyPlaces;
     selectedCategoryIndex = _mapStateStore.selectedCategoryIndex;
-    
-    // Konum alımını timeout ile yap
-    _initUserLocationWithTimeout();
+
+    if (_mapStateStore.userLocation != null) {
+      _isInitializing = false;
+      _mapStateStore.startTracking(_locationService);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        
+        if (mounted && _mapStateStore.userLocation != null) {
+          _mapController.move(_mapStateStore.userLocation!, 15);
+        }
+      });
+    } else {
+      _waitForLocation();
+    }
   }
   
-  Future<void> _initUserLocationWithTimeout() async {
-    try {
-      // 5 saniye timeout
-      await _initUserLocation().timeout(
-        const Duration(seconds: 5),
-        onTimeout: () {
-          debugPrint('Konum timeout - Varsayılan konum kullanılıyor');
-          if (mounted) {
-            setState(() {
-              // İstanbul varsayılan konum
-              _currentUserLatLng = const LatLng(41.0082, 28.9784);
-            });
-          }
-        },
-      );
-      
-      // Konum başarıyla alındıysa takibi başlat
-      if (mounted && _currentUserLatLng != null) {
-        await Future.delayed(const Duration(milliseconds: 500));
-        _startTrackingUser();
-      }
-    } catch (e) {
-      debugPrint('Konum hatası: $e');
-      if (mounted) {
-        setState(() {
-          _currentUserLatLng = const LatLng(41.0082, 28.9784);
-        });
+  Future<void> _waitForLocation() async {
+    int waitCount = 0;
+    while (_mapStateStore.userLocation == null && waitCount < 40 && mounted) {
+      await Future.delayed(const Duration(milliseconds: 250));
+      waitCount++;
+    }
+    
+    if (_mapStateStore.userLocation == null && mounted) {
+      _mapStateStore.setUserLocation(const LatLng(41.0082, 28.9784));
+    }
+    
+    if (mounted) {
+      setState(() {
+        _isInitializing = false;
+      });
+      _mapStateStore.startTracking(_locationService);
+      if (_mapStateStore.userLocation != null) {
+        _mapController.move(_mapStateStore.userLocation!, 15);
       }
     }
   }
@@ -223,78 +223,6 @@ class _MapPageState extends State<MapPage> {
     );
   }
 
-  Future<void> _initUserLocation() async {
-    final pos = await _locationService.getUserCurrentLocation();
-    if (pos != null && mounted) {
-      setState(() {
-        _currentUserLatLng = LatLng(pos.latitude, pos.longitude);
-      });
-    }
-  }
-
-  Future<Marker> _buildUserMarker() async {
-    return Marker(
-      point: _currentUserLatLng!,
-      width: 50,
-      height: 50,
-      child: Icon(
-        Icons.emoji_people, 
-        color: const Color.fromARGB(255, 255, 115, 0), 
-        size: MediaQuery.of(context).size.height * 0.05
-      ),
-    );
-  }
-
-  Widget _buildVerticalRadiusSlider() {
-    if (!_showRadiusSlider) return const SizedBox();
-
-    return Positioned(
-      right: 10,
-      bottom: 100,
-      child: AnimatedOpacity(
-        duration: const Duration(milliseconds: 300),
-        opacity: _showRadiusSlider ? 1.0 : 0.0,
-        child: Container(
-          height: 250,
-          width: 50,
-          padding: const EdgeInsets.all(0), // EdgeInsetsGeometry.directional() yerine
-          decoration: BoxDecoration(
-            color: Colors.transparent,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(blurRadius: 10, color: Colors.black.withOpacity(0.2)),
-            ],
-          ),
-          child: SfSliderTheme(
-            data: SfSliderThemeData(
-              tooltipBackgroundColor: const Color.fromARGB(255, 255, 115, 0),
-              tooltipTextStyle: Theme.of(context).textTheme.displaySmall?.copyWith(
-                color: Colors.white
-              )
-            ),
-            child: SfSlider.vertical(
-              inactiveColor: Colors.white,
-              activeColor: const Color.fromARGB(255, 255, 115, 0),
-              min: 50,
-              max: 5000,
-              interval: 9,
-              value: _radius.toDouble(),
-              enableTooltip: true,
-              tooltipTextFormatterCallback: (value, text) {
-                return "${(value / 1000).toStringAsFixed(1)} km";
-              },
-              onChanged: (value) {
-                setState(() {
-                  _radius = value.toInt();
-                });
-              },
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildRadiusToggleButton() {
     return FloatingActionButton(
       heroTag: "radius_button",
@@ -311,21 +239,8 @@ class _MapPageState extends State<MapPage> {
     );
   }
 
-  Future<void> _startTrackingUser() async {
-    _locationStream = await _locationService.startUpdateUserCurrentLocation(
-      onLocationChanged: (pos) {
-        final newLatLng = LatLng(pos.latitude, pos.longitude);
-        setState(() {
-          _currentUserLatLng = newLatLng;
-        });
-        _mapController.move(newLatLng, _mapController.camera.zoom);
-      },
-    );
-  }
-
   @override
   void dispose() {
-    _locationStream?.cancel();
     _mapController.dispose();
     super.dispose();
   }
@@ -334,22 +249,58 @@ class _MapPageState extends State<MapPage> {
   Widget build(BuildContext context) {
     final bottomTabState = Provider.of<BottomTabState>(context);
     
-    // Scaffold'a arka plan rengi eklendi
+    if (_isInitializing) {
+      return Scaffold(
+        backgroundColor: Colors.white,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const SizedBox(
+                height: 50,
+                width: 50,
+                child: CircularProgressIndicator(
+                  color: Color(0xFFFF7300),
+                  strokeWidth: 4,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                "Konumunuz alınıyor...",
+                style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                "Lütfen bekleyiniz",
+                style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                  color: Colors.grey[600],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final displayLocation = _mapStateStore.userLocation ?? const LatLng(41.0082, 28.9784);
+    
     return Scaffold(
-      backgroundColor: Colors.white, // veya Theme.of(context).scaffoldBackgroundColor
+      backgroundColor: Colors.white,
       body: Stack(
         children: [
-          // FlutterMap
           Positioned.fill(
             child: FlutterMap(
               mapController: _mapController,
               options: MapOptions(
                 onMapReady: () {
-                  if (_currentUserLatLng != null) {
-                    _mapController.move(_currentUserLatLng!, 15);
+                  if (_mapStateStore.userLocation != null) {
+                    _mapController.move(_mapStateStore.userLocation!, 15);
                   }
                 },
-                initialCenter: _currentUserLatLng ?? const LatLng(41.000, 41.000),
+                initialCenter: displayLocation,
                 initialZoom: 11.0,
                 minZoom: 3.0,
                 maxZoom: 18.0,
@@ -367,9 +318,9 @@ class _MapPageState extends State<MapPage> {
                 ),
                 CircleLayer(
                   circles: [
-                    if(_currentUserLatLng != null)
+                    if(_mapStateStore.userLocation != null)
                       CircleMarker(
-                        point: _currentUserLatLng!,
+                        point: _mapStateStore.userLocation!,
                         color: const Color.fromARGB(255, 255, 255, 255).withOpacity(0.2),
                         borderStrokeWidth: 2,
                         borderColor: const Color.fromARGB(255, 255, 255, 255).withOpacity(0.8),
@@ -378,11 +329,11 @@ class _MapPageState extends State<MapPage> {
                       ),
                   ],
                 ),
-                if (_currentUserLatLng != null)
+                if (_mapStateStore.userLocation != null)
                   MarkerLayer(
                     markers: [
                       Marker(
-                        point: _currentUserLatLng!,
+                        point: _mapStateStore.userLocation!,
                         width: 50,
                         height: 50,
                         child: Icon(
@@ -432,7 +383,6 @@ class _MapPageState extends State<MapPage> {
             ),
           ),
       
-          // Kategori Seçimi
           Positioned(
             top: MediaQuery.of(context).size.height * 0.12,
             left: MediaQuery.of(context).size.height * 0.04,
@@ -500,10 +450,9 @@ class _MapPageState extends State<MapPage> {
             ),
           ),
           
-          // Radyüs Slider ve Toggle Button
           Positioned(
             right: 16,
-            bottom: MediaQuery.of(context).size.height * 0.15, // Yukarı taşındı
+            bottom: MediaQuery.of(context).size.height * 0.15,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -550,14 +499,13 @@ class _MapPageState extends State<MapPage> {
             ),
           ),
           
-          // Alt Butonlar
           Positioned(
             bottom: MediaQuery.of(context).size.height * 0.04,
             left: 10,
             right: 10,
             child: Container(
-              decoration: BoxDecoration(
-                boxShadow: const [
+              decoration: const BoxDecoration(
+                boxShadow: [
                   BoxShadow(
                     color: Colors.black,
                     blurRadius: 50,
@@ -570,7 +518,7 @@ class _MapPageState extends State<MapPage> {
                   Expanded(
                     child: ElevatedButton.icon(
                       onPressed: () {
-                        _startTrackingUser();
+                        _mapStateStore.startTracking(_locationService);
                       },
                       icon: const Icon(Icons.gps_fixed),
                       label: Text(
@@ -600,11 +548,11 @@ class _MapPageState extends State<MapPage> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton.icon(
-                      onPressed: () async {
+                      onPressed: _mapStateStore.userLocation == null ? null : () async {
                         final results = await _fetchPlaces(
                           textQuery: selectedCategory,
-                          lat: _currentUserLatLng?.latitude ?? 40.9917,
-                          lng: _currentUserLatLng?.longitude ?? 28.8517,
+                          lat: _mapStateStore.userLocation!.latitude,
+                          lng: _mapStateStore.userLocation!.longitude,
                           radius: _radius,
                         );
                         setState(() {

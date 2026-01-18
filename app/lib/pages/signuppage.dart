@@ -1,10 +1,12 @@
 import 'package:app/functions/additionalfunc.dart';
+import 'package:app/global/universaltheme.dart';
 import 'package:app/pages/loginpage.dart';
 import 'package:app/services/authservice.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -29,6 +31,7 @@ class _SignupPageState extends State<SignupPage> {
 
   @override
   Widget build(BuildContext context) {
+    final bottomTabState = Provider.of<BottomTabState>(context);
     return Scaffold(
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
@@ -301,7 +304,11 @@ class _SignupPageState extends State<SignupPage> {
                   ),
                   TextButton(
                     onPressed: () {
-                      Navigator.pushReplacementNamed(context, "/home");
+                      bottomTabState.setTab(0);
+                      Navigator.of(context).pushNamedAndRemoveUntil(
+                        "/home",
+                        (route) => false,
+                      );
                     },
                     style: TextButton.styleFrom(
                       padding: EdgeInsets.zero,
